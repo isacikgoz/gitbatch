@@ -3,13 +3,30 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"syscall"
+//	"gopkg.in/alecthomas/kingpin.v2"
 )
 
+//var (
+//	currentDirectory, err = os.Getwd()
+//	directory = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDirectory).Short('d').String()
+//)
+
 func main() {
-	repo := "/Users/ibrahim/git"
-	FindRepos(repo)
+
+	args := os.Args[1:]
+	if len(args) > 0 {
+		repo := args[0]
+		FindRepos(repo)
+	} else {
+		repo, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+		}
+		FindRepos(repo)
+	}
 }
 
 func FindRepos(directory string) []string {
