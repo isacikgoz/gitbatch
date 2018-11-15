@@ -6,27 +6,18 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
-//	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-//var (
-//	currentDirectory, err = os.Getwd()
-//	directory = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDirectory).Short('d').String()
-//)
+var (
+	currentDir, err = os.Getwd()
+	dir = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
+)
 
 func main() {
-
-	args := os.Args[1:]
-	if len(args) > 0 {
-		repo := args[0]
-		FindRepos(repo)
-	} else {
-		repo, err := os.Getwd()
-		if err != nil {
-			log.Fatal(err)
-		}
-		FindRepos(repo)
-	}
+	kingpin.Parse()
+	log.Printf("the diretory under investigation is %s", *dir)
+	FindRepos(*dir)
 }
 
 func FindRepos(directory string) []string {
