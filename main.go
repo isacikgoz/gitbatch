@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -21,7 +20,6 @@ var (
 
 func main() {
 	kingpin.Parse()
-	log.Printf("%s is your repo pattern", *repoPattern)
 	FindRepos(*dir)
 }
 
@@ -71,7 +69,6 @@ func CheckIfError(err error) {
 	if err == nil {
 		return
 	}
-
-	fmt.Printf("\x1b[31;1m%s\x1b[0m\n", fmt.Sprintf("error: %s", err))
+	log.Fatal(err)
 	os.Exit(1)
 }
