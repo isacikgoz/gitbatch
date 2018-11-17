@@ -2,3 +2,8 @@
 
 ## gitbatch
 Aim of this simple application to make your local repositories syncrhonized with remotes easily. This is still a work in progress application.
+
+simple use is:
+```bash
+go run main.go -d '/Users/ibrahim/git' -p gitbatch -r origin -b master
+```
