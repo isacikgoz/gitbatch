@@ -1,30 +1,52 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
-	"strings"
-	"os"
+	"fmt"
+	"github.com/jroimartin/gocui"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
+	"io/ioutil"
+	"log"
+	"os"
+	"strings"
 )
 
+type RepoEntity struct {
+	Name       string
+	Repository git.Repository
+}
+
 var (
-	currentDir, err = os.Getwd()
-	dir = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
-	repoPattern = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
-	branch = kingpin.Flag("branch", "branch to be pulled").Default("master").Short('b').String()
-	remote = kingpin.Flag("remote", "remote name te be pulled").Default("origin").Short('r').String()
+	currentDir, err    = os.Getwd()
+	dir                = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
+	repoPattern        = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
+	repositories       []RepoEntity
+	selectedRepoEntity RepoEntity
 )
 
 func main() {
 	kingpin.Parse()
-	FindRepos(*dir)
+	repositories = FindRepos(*dir)
+
+	g, err := gocui.NewGui(gocui.OutputNormal)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer g.Close()
+
+	g.SetManagerFunc(layout)
+
+	if err := keybindings(g); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		log.Fatal(err)
+	}
 }
 
-func FindRepos(directory string) []string {
-	var gitRepositories []string
+func FindRepos(directory string) []RepoEntity {
+	var gitRepositories []RepoEntity
 	files, err := ioutil.ReadDir(directory)
 
 	if err != nil {
@@ -33,21 +55,13 @@ func FindRepos(directory string) []string {
 	filteredFiles := FilterRepos(files)
 	for _, f := range filteredFiles {
 		repo := directory + "/" + f.Name()
+
 		r, err := git.PlainOpen(repo)
-		if err !=nil {
+		if err != nil {
 			continue
 		}
-		// Get the working directory for the repository
-		w, err := r.Worktree()
-		CheckIfError(err)
-
-		ref := plumbing.ReferenceName("refs/heads/" + *branch)
-		err = w.Pull(&git.PullOptions{
-			RemoteName: *remote,
-			Progress: os.Stdout,
-			ReferenceName: ref,
-		})
-		CheckIfError(err)
+		entity := RepoEntity{f.Name(), *r}
+		gitRepositories = append(gitRepositories, entity)
 	}
 	return gitRepositories
 }
@@ -64,11 +78,163 @@ func FilterRepos(files []os.FileInfo) []os.FileInfo {
 	return filteredRepos
 }
 
-// CheckIfError should be used to naively panics if an error is not nil.
-func CheckIfError(err error) {
-	if err == nil {
-		return
+func layout(g *gocui.Gui) error {
+	maxX, maxY := g.Size()
+
+	if v, err := g.SetView("main", 0, 0, maxX-1, int(0.65*float32(maxY))-3); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = " Matched Repositories "
+		v.Highlight = true
+		v.SelBgColor = gocui.ColorGreen
+		v.SelFgColor = gocui.ColorBlack
+
+		for _, r := range repositories {
+			fmt.Fprintln(v, r.Name)
+		}
+
+		if _, err = setCurrentViewOnTop(g, "main"); err != nil {
+			return err
+		}
 	}
-	log.Fatal(err)
-	os.Exit(1)
+
+	if v, err := g.SetView("detail", 0, int(0.65*float32(maxY))-2, maxX-1, maxY-2); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = " Repository Detail "
+		v.Wrap = true
+		v.Autoscroll = true
+	}
+
+	if v, err := g.SetView("keybindings", -1, maxY-2, maxX, maxY); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.BgColor = gocui.ColorBlue
+		v.FgColor = gocui.ColorYellow
+		v.Frame = false
+		fmt.Fprintln(v, "q: quit ↑ ↓: navigate space: select")
+	}
+	return nil
+}
+
+func keybindings(g *gocui.Gui) error {
+	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("", 'q', gocui.ModNone, quit); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("main", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("main", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+		return err
+	}
+	if err := g.SetKeybinding("main", gocui.KeySpace, gocui.ModNone, markRepository); err != nil {
+		return err
+	}
+	return nil
+}
+
+func cursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		cx, cy := v.Cursor()
+		if err := v.SetCursor(cx, cy+1); err != nil {
+			ox, oy := v.Origin()
+			if err := v.SetOrigin(ox, oy+1); err != nil {
+				return err
+			}
+		}
+		updateDetail(g, v)
+	}
+	return nil
+}
+
+func cursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+			if err := v.SetOrigin(ox, oy-1); err != nil {
+				return err
+			}
+		}
+		updateDetail(g, v)
+	}
+	return nil
+}
+
+func quit(g *gocui.Gui, v *gocui.View) error {
+	return gocui.ErrQuit
+}
+
+func setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
+	if _, err := g.SetCurrentView(name); err != nil {
+		return nil, err
+	}
+	return g.SetViewOnTop(name)
+}
+
+func getSelectedRepository(g *gocui.Gui, v *gocui.View) (RepoEntity, error) {
+	var l string
+	var err error
+	var r RepoEntity
+
+	_, cy := v.Cursor()
+	if l, err = v.Line(cy); err != nil {
+		return r, err
+	}
+
+	for _, sr := range repositories {
+		if l == sr.Name {
+			return sr, nil
+		}
+	}
+	return r, err
+}
+
+func updateDetail(g *gocui.Gui, v *gocui.View) error {
+	var err error
+
+	_, cy := v.Cursor()
+	if _, err = v.Line(cy); err != nil {
+		return err
+	}
+
+	out, err := g.View("detail")
+	if err != nil {
+		return err
+	}
+
+	out.Clear()
+
+	if repo, err := getSelectedRepository(g, v); err != nil {
+		return err
+	} else {
+		if list, err := repo.Repository.Remotes(); err != nil {
+			return err
+		} else {
+			for _, r := range list {
+				fmt.Fprintln(out, r)
+			}
+		}
+	}
+	return nil
+}
+
+func markRepository(g *gocui.Gui, v *gocui.View) error {
+	var l string
+	var err error
+
+	_, cy := v.Cursor()
+	if l, err = v.Line(cy); err != nil {
+		return err
+	} else {
+		l = l + " X"
+	}
+
+	return nil
 }
