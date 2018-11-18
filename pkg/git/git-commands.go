@@ -3,6 +3,7 @@ package git
 import (
 	"strings"
 	"github.com/isacikgoz/gitbatch/pkg/command"
+	"github.com/isacikgoz/gitbatch/pkg/utils"
 )
 
 // UpstreamDifferenceCount checks how many pushables/pullables there are for the
@@ -31,7 +32,7 @@ func CurrentBranchName(repoPath string) (string, error) {
 			return "", err
 		}
 	}
-	return branchName, nil
+	return utils.TrimTrailingNewline(branchName), nil
 }
 
 
