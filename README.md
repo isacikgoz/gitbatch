@@ -3,9 +3,13 @@
 ## gitbatch
 Aim of this simple application to make your local repositories syncrhonized with remotes easily. This is still a work in progress application.
 
+clone the repository:
+```bash
+git clone https://github.com/isacikgoz/gitbatch
+```
 use it like:
 ```bash
-go run main.go -d '/Users/ibrahim/git' -p gitbatch -r origin -b master
+go run main.go -d '/Users/ibrahim/git' -p gitbatch
 ```
 to get help:
 ```bash
