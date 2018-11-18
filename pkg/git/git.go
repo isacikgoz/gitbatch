@@ -2,10 +2,12 @@ package git
 
 import (
 	"gopkg.in/src-d/go-git.v4"
+	"os"
 )
 
 type RepoEntity struct {
 	Name       string
+	AbsPath    string
 	Repository git.Repository
 	Pushables  string
 	Pullables  string
@@ -14,27 +16,23 @@ type RepoEntity struct {
 
 func InitializeRepository(directory string) (RepoEntity, error) {
 	var entity RepoEntity
-
+	file, err := os.Open(directory)
+	if err != nil {
+		return entity, err
+	}
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return entity, err
+	}
 	r, err := git.PlainOpen(directory)
 	if err != nil {
 		return entity, err
 	}
-	entity = RepoEntity{directory, *r, "", "", ""}
+	pushable, pullable := UpstreamDifferenceCount(directory)
+	branch, err := CurrentBranchName(directory)
+	entity = RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch}
 	
 	return entity, nil
-}
-
-func InitializeRepositories(directories []string) []RepoEntity {
-	var gitRepositories []RepoEntity
-	for _, f := range directories {
-		r, err := git.PlainOpen(f)
-		if err != nil {
-			continue
-		}
-		entity := RepoEntity{f, *r, "", "", ""}
-		gitRepositories = append(gitRepositories, entity)
-	}
-	return gitRepositories
 }
 
 

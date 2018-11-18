@@ -12,14 +12,17 @@ type App struct {
 }
 
 // Setup bootstrap a new application
-func Setup(repositories []git.RepoEntity) (*App, error) {
+func Setup(directories []string) (*App, error) {
 	app := &App{
 		closers: []io.Closer{},
 	}
 
-	var err error
+	entities, err := createRepositoryEntities(directories)
+	if err != nil {
+		return app, err
+	}
 
-	err = gui.Run(repositories)
+	err = gui.Run(entities)
 	if err != nil {
 		return app, err
 	}
@@ -35,4 +38,15 @@ func (app *App) Close() error {
 		}
 	}
 	return nil
+}
+
+func createRepositoryEntities(directories []string) (entities []git.RepoEntity, err error) {
+	for _, dir := range directories {
+		entity, err := git.InitializeRepository(dir)
+		if err != nil {
+			continue
+		}
+		entities = append(entities, entity)
+	}
+	return entities, nil
 }

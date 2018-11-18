@@ -75,13 +75,23 @@ func keybindings(g *gocui.Gui) error {
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
+		ox, oy := v.Origin()
+
+		ly := len(repositories) -1
+
+		// if we are at the end we just return
+		if cy+oy == ly {
+			return nil
+		}
 		if err := v.SetCursor(cx, cy+1); err != nil {
-			ox, oy := v.Origin()
+			
 			if err := v.SetOrigin(ox, oy+1); err != nil {
 				return err
 			}
 		}
-		updateDetail(g, v)
+		if err := updateDetail(g, v); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -95,7 +105,9 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		updateDetail(g, v)
+		if err := updateDetail(g, v); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -145,12 +157,12 @@ func updateDetail(g *gocui.Gui, v *gocui.View) error {
 	out.Clear()
 
 	if repo, err := getSelectedRepository(g, v); err != nil {
-		return err
+		out.Clear()
 	} else {
 		if list, err := repo.Repository.Remotes(); err != nil {
 			return err
 		} else {
-			fmt.Fprintln(out, repo.Name)
+			fmt.Fprintln(out, "↑" + repo.Pushables + " ↓" + repo.Pullables + " → " + repo.Branch)
 			for _, r := range list {
 				fmt.Fprintln(out, r)
 			}

@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/isacikgoz/gitbatch/pkg/app"
-	"github.com/isacikgoz/gitbatch/pkg/git"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"log"
 	"os"
+    "path/filepath"
 	"strings"
 )
 
@@ -14,12 +14,11 @@ var (
 	currentDir, err    = os.Getwd()
 	dir                = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
 	repoPattern        = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
-	repositories       []git.RepoEntity
 )
 
 func main() {
 	kingpin.Parse()
-	repositories = FindRepos(*dir)
+	repositories := FindRepos(*dir)
 
 	app, err := app.Setup(repositories) 
 	if err != nil {
@@ -29,8 +28,7 @@ func main() {
 	defer app.Close()
 }
 
-func FindRepos(directory string) []git.RepoEntity {
-	var gitRepositories []git.RepoEntity
+func FindRepos(directory string) (directories []string) {
 	files, err := ioutil.ReadDir(directory)
 
 	if err != nil {
@@ -39,15 +37,18 @@ func FindRepos(directory string) []git.RepoEntity {
 
 	filteredFiles := FilterRepos(files)
 	for _, f := range filteredFiles {
-		repo := directory + "/" + f.Name()
-
-		entity, err := git.InitializeRepository(repo)
+		repo := directory + string(os.PathSeparator) + f.Name()
+		file, err := os.Open(repo)
 		if err != nil {
 			continue
 		}
-		gitRepositories = append(gitRepositories, entity)
+		dir, err := filepath.Abs(file.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
+		directories = append(directories, dir)
 	}
-	return gitRepositories
+	return directories
 }
 
 func FilterRepos(files []os.FileInfo) []os.FileInfo {
