@@ -9,6 +9,7 @@ import (
 // App struct
 type App struct {
 	closers []io.Closer
+	Gui *gui.Gui
 }
 
 // Setup bootstrap a new application
@@ -22,7 +23,7 @@ func Setup(directories []string) (*App, error) {
 		return app, err
 	}
 
-	err = gui.Run(entities)
+	app.Gui, err = gui.NewGui(entities)
 	if err != nil {
 		return app, err
 	}

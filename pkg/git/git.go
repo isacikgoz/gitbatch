@@ -1,6 +1,8 @@
 package git
 
 import (
+	"github.com/fatih/color"
+	"github.com/isacikgoz/gitbatch/pkg/utils"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"os"
@@ -14,6 +16,7 @@ type RepoEntity struct {
 	Pushables  string
 	Pullables  string
 	Branch     string
+	Marked     bool
 }
 
 func InitializeRepository(directory string) (RepoEntity, error) {
@@ -32,7 +35,7 @@ func InitializeRepository(directory string) (RepoEntity, error) {
 	}
 	pushable, pullable := UpstreamDifferenceCount(directory)
 	branch, err := CurrentBranchName(directory)
-	entity = RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch}
+	entity = RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, false}
 	
 	return entity, nil
 }
@@ -49,7 +52,7 @@ func (entity *RepoEntity) GetCommits() (commits []string, err error) {
 
 // ... just iterates over the commits
     err = cIter.ForEach(func(c *object.Commit) error {
-    	commitstring := string([]rune(c.Hash.String())[:7]) + " " + c.Message
+    	commitstring := utils.ColoredString(string([]rune(c.Hash.String())[:7]), color.FgGreen) + " " + c.Message
     	re := regexp.MustCompile(`\r?\n`)
     	commitstring = re.ReplaceAllString(commitstring, " ")
         commits = append(commits, commitstring)
@@ -81,6 +84,17 @@ func (entity *RepoEntity) GetStatus() (status string) {
 	re := regexp.MustCompile(`\r?\n`)
     status = re.ReplaceAllString(status, " ")
     return status
+}
+
+
+func (entity *RepoEntity) Mark() {
+	if entity.Marked != true {
+		entity.Name = utils.ColoredString(entity.Name, color.FgYellow)
+		entity.Marked = true
+	} else {
+		entity.Name = utils.ColoredString(entity.Name, color.FgWhite)
+		entity.Marked = false
+	}
 }
 
 
