@@ -2,7 +2,6 @@ package gui
 
 import (
     "fmt"
-    "github.com/fatih/color"
     "github.com/isacikgoz/gitbatch/pkg/utils"
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
@@ -141,11 +140,7 @@ func (gui *Gui) refreshMain(g *gocui.Gui) error {
     }
     mainView.Clear()
     for _, r := range gui.Repositories {
-        if r.Marked {
-            fmt.Fprintln(mainView, utils.ColoredString(r.Name, color.FgGreen))
-        } else {
-            fmt.Fprintln(mainView, r.Name)
-        }
+        fmt.Fprintln(mainView, r.GetDisplayString())
     }
     return nil
 }
@@ -188,4 +183,16 @@ func (gui *Gui) getScheduleView(g *gocui.Gui) *gocui.View {
 func (gui *Gui) getStatusView(g *gocui.Gui) *gocui.View {
     v, _ := g.View("status")
     return v
+}
+
+func (gui *Gui) execute(g *gocui.Gui, v *gocui.View) error {
+    for _, r := range gui.Repositories {
+        if err := r.Pull(); err != nil {
+            return err
+        }
+        r.UnMark()
+        gui.refreshMain(g)
+        gui.updateSchedule(g)
+    }
+    return nil
 }

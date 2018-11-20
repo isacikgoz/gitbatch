@@ -36,7 +36,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.SelFgColor = gocui.ColorBlack
         v.Overwrite = true
         for _, r := range gui.Repositories {
-            fmt.Fprintln(v, r.Name)
+            fmt.Fprintln(v, r.GetDisplayString())
         }
 
         if _, err = gui.setCurrentViewOnTop(g, "main"); err != nil {
@@ -87,7 +87,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.BgColor = gocui.ColorWhite
         v.FgColor = gocui.ColorBlack
         v.Frame = false
-        fmt.Fprintln(v, "q: quit ↑ ↓: navigate space: select/deselect a: select all r: clear selection")
+        fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | a: select all | r: clear selection | enter: execute")
     }
     return nil
 }

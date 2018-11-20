@@ -6,6 +6,7 @@ import (
 	"github.com/isacikgoz/gitbatch/pkg/utils"
 )
 
+
 // UpstreamDifferenceCount checks how many pushables/pullables there are for the
 // current branch
 func UpstreamDifferenceCount(repoPath string) (string, string) {
@@ -33,4 +34,16 @@ func CurrentBranchName(repoPath string) (string, error) {
 		}
 	}
 	return utils.TrimTrailingNewline(branchName), nil
+}
+
+func (entity *RepoEntity) IsClean() (bool, error) {
+	worktree, err := entity.Repository.Worktree()
+	if err != nil {
+		return true, nil
+	}
+	status, err := worktree.Status()
+	if err != nil {
+		return status.IsClean(), nil
+	}
+	return false, nil
 }

@@ -11,6 +11,9 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
     if err := g.SetKeybinding("", 'q', gocui.ModNone, gui.quit); err != nil {
         return err
     }
+    if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, gui.execute); err != nil {
+        return err
+    }
     if err := g.SetKeybinding("main", gocui.KeyArrowDown, gocui.ModNone, gui.cursorDown); err != nil {
         return err
     }
