@@ -20,7 +20,7 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
          return err
     }
 
-    if err := gui.updateSchedule(g, entity); err != nil {
+    if err := gui.updateSchedule(g); err != nil {
          return err
     }
 
