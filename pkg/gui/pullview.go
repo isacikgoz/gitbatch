@@ -1,70 +1,86 @@
 package gui
 
 import (
-    "github.com/isacikgoz/gitbatch/pkg/git"
+    // "github./com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
-    "time"
 )
 
-func (gui *Gui) openPullView(g *gocui.Gui, entity *git.RepoEntity) error {
+func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
-    focusedViewName = entity.Name
-    v, err := g.SetView(focusedViewName, maxX/2-25, maxY/2-5, maxX/2+25, maxY/2+5)
+
+    v, err := g.SetView("pull", maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
     if err != nil {
             if err != gocui.ErrUnknownView {
                     return err
             }
-            v.Title = " " + focusedViewName + " "
-            v.Wrap = true
-            fmt.Fprintln(v, "Pulling...")
-    }
-    if _, err := g.SetCurrentView(focusedViewName); err != nil {
-            if err := gui.closePullView(g, entity); err != nil {
-                return nil
+            v.Title = " " + "Execution Parameters" + " "
+            v.Wrap = false
+            mrs, _ := gui.getMarkedEntities()
+            for _, r := range mrs {
+                line := r.Name + " : " + r.GetActiveRemote() + "/" + r.Branch + " → " + r.GetActiveBranch()
+                fmt.Fprintln(v, line)
             }
-            return err
+            
     }
-    return nil
-}
-
-func (gui *Gui) closePullView(g *gocui.Gui, entity *git.RepoEntity) error {
-    if g.CurrentView().Name() == entity.Name {
-        if err := g.DeleteView(entity.Name); err != nil {
-            return nil
-        }
-        if _, err := g.SetCurrentView("main"); err != nil {
-            return err
-        }
-    }
-    return nil
-}
-
-func (gui *Gui) startPullRoutine(g *gocui.Gui, entity *git.RepoEntity) error {
-    if err := gui.openPullView(g, entity); err != nil {
+    gui.updateKeyBindingsViewForPullView(g)
+    if _, err := g.SetCurrentView("pull"); err != nil {
         return err
     }
     return nil
 }
 
-func (gui *Gui) finalizePullRoutine(g *gocui.Gui, entity *git.RepoEntity) error {
-    time.Sleep(time.Second)
-    if err := gui.closePullView(g, entity); err != nil {
-        return err
-    }
-    return nil
-}
-
-func (gui *Gui) delView(g *gocui.Gui) error {
-    if focusedViewName != "" {
-        if err := g.DeleteView(focusedViewName); err != nil {
+func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
+ 
+        if err := g.DeleteView(v.Name()); err != nil {
             return nil
         }
         if _, err := g.SetCurrentView("main"); err != nil {
             return err
         }
-        focusedViewName = ""
+        gui.updateKeyBindingsViewForMainView(g)
+    
+    return nil
+}
+
+func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
+    go gui.updateKeyBindingsViewForExecution(g)
+    mrs, _ := gui.getMarkedEntities() 
+    for _, mr := range mrs {
+        mr.Pull()
     }
 
+    gui.refreshMain(g)
+    gui.updateSchedule(g)
+    gui.closePullView(g, v)
+    return nil
+}
+
+func (gui *Gui) updateKeyBindingsViewForPullView(g *gocui.Gui) error {
+
+    v, err := g.View("keybindings")
+    if err != nil {
+        return err
+    }
+    v.Clear()
+    v.BgColor = gocui.ColorGreen
+    v.FgColor = gocui.ColorBlack
+    v.Frame = false
+    fmt.Fprintln(v, "c: cancel | ↑ ↓: navigate | enter: execute")
+    return nil
+}
+
+
+func (gui *Gui) updateKeyBindingsViewForExecution(g *gocui.Gui) error {
+
+    v, err := g.View("keybindings")
+    if err != nil {
+        return err
+    }
+    v.Clear()
+    v.BgColor = gocui.ColorRed
+    v.FgColor = gocui.ColorWhite
+    v.Frame = false
+    fmt.Fprintln(v, " PULLING REPOSITORIES")
     return nil
 }

@@ -2,6 +2,7 @@ package gui
 
 import (
     "fmt"
+    "sync"
     "github.com/isacikgoz/gitbatch/pkg/utils"
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
@@ -165,44 +166,22 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
     return nil
 }
 
-func (gui *Gui) getCommitsView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("commits")
-    return v
-}
+func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
+    var wg sync.WaitGroup
+    var mu sync.Mutex
 
-func (gui *Gui) getRemotesView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("remotes")
-    return v
-}
-
-func (gui *Gui) getScheduleView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("schedule")
-    return v
-}
-
-func (gui *Gui) getStatusView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("status")
-    return v
-}
-
-func (gui *Gui) execute(g *gocui.Gui, v *gocui.View) error {
-    var repo *git.RepoEntity
-    if r, err := gui.getSelectedRepository(g, v); err != nil {
-        return err
-    } else {
-        repo = r
-    }
     for _, r := range gui.Repositories {
-        if r.Marked {
-            gui.startPullRoutine(g, repo)
-            if err := r.Pull(); err != nil {
-                return err
+        wg.Add(1)
+        go func(repo *git.RepoEntity){
+            defer wg.Done()
+            if repo.Marked {
+                mu.Lock()
+                rs = append(rs, repo)
+                mu.Unlock()
             }
-            r.UnMark()
-            gui.refreshMain(g)
-            gui.updateSchedule(g)
-        }
+        }(r)
     }
-    defer gui.finalizePullRoutine(g, repo)
-    return nil
+    wg.Wait()
+
+    return rs, nil
 }

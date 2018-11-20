@@ -12,10 +12,6 @@ type Gui struct {
 	Repositories []*git.RepoEntity
 }
 
-var (
-    focusedViewName string
-)
-
 // NewGui builds a new gui handler
 func NewGui(entities []*git.RepoEntity) (*Gui, error) {
 
@@ -105,6 +101,21 @@ func (gui *Gui) setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, err
         return nil, err
     }
     return g.SetViewOnTop(name)
+}
+
+func (gui *Gui) updateKeyBindingsViewForMainView(g *gocui.Gui) error {
+
+    v, err := g.View("keybindings")
+    if err != nil {
+        return err
+    }
+
+    v.Clear()
+    v.BgColor = gocui.ColorWhite
+    v.FgColor = gocui.ColorBlack
+    v.Frame = false
+    fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | a: select all | r: clear selection | enter: execute")
+    return nil
 }
 
 // Run setup the gui with keybindings and start the mainloop

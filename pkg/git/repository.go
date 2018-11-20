@@ -3,6 +3,7 @@ package git
 import (
 	"gopkg.in/src-d/go-git.v4"
 	"os"
+	"time"
 )
 
 type RepoEntity struct {
@@ -59,7 +60,22 @@ func (entity *RepoEntity) UnMark() {
 }
 
 func (entity *RepoEntity) Pull() error {
+	time.Sleep(5 * time.Second)
 	return nil
 }
 
+func (entity *RepoEntity) GetActiveBranch() string{
+	headRef, _ := entity.Repository.Head()
+	return headRef.Name().String()
+}
 
+func (entity *RepoEntity) GetActiveRemote() string {
+	if list, err := entity.Repository.Remotes(); err != nil {
+        return ""
+    } else {
+        for _, r := range list {
+        	return r.Config().Name
+        }
+    }
+    return ""
+}
