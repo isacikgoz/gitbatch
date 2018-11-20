@@ -34,6 +34,3 @@ func CurrentBranchName(repoPath string) (string, error) {
 	}
 	return utils.TrimTrailingNewline(branchName), nil
 }
-
-
-

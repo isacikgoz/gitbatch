@@ -20,5 +20,11 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
     if err := g.SetKeybinding("main", gocui.KeySpace, gocui.ModNone, gui.markRepository); err != nil {
         return err
     }
+    if err := g.SetKeybinding("main", 'a', gocui.ModNone, gui.markAllRepositories); err != nil {
+        return err
+    }
+    if err := g.SetKeybinding("main", 'r', gocui.ModNone, gui.unMarkAllRepositories); err != nil {
+        return err
+    }
     return nil
 }

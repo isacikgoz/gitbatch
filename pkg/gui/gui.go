@@ -2,8 +2,6 @@ package gui
 
 import (
     "github.com/isacikgoz/gitbatch/pkg/git"
-    "github.com/isacikgoz/gitbatch/pkg/utils"
-    "github.com/fatih/color"
     "github.com/jroimartin/gocui"
     "fmt"
 )
@@ -89,36 +87,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.BgColor = gocui.ColorWhite
         v.FgColor = gocui.ColorBlack
         v.Frame = false
-        fmt.Fprintln(v, "q: quit ↑ ↓: navigate space: select")
+        fmt.Fprintln(v, "q: quit ↑ ↓: navigate space: select/deselect a: select all r: clear selection")
     }
-    return nil
-}
-
-func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
-
-    if e, err := gui.getSelectedRepository(g, v); err != nil {
-        return err
-    } else {
-	    mainView, err := g.View("main")
-		if err != nil {
-			return err
-		}
-		if e.Marked != true {
-    		e.Mark()
-    	} else {
-    		e.UnMark()
-    	}
-		mainView.Clear()
-		for _, r := range gui.Repositories {
-			if r.Marked {
-				fmt.Fprintln(mainView, utils.ColoredString(r.Name, color.FgGreen))
-			} else {
-				fmt.Fprintln(mainView, r.Name)
-			} 	
-		}
-		gui.updateSchedule(g)
-    }
-    
     return nil
 }
 

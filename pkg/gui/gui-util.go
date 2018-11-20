@@ -1,8 +1,10 @@
 package gui
 
 import (
-    "github.com/isacikgoz/gitbatch/pkg/git"
+    "fmt"
+    "github.com/fatih/color"
     "github.com/isacikgoz/gitbatch/pkg/utils"
+    "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
 )
 
@@ -87,6 +89,65 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEnt
         }
     }
     return r, err
+}
+
+func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
+
+    if r, err := gui.getSelectedRepository(g, v); err != nil {
+        return err
+    } else {
+        if err != nil {
+            return err
+        }
+        if r.Marked != true {
+            r.Mark()
+        } else {
+            r.UnMark()
+        }
+        gui.refreshMain(g)
+        gui.updateSchedule(g)
+    }
+    
+    return nil
+}
+
+func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
+    for _, r := range gui.Repositories {
+        r.Mark()
+    }
+    if err := gui.refreshMain(g); err !=nil {
+        return err
+    }
+    gui.updateSchedule(g)
+    return nil
+}
+
+func (gui *Gui) unMarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
+    for _, r := range gui.Repositories {
+        r.UnMark()
+    }
+    if err := gui.refreshMain(g); err !=nil {
+        return err
+    }
+    gui.updateSchedule(g)
+    return nil
+}
+
+func (gui *Gui) refreshMain(g *gocui.Gui) error {
+    
+    mainView, err := g.View("main")
+    if err != nil {
+        return err
+    }
+    mainView.Clear()
+    for _, r := range gui.Repositories {
+        if r.Marked {
+            fmt.Fprintln(mainView, utils.ColoredString(r.Name, color.FgGreen))
+        } else {
+            fmt.Fprintln(mainView, r.Name)
+        }
+    }
+    return nil
 }
 
 // if the cursor down past the last item, move it to the last line
