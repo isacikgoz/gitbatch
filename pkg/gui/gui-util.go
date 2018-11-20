@@ -2,11 +2,11 @@ package gui
 
 import (
     "github.com/isacikgoz/gitbatch/pkg/git"
+    "github.com/isacikgoz/gitbatch/pkg/utils"
     "github.com/jroimartin/gocui"
-    "fmt"
 )
 
-func (gui *Gui) refreshViews(g *gocui.Gui, entity git.RepoEntity) error {
+func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 
     if err := gui.updateRemotes(g, entity); err != nil {
         return err
@@ -17,6 +17,10 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity git.RepoEntity) error {
     }
 
     if err := gui.updateCommits(g, entity); err != nil {
+         return err
+    }
+
+    if err := gui.updateSchedule(g, entity); err != nil {
          return err
     }
 
@@ -67,10 +71,10 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
     return nil
 }
 
-func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (git.RepoEntity, error) {
+func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEntity, error) {
     var l string
     var err error
-    var r git.RepoEntity
+    var r *git.RepoEntity
 
     _, cy := v.Cursor()
     if l, err = v.Line(cy); err != nil {
@@ -85,19 +89,22 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (git.RepoEnti
     return r, err
 }
 
-func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
-
-    if entity, err := gui.getSelectedRepository(g, v); err != nil {
+// if the cursor down past the last item, move it to the last line
+func (gui *Gui) correctCursor(v *gocui.View) error {
+    cx, cy := v.Cursor()
+    ox, oy := v.Origin()
+    width, height := v.Size()
+    maxY := height - 1
+    ly := width - 1
+    if oy+cy <= ly {
+        return nil
+    }
+    newCy := utils.Min(ly, maxY)
+    if err := v.SetCursor(cx, newCy); err != nil {
         return err
-    } else {
-        entity.Mark()
-
-        out, err := g.View("schedule")
-        if err != nil {
-            return err
-        }
-        fmt.Fprintln(out, entity.Name)
-        entity.Marked = false
+    }
+    if err := v.SetOrigin(ox, ly-newCy); err != nil {
+        return err
     }
     return nil
 }

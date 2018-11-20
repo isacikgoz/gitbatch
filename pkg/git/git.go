@@ -19,8 +19,7 @@ type RepoEntity struct {
 	Marked     bool
 }
 
-func InitializeRepository(directory string) (RepoEntity, error) {
-	var entity RepoEntity
+func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	file, err := os.Open(directory)
 	if err != nil {
 		return entity, err
@@ -35,7 +34,7 @@ func InitializeRepository(directory string) (RepoEntity, error) {
 	}
 	pushable, pullable := UpstreamDifferenceCount(directory)
 	branch, err := CurrentBranchName(directory)
-	entity = RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, false}
+	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, false}
 	
 	return entity, nil
 }
@@ -86,16 +85,12 @@ func (entity *RepoEntity) GetStatus() (status string) {
     return status
 }
 
-
 func (entity *RepoEntity) Mark() {
-	if entity.Marked != true {
-		entity.Name = utils.ColoredString(entity.Name, color.FgYellow)
-		entity.Marked = true
-	} else {
-		entity.Name = utils.ColoredString(entity.Name, color.FgWhite)
-		entity.Marked = false
-	}
+	entity.Marked = true
 }
 
+func (entity *RepoEntity) UnMark() {
+	entity.Marked = false
+}
 
 

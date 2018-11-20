@@ -6,7 +6,7 @@ import (
     "fmt"
 )
 
-func (gui *Gui) updateStatus(g *gocui.Gui, entity git.RepoEntity) error {
+func (gui *Gui) updateStatus(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
 
     out, err := g.View("status")

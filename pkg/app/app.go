@@ -41,7 +41,8 @@ func (app *App) Close() error {
 	return nil
 }
 
-func createRepositoryEntities(directories []string) (entities []git.RepoEntity, err error) {
+func createRepositoryEntities(directories []string) (entities []*git.RepoEntity, err error) {
+	entities = make([]*git.RepoEntity, 0)
 	for _, dir := range directories {
 		entity, err := git.InitializeRepository(dir)
 		if err != nil {
