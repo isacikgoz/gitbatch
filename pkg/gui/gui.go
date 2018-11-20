@@ -12,6 +12,10 @@ type Gui struct {
 	Repositories []*git.RepoEntity
 }
 
+var (
+    focusedViewName string
+)
+
 // NewGui builds a new gui handler
 func NewGui(entities []*git.RepoEntity) (*Gui, error) {
 
@@ -123,4 +127,3 @@ func (gui *Gui) Run() error {
     }
     return nil
 }
-

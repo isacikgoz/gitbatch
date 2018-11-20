@@ -29,5 +29,11 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
     if err := g.SetKeybinding("main", 'r', gocui.ModNone, gui.unMarkAllRepositories); err != nil {
         return err
     }
+    if err := g.SetKeybinding("", 'w', gocui.ModNone,
+                func(g *gocui.Gui, v *gocui.View) error {
+                    return gui.delView(g)
+                }); err != nil {
+                return err
+    }
     return nil
 }

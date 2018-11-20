@@ -186,13 +186,23 @@ func (gui *Gui) getStatusView(g *gocui.Gui) *gocui.View {
 }
 
 func (gui *Gui) execute(g *gocui.Gui, v *gocui.View) error {
-    for _, r := range gui.Repositories {
-        if err := r.Pull(); err != nil {
-            return err
-        }
-        r.UnMark()
-        gui.refreshMain(g)
-        gui.updateSchedule(g)
+    var repo *git.RepoEntity
+    if r, err := gui.getSelectedRepository(g, v); err != nil {
+        return err
+    } else {
+        repo = r
     }
+    for _, r := range gui.Repositories {
+        if r.Marked {
+            gui.startPullRoutine(g, repo)
+            if err := r.Pull(); err != nil {
+                return err
+            }
+            r.UnMark()
+            gui.refreshMain(g)
+            gui.updateSchedule(g)
+        }
+    }
+    defer gui.finalizePullRoutine(g, repo)
     return nil
 }

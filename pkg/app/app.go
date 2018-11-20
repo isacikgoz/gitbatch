@@ -4,9 +4,7 @@ import (
 	"github.com/isacikgoz/gitbatch/pkg/gui"
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"io"
-	"log"
 	"sync"
-	"time"
 )
 
 // App struct
@@ -50,7 +48,6 @@ func createRepositoryEntities(directories []string) (entities []*git.RepoEntity,
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 
-	start := time.Now()
 	for _, dir := range directories {
 		// increment wait counter by one because we run a single goroutine
 		// below
@@ -78,7 +75,5 @@ func createRepositoryEntities(directories []string) (entities []*git.RepoEntity,
 	// finished
 	wg.Wait()
 
-	elapsed := time.Since(start)
-	log.Printf("Finished collecting entities, elapsed time: %s\n", elapsed)
 	return entities, nil
 }
