@@ -15,7 +15,7 @@ func (gui *Gui) updateSchedule(g *gocui.Gui) error {
     }
     out.Clear()
     pullJobs := 0
-    for _, r := range gui.Repositories {
+    for _, r := range gui.State.Repositories {
         if r.Marked {
             pullJobs++
         }

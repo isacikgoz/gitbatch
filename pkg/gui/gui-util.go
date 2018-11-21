@@ -1,8 +1,10 @@
 package gui
 
 import (
-    "github.com/isacikgoz/gitbatch/pkg/git"
+    "fmt"
+    "sync"
     "github.com/isacikgoz/gitbatch/pkg/utils"
+    "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
 )
 
@@ -32,7 +34,7 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
         cx, cy := v.Cursor()
         ox, oy := v.Origin()
 
-        ly := len(gui.Repositories) -1
+        ly := len(gui.State.Repositories) -1
 
         // if we are at the end we just return
         if cy+oy == ly {
@@ -81,12 +83,67 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEnt
         return r, err
     }
 
-    for _, sr := range gui.Repositories {
+    for _, sr := range gui.State.Repositories {
         if l == sr.Name {
             return sr, nil
         }
     }
     return r, err
+}
+
+func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
+
+    if r, err := gui.getSelectedRepository(g, v); err != nil {
+        return err
+    } else {
+        if err != nil {
+            return err
+        }
+        if r.Marked != true {
+            r.Mark()
+        } else {
+            r.Unmark()
+        }
+        gui.refreshMain(g)
+        gui.updateSchedule(g)
+    }
+    
+    return nil
+}
+
+func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
+    for _, r := range gui.State.Repositories {
+        r.Mark()
+    }
+    if err := gui.refreshMain(g); err !=nil {
+        return err
+    }
+    gui.updateSchedule(g)
+    return nil
+}
+
+func (gui *Gui) unMarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
+    for _, r := range gui.State.Repositories {
+        r.Unmark()
+    }
+    if err := gui.refreshMain(g); err !=nil {
+        return err
+    }
+    gui.updateSchedule(g)
+    return nil
+}
+
+func (gui *Gui) refreshMain(g *gocui.Gui) error {
+    
+    mainView, err := g.View("main")
+    if err != nil {
+        return err
+    }
+    mainView.Clear()
+    for _, r := range gui.State.Repositories {
+        fmt.Fprintln(mainView, r.GetDisplayString())
+    }
+    return nil
 }
 
 // if the cursor down past the last item, move it to the last line
@@ -109,22 +166,22 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
     return nil
 }
 
-func (gui *Gui) getCommitsView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("commits")
-    return v
-}
+func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
+    var wg sync.WaitGroup
+    var mu sync.Mutex
 
-func (gui *Gui) getRemotesView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("remotes")
-    return v
-}
+    for _, r := range gui.State.Repositories {
+        wg.Add(1)
+        go func(repo *git.RepoEntity){
+            defer wg.Done()
+            if repo.Marked {
+                mu.Lock()
+                rs = append(rs, repo)
+                mu.Unlock()
+            }
+        }(r)
+    }
+    wg.Wait()
 
-func (gui *Gui) getScheduleView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("schedule")
-    return v
-}
-
-func (gui *Gui) getStatusView(g *gocui.Gui) *gocui.View {
-    v, _ := g.View("status")
-    return v
+    return rs, nil
 }

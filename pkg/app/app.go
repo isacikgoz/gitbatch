@@ -2,7 +2,6 @@ package app
 
 import (
 	"github.com/isacikgoz/gitbatch/pkg/gui"
-	"github.com/isacikgoz/gitbatch/pkg/git"
 	"io"
 )
 
@@ -18,12 +17,13 @@ func Setup(directories []string) (*App, error) {
 		closers: []io.Closer{},
 	}
 
-	entities, err := createRepositoryEntities(directories)
-	if err != nil {
-		return app, err
-	}
+	var err error
+	// entities, err := createRepositoryEntities(directories)
+	// if err != nil {
+	// 	return app, err
+	// }
 
-	app.Gui, err = gui.NewGui(entities)
+	app.Gui, err = gui.NewGui(directories)
 	if err != nil {
 		return app, err
 	}
@@ -39,16 +39,4 @@ func (app *App) Close() error {
 		}
 	}
 	return nil
-}
-
-func createRepositoryEntities(directories []string) (entities []*git.RepoEntity, err error) {
-	entities = make([]*git.RepoEntity, 0)
-	for _, dir := range directories {
-		entity, err := git.InitializeRepository(dir)
-		if err != nil {
-			continue
-		}
-		entities = append(entities, entity)
-	}
-	return entities, nil
 }
