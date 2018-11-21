@@ -66,10 +66,11 @@ func (entity *RepoEntity) Pull() error {
 	if err != nil {
 		return err
 	}
-	ref := plumbing.NewBranchReferenceName(entity.Branch)
+	rf := plumbing.NewBranchReferenceName(entity.Branch)
+	rm := entity.Remote
 	err = w.Pull(&git.PullOptions{
-		RemoteName: entity.Remote,
-		ReferenceName: ref,
+		RemoteName: rm,
+		ReferenceName: rf,
 		})
 	if err != nil {
 		return err

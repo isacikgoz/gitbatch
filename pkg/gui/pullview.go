@@ -48,10 +48,11 @@ func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
     gui.updateKeyBindingsViewForExecution(g)
     for _, mr := range mrs {
 
-        go gui.counter(g)
+        gui.updatePullViewWithExec(g)
 
         // here we will be waiting
         mr.Pull()
+        gui.updateCommits(g, mr)
         mr.Unmark()
     }
 
@@ -90,7 +91,7 @@ func (gui *Gui) updateKeyBindingsViewForExecution(g *gocui.Gui) error {
     return nil
 }
 
-func (gui *Gui) counter(g *gocui.Gui) {
+func (gui *Gui) updatePullViewWithExec(g *gocui.Gui) {
     
     v, err := g.View("pull")
     if err != nil {

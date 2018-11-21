@@ -11,9 +11,13 @@ import (
 func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 	r := entity.Repository
 
-    remotes, err = getRemotes(&r)
-    if err !=nil {
-    	return nil ,err
+    if list, err := r.Remotes(); err != nil {
+        return remotes, err
+    } else {
+        for _, r := range list {
+        	remoteString := r.Config().Name + " → " + r.Config().URLs[0]
+            remotes = append(remotes, remoteString)
+        }
     }
     return remotes, nil
 }
@@ -24,7 +28,7 @@ func getRemotes(r *git.Repository) (remotes []string, err error) {
         return remotes, err
     } else {
         for _, r := range list {
-        	remoteString := r.Config().Name + " → " + r.Config().URLs[0]
+        	remoteString := r.Config().Name
             remotes = append(remotes, remoteString)
         }
     }
