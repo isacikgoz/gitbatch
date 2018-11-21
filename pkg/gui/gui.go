@@ -56,6 +56,8 @@ func (gui *Gui) Run() error {
     }
     defer g.Close()
 
+    gui.g = g
+
     g.SetManagerFunc(gui.layout)
 
     if err := gui.keybindings(g); err != nil {

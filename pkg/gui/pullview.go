@@ -3,6 +3,7 @@ package gui
 import (
     "github.com/jroimartin/gocui"
     "fmt"
+//    "sync"
 )
 
 func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
@@ -46,19 +47,29 @@ func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
     mrs, _ := gui.getMarkedEntities()
 
     gui.updateKeyBindingsViewForExecution(g)
+
+    //var wg sync.WaitGroup
+
     for _, mr := range mrs {
+        //wg.Add(1)
+        go func(g *gocui.Gui, v *gocui.View) {
+            
+            gui.updatePullViewWithExec(g)
 
-        gui.updatePullViewWithExec(g)
+            // here we will be waiting
+            mr.PullTest()
+            gui.updateCommits(g, mr)
+            mr.Unmark()
 
-        // here we will be waiting
-        mr.Pull()
-        gui.updateCommits(g, mr)
-        mr.Unmark()
+            //not working somehow
+            gui.closePullView(g, v)
+            //defer wg.Done()
+        }(g, v)
     }
 
+    //wg.Wait()
     gui.refreshMain(g)
     gui.updateSchedule(g)
-    gui.closePullView(g, v)
     return nil
 }
 
