@@ -22,6 +22,26 @@ func NewGui(entities []*git.RepoEntity) (*Gui, error) {
 	return gui, nil
 }
 
+// Run setup the gui with keybindings and start the mainloop
+func (gui *Gui) Run() error {
+
+    g, err := gocui.NewGui(gocui.OutputNormal)
+    if err != nil {
+        return err
+    }
+    defer g.Close()
+
+    g.SetManagerFunc(gui.layout)
+
+    if err := gui.keybindings(g); err != nil {
+        return err
+    }
+
+    if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+        return err
+    }
+    return nil
+}
 
 func (gui *Gui) layout(g *gocui.Gui) error {
     maxX, maxY := g.Size()
@@ -115,26 +135,5 @@ func (gui *Gui) updateKeyBindingsViewForMainView(g *gocui.Gui) error {
     v.FgColor = gocui.ColorBlack
     v.Frame = false
     fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | a: select all | r: clear selection | enter: execute")
-    return nil
-}
-
-// Run setup the gui with keybindings and start the mainloop
-func (gui *Gui) Run() error {
-
-    g, err := gocui.NewGui(gocui.OutputNormal)
-    if err != nil {
-        return err
-    }
-    defer g.Close()
-
-    g.SetManagerFunc(gui.layout)
-
-    if err := gui.keybindings(g); err != nil {
-        return err
-    }
-
-    if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-        return err
-    }
     return nil
 }
