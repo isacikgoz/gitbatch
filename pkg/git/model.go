@@ -11,6 +11,15 @@ import (
 func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 	r := entity.Repository
 
+    remotes, err = getRemotes(&r)
+    if err !=nil {
+    	return nil ,err
+    }
+    return remotes, nil
+}
+
+func getRemotes(r *git.Repository) (remotes []string, err error) {
+
     if list, err := r.Remotes(); err != nil {
         return remotes, err
     } else {

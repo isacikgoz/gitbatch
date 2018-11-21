@@ -8,7 +8,7 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
     if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, gui.quit); err != nil {
         return err
     }
-    if err := g.SetKeybinding("", 'q', gocui.ModNone, gui.quit); err != nil {
+    if err := g.SetKeybinding("main", 'q', gocui.ModNone, gui.quit); err != nil {
         return err
     }
     if err := g.SetKeybinding("main", gocui.KeyEnter, gocui.ModNone, gui.openPullView); err != nil {

@@ -34,7 +34,7 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
         cx, cy := v.Cursor()
         ox, oy := v.Origin()
 
-        ly := len(gui.Repositories) -1
+        ly := len(gui.State.Repositories) -1
 
         // if we are at the end we just return
         if cy+oy == ly {
@@ -83,7 +83,7 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEnt
         return r, err
     }
 
-    for _, sr := range gui.Repositories {
+    for _, sr := range gui.State.Repositories {
         if l == sr.Name {
             return sr, nil
         }
@@ -102,7 +102,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
         if r.Marked != true {
             r.Mark()
         } else {
-            r.UnMark()
+            r.Unmark()
         }
         gui.refreshMain(g)
         gui.updateSchedule(g)
@@ -112,7 +112,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
-    for _, r := range gui.Repositories {
+    for _, r := range gui.State.Repositories {
         r.Mark()
     }
     if err := gui.refreshMain(g); err !=nil {
@@ -123,8 +123,8 @@ func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) unMarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
-    for _, r := range gui.Repositories {
-        r.UnMark()
+    for _, r := range gui.State.Repositories {
+        r.Unmark()
     }
     if err := gui.refreshMain(g); err !=nil {
         return err
@@ -140,7 +140,7 @@ func (gui *Gui) refreshMain(g *gocui.Gui) error {
         return err
     }
     mainView.Clear()
-    for _, r := range gui.Repositories {
+    for _, r := range gui.State.Repositories {
         fmt.Fprintln(mainView, r.GetDisplayString())
     }
     return nil
@@ -170,7 +170,7 @@ func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
     var wg sync.WaitGroup
     var mu sync.Mutex
 
-    for _, r := range gui.Repositories {
+    for _, r := range gui.State.Repositories {
         wg.Add(1)
         go func(repo *git.RepoEntity){
             defer wg.Done()

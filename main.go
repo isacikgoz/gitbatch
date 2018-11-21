@@ -24,6 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	app.Gui.Run()
 
 	defer app.Close()

@@ -2,6 +2,7 @@ package git
 
 import (
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
 	"os"
 	"time"
 )
@@ -13,6 +14,7 @@ type RepoEntity struct {
 	Pushables  string
 	Pullables  string
 	Branch     string
+	Remote     string
 	Marked     bool
 	Clean      bool
 }
@@ -32,8 +34,8 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	}
 	pushable, pullable := UpstreamDifferenceCount(directory)
 	branch, err := CurrentBranchName(directory)
-
-	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, false, isClean(r, fileInfo.Name())}
+	remotes, err := getRemotes(r)
+	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], false, isClean(r, fileInfo.Name())}
 	
 	return entity, nil
 }
@@ -55,12 +57,41 @@ func (entity *RepoEntity) Mark() {
 	entity.Marked = true
 }
 
-func (entity *RepoEntity) UnMark() {
+func (entity *RepoEntity) Unmark() {
 	entity.Marked = false
 }
 
 func (entity *RepoEntity) Pull() error {
+	w, err := entity.Repository.Worktree()
+	if err != nil {
+		return err
+	}
+	ref := plumbing.NewBranchReferenceName(entity.Branch)
+	err = w.Pull(&git.PullOptions{
+		RemoteName: entity.Remote,
+		ReferenceName: ref,
+		})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (entity *RepoEntity) PullTest() error {
 	time.Sleep(5 * time.Second)
+
+	return nil
+}
+
+func (entity *RepoEntity) Fetch() error {
+	err := entity.Repository.Fetch(&git.FetchOptions{
+		RemoteName: entity.Remote,
+		})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

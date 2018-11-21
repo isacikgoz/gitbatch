@@ -1,7 +1,6 @@
 package gui
 
 import (
-    // "github./com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
 )
@@ -21,7 +20,6 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
                 line := r.Name + " : " + r.GetActiveRemote() + "/" + r.Branch + " → " + r.GetActiveBranch()
                 fmt.Fprintln(v, line)
             }
-            
     }
     gui.updateKeyBindingsViewForPullView(g)
     if _, err := g.SetCurrentView("pull"); err != nil {
@@ -44,10 +42,17 @@ func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
-    go gui.updateKeyBindingsViewForExecution(g)
-    mrs, _ := gui.getMarkedEntities() 
+    gui.updateKeyBindingsViewForExecution(g)
+    mrs, _ := gui.getMarkedEntities()
+
+    gui.updateKeyBindingsViewForExecution(g)
     for _, mr := range mrs {
+
+        go gui.counter(g)
+
+        // here we will be waiting
         mr.Pull()
+        mr.Unmark()
     }
 
     gui.refreshMain(g)
@@ -83,4 +88,18 @@ func (gui *Gui) updateKeyBindingsViewForExecution(g *gocui.Gui) error {
     v.Frame = false
     fmt.Fprintln(v, " PULLING REPOSITORIES")
     return nil
+}
+
+func (gui *Gui) counter(g *gocui.Gui) {
+    
+    v, err := g.View("pull")
+    if err != nil {
+        return
+    }
+    
+    g.Update(func(g *gocui.Gui) error {
+        v.Clear()
+        fmt.Fprintln(v, "Pulling...")
+        return nil
+    })
 }

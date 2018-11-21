@@ -4,19 +4,44 @@ import (
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
+    "time"
+    "os"
+    "os/exec"
+    "io/ioutil"
+    "log"
 )
+
+// SentinelErrors are the errors that have special meaning and need to be checked
+// by calling functions. The less of these, the better
+type SentinelErrors struct {
+    ErrSubProcess error
+}
 
 // Gui wraps the gocui Gui object which handles rendering and events
 type Gui struct {
 	g *gocui.Gui
-	Repositories []*git.RepoEntity
+    SubProcess *exec.Cmd
+    State guiState
+    Errors SentinelErrors
+}
+
+type guiState struct {
+    Repositories []*git.RepoEntity
+    Directories  []string
 }
 
 // NewGui builds a new gui handler
-func NewGui(entities []*git.RepoEntity) (*Gui, error) {
+func NewGui(directoies []string) (*Gui, error) {
 
+    rs, err := git.LoadRepositoryEntities(directoies)
+    if err != nil {
+        return nil, err
+    }
+    initialState := guiState{
+        Repositories: rs,
+    }
 	gui := &Gui{
-		Repositories: entities,
+		State: initialState,
 	}
 
 	return gui, nil
@@ -43,6 +68,38 @@ func (gui *Gui) Run() error {
     return nil
 }
 
+// RunWithSubprocesses loops, instantiating a new gocui.Gui with each iteration
+// if the error returned from a run is a ErrSubProcess, it runs the subprocess
+// otherwise it handles the error, possibly by quitting the application
+func (gui *Gui) RunWithSubprocesses() {
+    for {
+        if err := gui.Run(); err != nil {
+            if err == gocui.ErrQuit {
+                break
+            } else if err == gui.Errors.ErrSubProcess {
+                gui.SubProcess.Stdin = os.Stdin
+                gui.SubProcess.Stdout = os.Stdout
+                gui.SubProcess.Stderr = os.Stderr
+                gui.SubProcess.Run()
+                gui.SubProcess.Stdout = ioutil.Discard
+                gui.SubProcess.Stderr = ioutil.Discard
+                gui.SubProcess.Stdin = nil
+                gui.SubProcess = nil
+            } else {
+                log.Fatal(err)
+            }
+        }
+    }
+}
+
+func (gui *Gui) goEvery(g *gocui.Gui, interval time.Duration, function func(*gocui.Gui) error) {
+    go func() {
+        for range time.Tick(interval) {
+            function(g)
+        }
+    }()
+}
+
 func (gui *Gui) layout(g *gocui.Gui) error {
     maxX, maxY := g.Size()
 
@@ -55,7 +112,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.SelBgColor = gocui.ColorWhite
         v.SelFgColor = gocui.ColorBlack
         v.Overwrite = true
-        for _, r := range gui.Repositories {
+        for _, r := range gui.State.Repositories {
             fmt.Fprintln(v, r.GetDisplayString())
         }
 
