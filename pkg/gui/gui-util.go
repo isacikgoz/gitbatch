@@ -6,6 +6,7 @@ import (
     "github.com/isacikgoz/gitbatch/pkg/utils"
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
+    "regexp"
 )
 
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
@@ -14,7 +15,7 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
         return err
     }
 
-    if err := gui.updateStatus(g, entity); err != nil {
+    if err := gui.updateBranch(g, entity); err != nil {
         return err
     }
 
@@ -82,9 +83,10 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEnt
     if l, err = v.Line(cy); err != nil {
         return r, err
     }
-
+    rg := regexp.MustCompile(` → .+ `)
+    ss := rg.Split(l, 5)
     for _, sr := range gui.State.Repositories {
-        if l == sr.Name {
+        if ss[len(ss)-1] == sr.Name {
             return sr, nil
         }
     }

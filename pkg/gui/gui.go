@@ -105,7 +105,7 @@ func (gui *Gui) goEvery(g *gocui.Gui, interval time.Duration, function func(*goc
 func (gui *Gui) layout(g *gocui.Gui) error {
     maxX, maxY := g.Size()
 
-    if v, err := g.SetView("main", 0, 0, int(0.5*float32(maxX))-1, maxY-2); err != nil {
+    if v, err := g.SetView("main", 0, 0, int(0.55*float32(maxX))-1, maxY-2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
@@ -123,16 +123,16 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         }
     }
 
-    if v, err := g.SetView("status", int(0.5*float32(maxX)), 0, maxX-1, 2); err != nil {
+    if v, err := g.SetView("branch", int(0.55*float32(maxX)), 0, maxX-1, int(0.20*float32(maxY))-1); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
-        v.Title = " Status "
+        v.Title = " Branches "
         v.Wrap = false
         v.Autoscroll = false
     }
 
-    if v, err := g.SetView("remotes", int(0.5*float32(maxX)), 3, maxX-1, int(0.25*float32(maxY))); err != nil {
+    if v, err := g.SetView("remotes", int(0.55*float32(maxX)), int(0.20*float32(maxY)), maxX-1, int(0.40*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
@@ -141,7 +141,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Autoscroll = false
     }
 
-    if v, err := g.SetView("commits", int(0.5*float32(maxX)), int(0.25*float32(maxY))+1, maxX-1, int(0.75*float32(maxY))); err != nil {
+    if v, err := g.SetView("commits", int(0.55*float32(maxX)), int(0.40*float32(maxY))+1, maxX-1, int(0.75*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
@@ -150,7 +150,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Autoscroll = false
     }
 
-    if v, err := g.SetView("schedule", int(0.5*float32(maxX)), int(0.75*float32(maxY))+1, maxX-1, maxY-2); err != nil {
+    if v, err := g.SetView("schedule", int(0.55*float32(maxX)), int(0.75*float32(maxY))+1, maxX-1, maxY-2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }

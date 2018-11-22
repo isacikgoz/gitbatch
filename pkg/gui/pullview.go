@@ -3,7 +3,7 @@ package gui
 import (
     "github.com/jroimartin/gocui"
     "fmt"
-//    "sync"
+    // "sync"
 )
 
 func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
@@ -30,7 +30,7 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
- 
+
         if err := g.DeleteView(v.Name()); err != nil {
             return nil
         }
@@ -38,38 +38,25 @@ func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
             return err
         }
         gui.updateKeyBindingsViewForMainView(g)
-    
+
     return nil
 }
 
 func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
-    gui.updateKeyBindingsViewForExecution(g)
+
+    updateKeyBindingsViewForExecution(g)
+
     mrs, _ := gui.getMarkedEntities()
-
-    gui.updateKeyBindingsViewForExecution(g)
-
-    //var wg sync.WaitGroup
-
     for _, mr := range mrs {
-        //wg.Add(1)
-        go func(g *gocui.Gui, v *gocui.View) {
-            
-            gui.updatePullViewWithExec(g)
-
-            // here we will be waiting
-            mr.PullTest()
-            gui.updateCommits(g, mr)
-            mr.Unmark()
-
-            //not working somehow
-            gui.closePullView(g, v)
-            //defer wg.Done()
-        }(g, v)
+        // here we will be waiting
+        mr.PullTest()
+        gui.updateCommits(g, mr)
+        mr.Unmark()
     }
-
-    //wg.Wait()
+    gui.closePullView(g,v)
     gui.refreshMain(g)
     gui.updateSchedule(g)
+
     return nil
 }
 
@@ -88,7 +75,7 @@ func (gui *Gui) updateKeyBindingsViewForPullView(g *gocui.Gui) error {
 }
 
 
-func (gui *Gui) updateKeyBindingsViewForExecution(g *gocui.Gui) error {
+func updateKeyBindingsViewForExecution(g *gocui.Gui) error {
 
     v, err := g.View("keybindings")
     if err != nil {
@@ -103,12 +90,12 @@ func (gui *Gui) updateKeyBindingsViewForExecution(g *gocui.Gui) error {
 }
 
 func (gui *Gui) updatePullViewWithExec(g *gocui.Gui) {
-    
+
     v, err := g.View("pull")
     if err != nil {
         return
     }
-    
+
     g.Update(func(g *gocui.Gui) error {
         v.Clear()
         fmt.Fprintln(v, "Pulling...")

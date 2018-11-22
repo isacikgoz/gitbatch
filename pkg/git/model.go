@@ -10,12 +10,12 @@ import (
 
 func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 	r := entity.Repository
-
+    red := color.New(color.FgRed)
     if list, err := r.Remotes(); err != nil {
         return remotes, err
     } else {
         for _, r := range list {
-        	remoteString := r.Config().Name + " → " + r.Config().URLs[0]
+        	remoteString := r.Config().Name + string(red.Sprint(" → ")) + r.Config().URLs[0]
             remotes = append(remotes, remoteString)
         }
     }
@@ -68,14 +68,38 @@ func (entity *RepoEntity) GetStatus() (status string) {
 }
 
 func (entity *RepoEntity) GetDisplayString() string{
+
+    blue := color.New(color.FgBlue)
+    green := color.New(color.FgGreen)
+    red := color.New(color.FgRed)
+    cyan := color.New(color.FgCyan)
+    orange := color.New(color.FgYellow)
+    white := color.New(color.FgWhite)
+
+    prefix := string(blue.Sprint("↑")) + " " + entity.Pushables + " " +
+     string(blue.Sprint("↓")) + " " + entity.Pullables + string(red.Sprint(" → ")) + string(cyan.Sprint(entity.Branch)) + " "
+
 	if entity.Marked {
-		green := color.New(color.FgGreen)
-		return string(green.Sprint(entity.Name))
+		return prefix + string(green.Sprint(entity.Name))
 	} else if !entity.Clean {
-		orange := color.New(color.FgYellow)
-		return string(orange.Sprint(entity.Name))
+		return prefix + string(orange.Sprint(entity.Name))
 	} else {
-		white := color.New(color.FgWhite)
-		return string(white.Sprint(entity.Name))
+		return prefix + string(white.Sprint(entity.Name))
 	}
+}
+
+func  (entity *RepoEntity) GetBranches() (branches []string, err error) {
+    localBranches, err := entity.LocalBranches()
+    red := color.New(color.FgRed)
+    if err != nil {
+        return nil, err
+    }
+    for _, b := range localBranches {
+        prefix := "   "
+        if b == entity.GetActiveBranch() {
+            prefix = " → "
+        }
+        branches = append(branches, (string(red.Sprint(prefix)) + b))
+    }
+    return branches, nil
 }

@@ -98,7 +98,21 @@ func (entity *RepoEntity) Fetch() error {
 
 func (entity *RepoEntity) GetActiveBranch() string{
 	headRef, _ := entity.Repository.Head()
-	return headRef.Name().String()
+	return headRef.Name().Short()
+}
+
+func (entity *RepoEntity) LocalBranches() (lbs []string, err error){
+	branches, err := entity.Repository.Branches()
+	if err != nil {
+		return nil, err
+	}
+	branches.ForEach(func(b *plumbing.Reference) error {
+		if b.Type() == plumbing.HashReference {
+        	lbs = append(lbs, b.Name().Short())
+    	}
+    	return nil
+	})
+	return lbs, err
 }
 
 func (entity *RepoEntity) GetActiveRemote() string {
