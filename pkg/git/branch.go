@@ -46,7 +46,9 @@ func (entity *RepoEntity) NextBranch() string{
 }
 
 func (entity *RepoEntity) Checkout(branchName string) error {
-
+	if branchName == entity.Branch {
+		return nil
+	}
 	w, err := entity.Repository.Worktree()
 	if err != nil {
 		return err
