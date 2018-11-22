@@ -33,7 +33,8 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		return nil, err
 	}
 	pushable, pullable := UpstreamDifferenceCount(directory)
-	branch, err := CurrentBranchName(directory)
+	headRef, _ := r.Head()
+	branch := headRef.Name().Short()
 	remotes, err := getRemotes(r)
 	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], false, isClean(r, fileInfo.Name())}
 	
@@ -94,25 +95,6 @@ func (entity *RepoEntity) Fetch() error {
 	}
 
 	return nil
-}
-
-func (entity *RepoEntity) GetActiveBranch() string{
-	headRef, _ := entity.Repository.Head()
-	return headRef.Name().Short()
-}
-
-func (entity *RepoEntity) LocalBranches() (lbs []string, err error){
-	branches, err := entity.Repository.Branches()
-	if err != nil {
-		return nil, err
-	}
-	branches.ForEach(func(b *plumbing.Reference) error {
-		if b.Type() == plumbing.HashReference {
-        	lbs = append(lbs, b.Name().Short())
-    	}
-    	return nil
-	})
-	return lbs, err
 }
 
 func (entity *RepoEntity) GetActiveRemote() string {

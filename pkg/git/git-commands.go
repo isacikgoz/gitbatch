@@ -3,7 +3,6 @@ package git
 import (
 	"strings"
 	"github.com/isacikgoz/gitbatch/pkg/command"
-	"github.com/isacikgoz/gitbatch/pkg/utils"
 )
 
 
@@ -21,29 +20,4 @@ func UpstreamDifferenceCount(repoPath string) (string, string) {
 		return "?", "?"
 	}
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
-}
-
-func CurrentBranchName(repoPath string) (string, error) {
-	args := []string{"symbolic-ref", "--short", "HEAD"}
-	branchName, err := command.RunCommandWithOutput(repoPath, "git", args)
-	if err != nil {
-		args = []string{"rev-parse", "--short", "HEAD"}
-		branchName, err = command.RunCommandWithOutput(repoPath, "git", args)
-		if err != nil {
-			return "", err
-		}
-	}
-	return utils.TrimTrailingNewline(branchName), nil
-}
-
-func (entity *RepoEntity) IsClean() (bool, error) {
-	worktree, err := entity.Repository.Worktree()
-	if err != nil {
-		return true, nil
-	}
-	status, err := worktree.Status()
-	if err != nil {
-		return status.IsClean(), nil
-	}
-	return false, nil
 }

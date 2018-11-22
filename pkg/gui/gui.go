@@ -137,7 +137,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
             return err
         }
         v.Title = " Remotes "
-        v.Wrap = true
+        v.Wrap = false
         v.Autoscroll = false
     }
 
@@ -175,7 +175,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.BgColor = gocui.ColorWhite
         v.FgColor = gocui.ColorBlack
         v.Frame = false
-        fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | a: select all | r: clear selection | enter: execute")
+        fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | c: controls | enter: execute")
     }
     return nil
 }
@@ -202,6 +202,6 @@ func (gui *Gui) updateKeyBindingsViewForMainView(g *gocui.Gui) error {
     v.BgColor = gocui.ColorWhite
     v.FgColor = gocui.ColorBlack
     v.Frame = false
-    fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | a: select all | r: clear selection | enter: execute")
+    fmt.Fprintln(v, "q: quit | ↑ ↓: navigate | space: select/deselect | c: controls | enter: execute")
     return nil
 }

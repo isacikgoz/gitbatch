@@ -25,3 +25,21 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 
     return nil
 }
+
+func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
+    var err error
+
+    entity, err := gui.getSelectedRepository(g, v)
+    if err != nil {
+        return err
+    }
+    if _, err = entity.NextRemote(); err != nil {
+        return err
+    }
+
+    if err = gui.updateRemotes(g, entity); err != nil {
+        return err
+    }
+
+    return nil
+}

@@ -11,24 +11,18 @@ import (
 func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 	r := entity.Repository
     red := color.New(color.FgRed)
+    green := color.New(color.FgGreen)
     if list, err := r.Remotes(); err != nil {
         return remotes, err
     } else {
         for _, r := range list {
-        	remoteString := r.Config().Name + string(red.Sprint(" → ")) + r.Config().URLs[0]
-            remotes = append(remotes, remoteString)
-        }
-    }
-    return remotes, nil
-}
-
-func getRemotes(r *git.Repository) (remotes []string, err error) {
-
-    if list, err := r.Remotes(); err != nil {
-        return remotes, err
-    } else {
-        for _, r := range list {
-        	remoteString := r.Config().Name
+            var remoteString string
+            if r.Config().Name == entity.Remote {
+                remoteString = r.Config().Name + string(green.Sprint(" → ")) + r.Config().URLs[0]
+            } else {
+                remoteString = r.Config().Name + string(red.Sprint(" → ")) + r.Config().URLs[0]
+            }
+        	
             remotes = append(remotes, remoteString)
         }
     }
@@ -90,7 +84,7 @@ func (entity *RepoEntity) GetDisplayString() string{
 
 func  (entity *RepoEntity) GetBranches() (branches []string, err error) {
     localBranches, err := entity.LocalBranches()
-    red := color.New(color.FgRed)
+    green := color.New(color.FgGreen)
     if err != nil {
         return nil, err
     }
@@ -99,7 +93,7 @@ func  (entity *RepoEntity) GetBranches() (branches []string, err error) {
         if b == entity.GetActiveBranch() {
             prefix = " → "
         }
-        branches = append(branches, (string(red.Sprint(prefix)) + b))
+        branches = append(branches, (string(green.Sprint(prefix)) + b))
     }
     return branches, nil
 }
