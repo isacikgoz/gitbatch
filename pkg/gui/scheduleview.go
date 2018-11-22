@@ -1,12 +1,12 @@
 package gui
 
 import (
+    "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
-    "strconv"
 )
 
-func (gui *Gui) updateSchedule(g *gocui.Gui) error {
+func (gui *Gui) updateSchedule(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
 
     out, err := g.View("schedule")
@@ -14,13 +14,11 @@ func (gui *Gui) updateSchedule(g *gocui.Gui) error {
         return err
     }
     out.Clear()
-    pullJobs := 0
-    for _, r := range gui.State.Repositories {
-        if r.Marked {
-            pullJobs++
-        }
+    if entity.Marked {
+        s := "git pull " + entity.GetActiveRemote() + " " + entity.GetActiveBranch()
+        fmt.Fprintln(out, s)
+    } else {
+        return nil
     }
-    jobs := strconv.Itoa(pullJobs) + " repositories to pull"
-    fmt.Fprintln(out, jobs)
     return nil
 }

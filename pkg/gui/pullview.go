@@ -55,7 +55,7 @@ func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
     }
     gui.closePullView(g,v)
     gui.refreshMain(g)
-    gui.updateSchedule(g)
+    gui.updateJobs(g)
 
     return nil
 }

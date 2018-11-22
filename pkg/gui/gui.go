@@ -141,7 +141,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Autoscroll = false
     }
 
-    if v, err := g.SetView("commits", int(0.55*float32(maxX)), int(0.40*float32(maxY))+1, maxX-1, int(0.75*float32(maxY))); err != nil {
+    if v, err := g.SetView("commits", int(0.55*float32(maxX)), int(0.40*float32(maxY))+1, maxX-1, int(0.73*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
@@ -150,11 +150,20 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Autoscroll = false
     }
 
-    if v, err := g.SetView("schedule", int(0.55*float32(maxX)), int(0.75*float32(maxY))+1, maxX-1, maxY-2); err != nil {
+    if v, err := g.SetView("schedule", int(0.55*float32(maxX)), int(0.73*float32(maxY))+1, maxX-1, int(0.85*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
         v.Title = " Schedule "
+        v.Wrap = true
+        v.Autoscroll = true
+    }
+
+    if v, err := g.SetView("jobs", int(0.55*float32(maxX)), int(0.85*float32(maxY))+1, maxX-1, maxY-2); err != nil {
+        if err != gocui.ErrUnknownView {
+            return err
+        }
+        v.Title = " Jobs "
         v.Wrap = true
         v.Autoscroll = true
     }
