@@ -35,7 +35,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	pushable, pullable := UpstreamDifferenceCount(directory)
 	headRef, _ := r.Head()
 	branch := headRef.Name().Short()
-	remotes, err := getRemotes(r)
+	remotes, err := remoteBranches(r)
 	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], false, isClean(r, fileInfo.Name())}
 	
 	return entity, nil

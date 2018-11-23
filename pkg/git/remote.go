@@ -2,6 +2,8 @@ package git
 
 import (
 	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 )
 
 func getRemotes(r *git.Repository) (remotes []string, err error) {
@@ -19,7 +21,7 @@ func getRemotes(r *git.Repository) (remotes []string, err error) {
 
 func (entity *RepoEntity) NextRemote() (string, error) {
 
-	remotes, err := getRemotes(&entity.Repository)
+	remotes, err := remoteBranches(&entity.Repository)
 	if err != nil {
 		return entity.Remote, err
 	}
@@ -38,4 +40,30 @@ func (entity *RepoEntity) NextRemote() (string, error) {
 	}
 	
 	return entity.Remote, nil
+}
+
+func remoteBranches(r *git.Repository) (remotes []string, err error) {
+	bs, err := remoteBranchesIter(r.Storer)
+	if err != nil {
+		return remotes, err
+	}
+	err = bs.ForEach(func(b *plumbing.Reference) error {
+		remotes = append(remotes, b.Name().Short())
+		return nil
+	})
+	if err != nil {
+		return remotes, err
+	}
+	return remotes, err
+}
+
+func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) {
+	refs, err := s.IterReferences()
+	if err != nil {
+		return nil, err
+	}
+
+	return storer.NewReferenceFilteredIter(func(ref *plumbing.Reference) bool {
+		return ref.Name().IsRemote()
+	}, refs), nil
 }

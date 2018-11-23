@@ -9,23 +9,23 @@ import (
 )
 
 func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
+
 	r := entity.Repository
-    red := color.New(color.FgRed)
     green := color.New(color.FgGreen)
-    if list, err := r.Remotes(); err != nil {
+    if list, err := remoteBranches(&r); err != nil {
         return remotes, err
     } else {
         for _, r := range list {
             var remoteString string
-            if r.Config().Name == entity.Remote {
-                remoteString = r.Config().Name + string(green.Sprint(" → ")) + r.Config().URLs[0]
+            if r == entity.Remote {
+                remoteString = string(green.Sprint(" → ")) + r
             } else {
-                remoteString = r.Config().Name + string(red.Sprint(" → ")) + r.Config().URLs[0]
+                remoteString = "   " + r
             }
-        	
             remotes = append(remotes, remoteString)
         }
     }
+
     return remotes, nil
 }
 
@@ -39,7 +39,7 @@ func (entity *RepoEntity) GetCommits() (commits []string, err error) {
 		Order: git.LogOrderCommitterTime,
 	})
 
-// ... just iterates over the commits
+    // ... just iterates over the commits
     err = cIter.ForEach(func(c *object.Commit) error {
     	commitstring := utils.ColoredString(string([]rune(c.Hash.String())[:7]), color.FgGreen) + " " + c.Message
     	re := regexp.MustCompile(`\r?\n`)
