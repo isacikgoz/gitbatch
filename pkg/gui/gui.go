@@ -138,7 +138,13 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         }
         v.Title = " Remotes "
         v.Wrap = false
-        v.Autoscroll = false
+
+        v.Highlight = true
+        v.SelBgColor = gocui.ColorWhite
+        v.SelFgColor = gocui.ColorBlack
+
+        v.Autoscroll = true
+        v.Overwrite = true
     }
 
     if v, err := g.SetView("commits", int(0.55*float32(maxX)), int(0.40*float32(maxY))+1, maxX-1, int(0.73*float32(maxY))); err != nil {

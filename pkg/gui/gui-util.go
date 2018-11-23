@@ -11,7 +11,7 @@ import (
 
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 
-    if err := gui.updateRemotes(g, entity); err != nil {
+    if _, err := gui.updateRemotes(g, entity); err != nil {
         return err
     }
 

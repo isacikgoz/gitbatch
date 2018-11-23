@@ -8,6 +8,7 @@ import (
 
 // UpstreamDifferenceCount checks how many pushables/pullables there are for the
 // current branch
+// TODO: get pull pushes to remote branch vs local branch
 func UpstreamDifferenceCount(repoPath string) (string, string) {
 	args := []string{"rev-list", "@{u}..HEAD", "--count"}
 	pushableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
