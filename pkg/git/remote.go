@@ -64,6 +64,9 @@ func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) 
 	}
 
 	return storer.NewReferenceFilteredIter(func(ref *plumbing.Reference) bool {
-		return ref.Name().IsRemote()
+		if ref.Type() == plumbing.HashReference {
+			return ref.Name().IsRemote()
+		}
+		return false
 	}, refs), nil
 }
