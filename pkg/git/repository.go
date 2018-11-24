@@ -15,6 +15,7 @@ type RepoEntity struct {
 	Pullables  string
 	Branch     string
 	Remote     string
+	Commit     string
 	Marked     bool
 	Clean      bool
 }
@@ -36,7 +37,8 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	headRef, _ := r.Head()
 	branch := headRef.Name().Short()
 	remotes, err := remoteBranches(r)
-	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], false, isClean(r, fileInfo.Name())}
+	commit, _ := lastCommit(r)
+	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], commit, false, isClean(r, fileInfo.Name())}
 	
 	return entity, nil
 }

@@ -14,14 +14,31 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
         return err
     }
     out.Clear()
-    branches, err := entity.GetBranches()
-    if err != nil {
-        return err
-    }
-    for _, b := range branches {
-        fmt.Fprintln(out, b)
-    }
 
+    currentindex := 0
+
+    if branches, err := entity.Branches(); err != nil {
+        return err
+    } else {
+        for i, b := range branches {
+            if b == entity.Branch {
+                currentindex = i
+                fmt.Fprintln(out, selectionIndicator() + b)
+                continue
+            } 
+            fmt.Fprintln(out, tab() + b)
+        }
+    }
+    _, y := out.Size()
+    if currentindex > y-1 {
+        if err := out.SetOrigin(0, currentindex - int(0.5*float32(y))); err != nil {
+            return err
+        }
+    } else {
+        if err := out.SetOrigin(0, 0); err != nil {
+            return err
+        }
+    }
     return nil
 }
 
@@ -32,14 +49,15 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
     if err != nil {
         return err
     }
+
     if err = entity.Checkout(entity.NextBranch()); err != nil {
         return err
     }
-
+    
     if err = gui.updateBranch(g, entity); err != nil {
         return err
     }
-    
+
     if err = gui.updateCommits(g, entity); err != nil {
         return err
     }

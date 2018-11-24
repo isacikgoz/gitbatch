@@ -23,6 +23,15 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
     if err := g.SetKeybinding("main", gocui.KeyArrowDown, gocui.ModNone, gui.cursorDown); err != nil {
         return err
     }
+    if err := g.SetKeybinding("main", 's', gocui.ModNone, gui.nextCommit); err != nil {
+        return err
+    }
+    if err := g.SetKeybinding("main", 'x', gocui.ModNone, gui.showCommitDetail); err != nil {
+        return err
+    }
+    if err := g.SetKeybinding("commitdetail", 'c', gocui.ModNone, gui.closeCommitDetailView); err != nil {
+        return err
+    }
     if err := g.SetKeybinding("main", gocui.KeyArrowUp, gocui.ModNone, gui.cursorUp); err != nil {
         return err
     }

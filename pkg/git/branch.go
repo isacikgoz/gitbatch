@@ -15,6 +15,7 @@ func (entity *RepoEntity) LocalBranches() (lbs []string, err error){
 	if err != nil {
 		return nil, err
 	}
+	defer branches.Close()
 	branches.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() == plumbing.HashReference {
         	lbs = append(lbs, b.Name().Short())

@@ -3,15 +3,19 @@ package gui
 import (
     "fmt"
     "sync"
+    "github.com/fatih/color"
     "github.com/isacikgoz/gitbatch/pkg/utils"
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "regexp"
 )
+var (
+    green = color.New(color.FgGreen)
+    )
 
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 
-    if _, err := gui.updateRemotes(g, entity); err != nil {
+    if err := gui.updateRemotes(g, entity); err != nil {
         return err
     }
 
@@ -148,7 +152,7 @@ func (gui *Gui) refreshMain(g *gocui.Gui) error {
     }
     mainView.Clear()
     for _, r := range gui.State.Repositories {
-        fmt.Fprintln(mainView, r.GetDisplayString())
+        fmt.Fprintln(mainView, r.DisplayString())
     }
     return nil
 }
@@ -191,4 +195,12 @@ func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
     wg.Wait()
 
     return rs, nil
+}
+
+func selectionIndicator() string {
+    return green.Sprint("→ ")
+}
+
+func tab() string {
+    return green.Sprint("  ")
 }

@@ -14,14 +14,17 @@ func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
                     return err
             }
             v.Title = " " + "Application Controls" + " "
-            fmt.Fprintln(v, "a: select all")
-            fmt.Fprintln(v, "b: iterate over branch")
-            fmt.Fprintln(v, "c: close window")
-            fmt.Fprintln(v, "d: deselect all")
-            fmt.Fprintln(v, "r: iterate over remote")
-            fmt.Fprintln(v, "enter: execute")
-            fmt.Fprintln(v, "q: quit")
-            fmt.Fprintln(v, "ctrl+c: force quit")
+            fmt.Fprintln(v, " ")
+            fmt.Fprintln(v, " a: select all")
+            fmt.Fprintln(v, " b: iterate over branch")
+            fmt.Fprintln(v, " c: close window")
+            fmt.Fprintln(v, " d: deselect all")
+            fmt.Fprintln(v, " r: iterate over remote")
+            fmt.Fprintln(v, " s: iterate over commit")
+            fmt.Fprintln(v, " x: show commit detail")
+            fmt.Fprintln(v, " enter: execute")
+            fmt.Fprintln(v, " q: quit")
+            fmt.Fprintln(v, " ctrl+c: force quit")
     }
     gui.updateKeyBindingsViewForCheatSheetView(g)
     if _, err := g.SetCurrentView("cheatsheet"); err != nil {

@@ -25,7 +25,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app.Gui.Run()
+	err = app.Gui.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer app.Close()
 }

@@ -7,40 +7,40 @@ import (
     // "strings"
 )
 
-func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) (int, error) {
+func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
 
     out, err := g.View("remotes")
     if err != nil {
-        return 0, err
+        return err
     }
     out.Clear()
-    // ox, _ := out.Origin()
 
     currentindex := 0
 
     if list, err := entity.GetRemotes(); err != nil {
-        return 0, err
+        return err
     } else {
-        for _, r := range list {
-            // if strings.Contains(r, entity.Remote) {
-            //     currentindex = i
-            // }
-            fmt.Fprintln(out, r)
+        for i, r := range list {
+            if r == entity.Remote {
+                currentindex = i
+                fmt.Fprintln(out, selectionIndicator() + r)
+                continue
+            } 
+            fmt.Fprintln(out, tab() + r)
         }
     }
-
-    // if err := out.SetCursor(0, currentindex); err != nil {
-            
-    // if err := out.SetOrigin(0, currentindex); err != nil {
-    //     return currentindex, err
-    // }
-    //      }
-
-    // cx, cy := out.Cursor()
-    bl := out.ViewBufferLines()
-     fmt.Fprintf(out, "Bufferedlines -> %d", len(bl))
-    return currentindex, nil
+    _, y := out.Size()
+    if currentindex > y-1 {
+        if err := out.SetOrigin(0, currentindex - int(0.5*float32(y))); err != nil {
+            return err
+        }
+    } else {
+        if err := out.SetOrigin(0, 0); err != nil {
+            return err
+        }
+    }
+    return nil
 }
 
 func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
@@ -50,52 +50,14 @@ func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
     if err != nil {
         return err
     }
+    
     if _, err = entity.NextRemote(); err != nil {
         return err
     }
 
-    if _, err := g.SetCurrentView("remotes"); err != nil {
+    if err = gui.updateRemotes(g, entity); err != nil {
         return err
     }
 
-    if _, err = gui.updateRemotes(g, entity); err != nil {
-        return err
-    }
-
-    if _, err := g.SetCurrentView("main"); err != nil {
-        return err
-    }
-
-    // out, err := g.View("remotes")
-    // if err != nil {
-    //     return err
-    // }
-    // if list, err := entity.GetRemotes(); err != nil {
-    //     return err
-    // } else {
-    //      gui.simpleCursorDown(g, out, len(list))
-    // }
-   
     return nil
 }
-
-// func (gui *Gui) simpleCursorDown(g *gocui.Gui, v *gocui.View, maxY int) error {
-//     if v != nil {
-//         cx, cy := v.Cursor()
-//         ox, oy := v.Origin()
-
-//         //ly := len(gui.State.Repositories) -1
-
-//         // if we are at the end we just return
-//         if cy+oy == maxY {
-//             return nil
-//         }
-//         if err := v.SetCursor(cx, cy+1); err != nil {
-            
-//             if err := v.SetOrigin(ox, oy+1); err != nil {
-//                 return err
-//             }
-//         }
-//     }
-//     return nil
-// }

@@ -115,7 +115,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.SelFgColor = gocui.ColorBlack
         v.Overwrite = true
         for _, r := range gui.State.Repositories {
-            fmt.Fprintln(v, r.GetDisplayString())
+            fmt.Fprintln(v, r.DisplayString())
         }
 
         if _, err = gui.setCurrentViewOnTop(g, "main"); err != nil {
@@ -138,12 +138,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         }
         v.Title = " Remotes "
         v.Wrap = false
-
-        v.Highlight = true
-        v.SelBgColor = gocui.ColorWhite
-        v.SelFgColor = gocui.ColorBlack
-
-        v.Autoscroll = true
         v.Overwrite = true
     }
 

@@ -47,6 +47,7 @@ func remoteBranches(r *git.Repository) (remotes []string, err error) {
 	if err != nil {
 		return remotes, err
 	}
+	defer bs.Close()
 	err = bs.ForEach(func(b *plumbing.Reference) error {
 		remotes = append(remotes, b.Name().Short())
 		return nil

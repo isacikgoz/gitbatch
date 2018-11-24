@@ -11,18 +11,12 @@ import (
 func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 
 	r := entity.Repository
-    green := color.New(color.FgGreen)
+    // green := color.New(color.FgGreen)
     if list, err := remoteBranches(&r); err != nil {
         return remotes, err
     } else {
         for _, r := range list {
-            var remoteString string
-            if r == entity.Remote {
-                remoteString = string(green.Sprint(" → ")) + r
-            } else {
-                remoteString = "   " + r
-            }
-            remotes = append(remotes, remoteString)
+            remotes = append(remotes, r)
         }
     }
 
@@ -32,7 +26,10 @@ func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 func (entity *RepoEntity) GetCommits() (commits []string, err error) {
 	r := entity.Repository
 	//TODO: Handle Errors
-	ref, _ := r.Head()
+	ref, err := r.Head()
+    if err != nil {
+        return commits, err
+    }
 
     cIter, _ := r.Log(&git.LogOptions{
     	From: ref.Hash(),
@@ -61,7 +58,7 @@ func (entity *RepoEntity) GetStatus() (status string) {
     return status
 }
 
-func (entity *RepoEntity) GetDisplayString() string{
+func (entity *RepoEntity) DisplayString() string{
 
     blue := color.New(color.FgBlue)
     green := color.New(color.FgGreen)
@@ -82,18 +79,10 @@ func (entity *RepoEntity) GetDisplayString() string{
 	}
 }
 
-func  (entity *RepoEntity) GetBranches() (branches []string, err error) {
+func (entity *RepoEntity) Branches() (branches []string, err error) {
     localBranches, err := entity.LocalBranches()
-    green := color.New(color.FgGreen)
     if err != nil {
         return nil, err
     }
-    for _, b := range localBranches {
-        prefix := "   "
-        if b == entity.GetActiveBranch() {
-            prefix = " → "
-        }
-        branches = append(branches, (string(green.Sprint(prefix)) + b))
-    }
-    return branches, nil
+    return localBranches, nil
 }
