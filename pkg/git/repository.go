@@ -15,7 +15,7 @@ type RepoEntity struct {
 	Pullables  string
 	Branch     string
 	Remote     string
-	Commit     string
+	Commit     *Commit
 	Marked     bool
 	Clean      bool
 }

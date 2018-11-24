@@ -1,6 +1,7 @@
 package gui
 
 import (
+    "github.com/fatih/color"
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
@@ -16,17 +17,19 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
     }
     out.Clear()
 
+    cyan := color.New(color.FgCyan)
+    green := color.New(color.FgGreen)
     currentindex := 0
     if commits, err := entity.Commits(); err != nil {
         return err
     } else {
         for i, c := range commits {
-            if c[:git.Hashlimit] == entity.Commit {
+            if c.Hash == entity.Commit.Hash {
                 currentindex = i
-                fmt.Fprintln(out, selectionIndicator() + c)
+                fmt.Fprintln(out, selectionIndicator() + green.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
                 continue
             } 
-            fmt.Fprintln(out, tab() + c)
+            fmt.Fprintln(out, tab() + cyan.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
         }
     }
     _, y := out.Size()
@@ -64,7 +67,7 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
 
-    v, err := g.SetView("commitdetail", maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
+    v, err := g.SetView("commitdetail", 5, 3, maxX-5, maxY-3)
     if err != nil {
         if err != gocui.ErrUnknownView {
              return err
@@ -72,6 +75,7 @@ func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
         v.Title = " Commit Detail "
         v.Highlight = true
         v.Overwrite = true
+        v.SelFgColor = gocui.ColorGreen
 
         main, _ := g.View("main")
 
@@ -86,7 +90,7 @@ func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
             return err
         }
         fmt.Fprintln(v, detail)
-        diff, err := entity.Diff(entity.Commit)
+        diff, err := entity.Diff(entity.Commit.Hash)
         if err != nil {
             return err
         }
@@ -124,5 +128,43 @@ func (gui *Gui) updateKeyBindingsViewForCommitDetailView(g *gocui.Gui) error {
     v.FgColor = gocui.ColorBlack
     v.Frame = false
     fmt.Fprintln(v, "c: cancel | ↑ ↓: navigate")
+    return nil
+}
+
+func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
+    if v != nil {
+        cx, cy := v.Cursor()
+        ox, oy := v.Origin()
+
+        // TODO: do something when it hits bottom
+        // also it woulf be nice to emulate less buttons
+        // or at least page-up/page-down buttons
+
+        // ly := len(gui.State.Repositories) -1
+
+        // // if we are at the end we just return
+        // if cy+oy == ly {
+        //     return nil
+        // }
+        if err := v.SetCursor(cx, cy+1); err != nil {
+            
+            if err := v.SetOrigin(ox, oy+1); err != nil {
+                return err
+            }
+        }
+    }
+    return nil
+}
+
+func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
+    if v != nil {
+        ox, oy := v.Origin()
+        cx, cy := v.Cursor()
+        if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+            if err := v.SetOrigin(ox, oy-1); err != nil {
+                return err
+            }
+        }
+    }
     return nil
 }

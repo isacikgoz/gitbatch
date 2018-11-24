@@ -6,16 +6,29 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"regexp"
 	"log"
+	"time"
 )
 
 var (
-	Hashlimit = 40
+	Hashlimit = 6
 )
 
-func lastCommit(r *git.Repository) (hash string, err error) {
+type Commit struct {
+	Hash string
+	Author string
+	Message string
+	Time time.Time
+}
+
+func newCommit(hash, author, message string, time time.Time) (commit *Commit) {
+	commit = &Commit{hash, author, message, time}
+	return commit
+}
+
+func lastCommit(r *git.Repository) (commit *Commit, err error) {
 	ref, err := r.Head()
     if err != nil {
-        return hash, err
+        return nil, err
     }
 
     cIter, _ := r.Log(&git.LogOptions{
@@ -26,10 +39,11 @@ func lastCommit(r *git.Repository) (hash string, err error) {
 
 	c, err := cIter.Next()
 	if err != nil {
-        return hash, err
+        return nil, err
     }
-    hash = string([]rune(c.Hash.String())[:Hashlimit])
-	return hash, nil
+    re := regexp.MustCompile(`\r?\n`)
+    commit = newCommit(re.ReplaceAllString(c.Hash.String(), " "), c.Author.Email, re.ReplaceAllString(c.Message, " "), c.Author.When)
+	return commit, nil
 }
 
 func (entity *RepoEntity) NextCommit() error {
@@ -42,19 +56,19 @@ func (entity *RepoEntity) NextCommit() error {
 
     currentCommitIndex := 0
 	for i, cs := range commits {
-		if cs[:Hashlimit] == currentCommit {
+		if cs.Hash == currentCommit.Hash {
 			currentCommitIndex = i
 		}
 	}
 	if currentCommitIndex == len(commits)-1 {
-		entity.Commit = commits[0][:Hashlimit]
+		entity.Commit = commits[0]
 		return nil
 	}
-	entity.Commit = commits[currentCommitIndex+1][:Hashlimit]
+	entity.Commit = commits[currentCommitIndex+1]
 	return nil
 }
 
-func (entity *RepoEntity) Commits() (commits []string, err error) {
+func (entity *RepoEntity) Commits() (commits []*Commit, err error) {
 	r := entity.Repository
 	
 	ref, err := r.Head()
@@ -70,10 +84,11 @@ func (entity *RepoEntity) Commits() (commits []string, err error) {
 
     // ... just iterates over the commits
     err = cIter.ForEach(func(c *object.Commit) error {
-    	commitstring := string([]rune(c.Hash.String())[:Hashlimit]) + " " + c.Message
+    	// commitstring := string([]rune(c.Hash.String())[:Hashlimit]) + " " + c.Message
     	re := regexp.MustCompile(`\r?\n`)
-    	commitstring = re.ReplaceAllString(commitstring, " ")
-        commits = append(commits, commitstring)
+    	// commitstring = re.ReplaceAllString(commitstring, " ")
+    	commit := newCommit(re.ReplaceAllString(c.Hash.String(), " "), c.Author.Email, re.ReplaceAllString(c.Message, " "), c.Author.When)
+        commits = append(commits, commit)
 
         return nil
 	})
@@ -84,30 +99,9 @@ func (entity *RepoEntity) Commits() (commits []string, err error) {
 }
 
 func (entity *RepoEntity) CommitDetail() (commitDetail string, err error) {
-	r := entity.Repository
-	
-	ref, err := r.Head()
-    if err != nil {
-        return commitDetail, err
-    }
 
-    cIter, _ := r.Log(&git.LogOptions{
-    	From: ref.Hash(),
-		Order: git.LogOrderCommitterTime,
-	})
-    var commit *object.Commit
-	err = cIter.ForEach(func(c *object.Commit) error {
-		if string([]rune(c.Hash.String())[:Hashlimit]) == entity.Commit {
-			commit = c
-		}
-
-        return nil
-	})
-	// commit, err := cIter.Next()
-	// if err != nil {
- //        return commitDetail, err
- //    }
-	commitDetail = "Hash: " + commit.Hash.String() + "\n" + "Author: " + commit.Author.Email + "\n" + commit.Message
+	commit := entity.Commit
+	commitDetail = "Hash: " + commit.Hash + "\n" + "Author: " + commit.Author + "\n" + commit.Message
 
     return commitDetail, nil
 }
@@ -177,7 +171,11 @@ func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 
 		for _, c := range changes {
 			// if c.To.Name == node {
-				diff = diff + c.String() + "\n"
+				patch, err := c.Patch()
+				if err != nil {
+					break
+				}
+				diff = diff + patch.String() + "\n"
 			// 	break
 			// }
 		}

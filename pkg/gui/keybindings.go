@@ -20,7 +20,16 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
     if err := g.SetKeybinding("pull", gocui.KeyEnter, gocui.ModNone, gui.executePull); err != nil {
         return err
     }
+    if err := g.SetKeybinding("main", gocui.KeyArrowUp, gocui.ModNone, gui.cursorUp); err != nil {
+        return err
+    }
     if err := g.SetKeybinding("main", gocui.KeyArrowDown, gocui.ModNone, gui.cursorDown); err != nil {
+        return err
+    }
+    if err := g.SetKeybinding("commitdetail", gocui.KeyArrowUp, gocui.ModNone, gui.commitCursorUp); err != nil {
+        return err
+    }
+    if err := g.SetKeybinding("commitdetail", gocui.KeyArrowDown, gocui.ModNone, gui.commitCursorDown); err != nil {
         return err
     }
     if err := g.SetKeybinding("main", 's', gocui.ModNone, gui.nextCommit); err != nil {
@@ -30,9 +39,6 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
         return err
     }
     if err := g.SetKeybinding("commitdetail", 'c', gocui.ModNone, gui.closeCommitDetailView); err != nil {
-        return err
-    }
-    if err := g.SetKeybinding("main", gocui.KeyArrowUp, gocui.ModNone, gui.cursorUp); err != nil {
         return err
     }
     if err := g.SetKeybinding("main", gocui.KeySpace, gocui.ModNone, gui.markRepository); err != nil {

@@ -2,9 +2,6 @@ package git
 
 import (
 	"github.com/fatih/color"
-	"github.com/isacikgoz/gitbatch/pkg/utils"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"regexp"
 )
 
@@ -21,34 +18,6 @@ func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
     }
 
     return remotes, nil
-}
-
-func (entity *RepoEntity) GetCommits() (commits []string, err error) {
-	r := entity.Repository
-	//TODO: Handle Errors
-	ref, err := r.Head()
-    if err != nil {
-        return commits, err
-    }
-
-    cIter, _ := r.Log(&git.LogOptions{
-    	From: ref.Hash(),
-		Order: git.LogOrderCommitterTime,
-	})
-
-    // ... just iterates over the commits
-    err = cIter.ForEach(func(c *object.Commit) error {
-    	commitstring := utils.ColoredString(string([]rune(c.Hash.String())[:7]), color.FgGreen) + " " + c.Message
-    	re := regexp.MustCompile(`\r?\n`)
-    	commitstring = re.ReplaceAllString(commitstring, " ")
-        commits = append(commits, commitstring)
-
-        return nil
-	})
-	if err != nil {
-		return commits, err
-	}
-    return commits, nil
 }
 
 func (entity *RepoEntity) GetStatus() (status string) {
