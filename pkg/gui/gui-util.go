@@ -39,6 +39,13 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
     return nil
 }
 
+func (gui *Gui) setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
+    if _, err := g.SetCurrentView(name); err != nil {
+        return nil, err
+    }
+    return g.SetViewOnTop(name)
+}
+
 // if the cursor down past the last item, move it to the last line
 func (gui *Gui) correctCursor(v *gocui.View) error {
     cx, cy := v.Cursor()

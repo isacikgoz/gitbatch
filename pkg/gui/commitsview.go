@@ -11,7 +11,7 @@ import (
 func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
 
-    out, err := g.View("commits")
+    out, err := g.View(commitViewFeature.Name)
     if err != nil {
         return err
     }
@@ -58,16 +58,16 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
-    v, err := g.SetView("commitdetail", 5, 3, maxX-5, maxY-3)
+    v, err := g.SetView(commitdetailViewFeature.Name, 5, 3, maxX-5, maxY-3)
     if err != nil {
         if err != gocui.ErrUnknownView {
              return err
         }
-        v.Title = " Commit Detail "
+        v.Title = commitdetailViewFeature.Title
         v.Overwrite = true
         v.Wrap = true
 
-        main, _ := g.View("main")
+        main, _ := g.View(mainViewFeature.Name)
 
         entity, err := gui.getSelectedRepository(g, main)
         if err != nil {
@@ -86,8 +86,8 @@ func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
         }
     }
     
-    gui.updateKeyBindingsViewForCommitDetailView(g)
-    if _, err := g.SetCurrentView("commitdetail"); err != nil {
+    gui.updateKeyBindingsView(g, commitdetailViewFeature.Name)
+    if _, err := g.SetCurrentView(commitdetailViewFeature.Name); err != nil {
         return err
     }
     return nil
@@ -98,25 +98,10 @@ func (gui *Gui) closeCommitDetailView(g *gocui.Gui, v *gocui.View) error {
         if err := g.DeleteView(v.Name()); err != nil {
             return nil
         }
-        if _, err := g.SetCurrentView("main"); err != nil {
+        if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
             return err
         }
-        gui.updateKeyBindingsViewForMainView(g)
-
-    return nil
-}
-
-func (gui *Gui) updateKeyBindingsViewForCommitDetailView(g *gocui.Gui) error {
-
-    v, err := g.View("keybindings")
-    if err != nil {
-        return err
-    }
-    v.Clear()
-    v.BgColor = gocui.ColorWhite
-    v.FgColor = gocui.ColorBlack
-    v.Frame = false
-    fmt.Fprintln(v, "c: cancel | ↑ ↓: navigate")
+        gui.updateKeyBindingsView(g, mainViewFeature.Name)
     return nil
 }
 

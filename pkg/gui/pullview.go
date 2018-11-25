@@ -8,12 +8,12 @@ import (
 func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
 
-    v, err := g.SetView("pull", maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
+    v, err := g.SetView(pullViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
     if err != nil {
             if err != gocui.ErrUnknownView {
                     return err
             }
-            v.Title = " " + "Execution Parameters" + " "
+            v.Title = pullViewFeature.Title
             v.Wrap = false
             mrs, _ := gui.getMarkedEntities()
             for _, r := range mrs {
@@ -21,8 +21,8 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
                 fmt.Fprintln(v, line)
             }
     }
-    gui.updateKeyBindingsViewForPullView(g)
-    if _, err := g.SetCurrentView("pull"); err != nil {
+    gui.updateKeyBindingsView(g, pullViewFeature.Name)
+    if _, err := g.SetCurrentView(pullViewFeature.Name); err != nil {
         return err
     }
     return nil
@@ -33,10 +33,10 @@ func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
         if err := g.DeleteView(v.Name()); err != nil {
             return nil
         }
-        if _, err := g.SetCurrentView("main"); err != nil {
+        if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
             return err
         }
-        gui.updateKeyBindingsViewForMainView(g)
+        gui.updateKeyBindingsView(g, mainViewFeature.Name)
 
     return nil
 }
@@ -59,24 +59,9 @@ func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
     return nil
 }
 
-func (gui *Gui) updateKeyBindingsViewForPullView(g *gocui.Gui) error {
-
-    v, err := g.View("keybindings")
-    if err != nil {
-        return err
-    }
-    v.Clear()
-    v.BgColor = gocui.ColorGreen
-    v.FgColor = gocui.ColorBlack
-    v.Frame = false
-    fmt.Fprintln(v, "c: cancel | ↑ ↓: navigate | enter: execute")
-    return nil
-}
-
-
 func updateKeyBindingsViewForExecution(g *gocui.Gui) error {
 
-    v, err := g.View("keybindings")
+    v, err := g.View(keybindingsViewFeature.Name)
     if err != nil {
         return err
     }
@@ -90,7 +75,7 @@ func updateKeyBindingsViewForExecution(g *gocui.Gui) error {
 
 func (gui *Gui) updatePullViewWithExec(g *gocui.Gui) {
 
-    v, err := g.View("pull")
+    v, err := g.View(pullViewFeature.Name)
     if err != nil {
         return
     }

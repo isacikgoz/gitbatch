@@ -9,7 +9,7 @@ import (
 func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
 
-    out, err := g.View("remotes")
+    out, err := g.View(remoteViewFeature.Name)
     if err != nil {
         return err
     }

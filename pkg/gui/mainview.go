@@ -11,18 +11,18 @@ import (
 func (gui *Gui) fillMain(g *gocui.Gui) error {
 
     g.Update(func(g *gocui.Gui) error {
-        v, err := g.View("main")
+        v, err := g.View(mainViewFeature.Name)
         if err != nil {
             return err
         }
         for _, r := range gui.State.Repositories {
             fmt.Fprintln(v, displayString(r))
         }
-        err = g.DeleteView("loading")
+        err = g.DeleteView(loadingViewFeature.Name)
         if err != nil {
             return err
         }
-        if _, err = gui.setCurrentViewOnTop(g, "main"); err != nil {
+        if _, err = gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
             return err
         }
         if entity, err := gui.getSelectedRepository(g, v); err != nil {
@@ -142,7 +142,7 @@ func (gui *Gui) unMarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) refreshMain(g *gocui.Gui) error {
     
-    mainView, err := g.View("main")
+    mainView, err := g.View(mainViewFeature.Name)
     if err != nil {
         return err
     }

@@ -9,7 +9,7 @@ import (
 func (gui *Gui) updateSchedule(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
 
-    out, err := g.View("schedule")
+    out, err := g.View(scheduleViewFeature.Name)
     if err != nil {
         return err
     }

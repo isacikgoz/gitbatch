@@ -4,13 +4,12 @@ import (
     "github.com/jroimartin/gocui"
     "fmt"
     "strconv"
-    "github.com/fatih/color"
 )
 
 func (gui *Gui) updateJobs(g *gocui.Gui) error {
     var err error
 
-    out, err := g.View("jobs")
+    out, err := g.View(jobsViewFeature.Name)
     if err != nil {
         return err
     }
@@ -21,9 +20,9 @@ func (gui *Gui) updateJobs(g *gocui.Gui) error {
             pullJobs++
         }
     }
-    fcolor := color.New(color.FgWhite)
+    fcolor := white
     if pullJobs > 0 {
-        fcolor = color.New(color.FgGreen)
+        fcolor = green
     }
     
     jobs := strconv.Itoa(pullJobs) + " repositories to pull"
