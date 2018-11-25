@@ -5,7 +5,6 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"regexp"
-	"log"
 	"time"
 )
 
@@ -84,9 +83,7 @@ func (entity *RepoEntity) Commits() (commits []*Commit, err error) {
 
     // ... just iterates over the commits
     err = cIter.ForEach(func(c *object.Commit) error {
-    	// commitstring := string([]rune(c.Hash.String())[:Hashlimit]) + " " + c.Message
     	re := regexp.MustCompile(`\r?\n`)
-    	// commitstring = re.ReplaceAllString(commitstring, " ")
     	commit := newCommit(re.ReplaceAllString(c.Hash.String(), " "), c.Author.Email, re.ReplaceAllString(c.Message, " "), c.Author.When)
         commits = append(commits, commit)
 
@@ -98,90 +95,60 @@ func (entity *RepoEntity) Commits() (commits []*Commit, err error) {
     return commits, nil
 }
 
-func (entity *RepoEntity) CommitDetail() (commitDetail string, err error) {
-
-	commit := entity.Commit
-	commitDetail = "Hash: " + commit.Hash + "\n" + "Author: " + commit.Author + "\n" + commit.Message
-
-    return commitDetail, nil
-}
-
-// resolve blob at given path from obj. obj can be a commit, tag, tree, or blob.
-func resolve(obj object.Object, path string) (*object.Blob, error) {
-	switch o := obj.(type) {
-	case *object.Commit:
-		t, err := o.Tree()
-		if err != nil {
-			return nil, err
-		}
-		return resolve(t, path)
-	case *object.Tag:
-		target, err := o.Object()
-		if err != nil {
-			return nil, err
-		}
-		return resolve(target, path)
-	case *object.Tree:
-		file, err := o.File(path)
-		if err != nil {
-			return nil, err
-		}
-		return &file.Blob, nil
-	case *object.Blob:
-		return o, nil
-	default:
-		return nil, object.ErrUnsupportedObject
-	}
-}
-
 func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
+
+	cms, err :=  entity.Commits()
+    if err != nil {
+        return "", err
+    }
+
+	currentCommitIndex := 0
+	for i, cs := range cms {
+		if cs.Hash == hash {
+			currentCommitIndex = i
+		}
+	}
+	if len(cms) -currentCommitIndex <= 1 {
+		return "there is no diff", nil
+	}
+
 	commits, err := entity.Repository.Log(&git.LogOptions{
-    	From: plumbing.NewHash(hash),
+    	From: plumbing.NewHash(cms[currentCommitIndex].Hash),
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
-		log.Fatal(hash)
 		return "", err
 	}
-	defer commits.Close()
 
-	var prevCommit *object.Commit
-	var prevTree   *object.Tree
-
-	for {
-		commit, err := commits.Next()
-		if err != nil {
-			break
-		}
-		currentTree, err := commit.Tree()
-		if err != nil {
-			return diff, err
-		}
-
-		if prevCommit == nil {
-			prevCommit = commit
-			prevTree = currentTree
-			continue
-		}
-
-		changes, err := currentTree.Diff(prevTree)
+	currentCommit, err := commits.Next()
 		if err != nil {
 			return "", err
 		}
+	currentTree, err := currentCommit.Tree()
+	if err != nil {
+		return diff, err
+	}
 
-		for _, c := range changes {
-			// if c.To.Name == node {
-				patch, err := c.Patch()
-				if err != nil {
-					break
-				}
-				diff = diff + patch.String() + "\n"
-			// 	break
-			// }
+	prevCommit, err := commits.Next()
+		if err != nil {
+			return "", err
 		}
+	prevTree, err := prevCommit.Tree()
+	if err != nil {
+		return diff, err
+	}
 
-		prevCommit = commit
-		prevTree = currentTree
+	changes, err := prevTree.Diff(currentTree)
+	if err != nil {
+		return "", err
+	}
+
+	for _, c := range changes {
+			patch, err := c.Patch()
+			if err != nil {
+				break
+			}
+			diff = diff + patch.String() + "\n"
 	}
 	return diff, nil
 }

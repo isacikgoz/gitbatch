@@ -16,10 +16,11 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
     out.Clear()
 
     currentindex := 0
-
-    if branches, err := entity.Branches(); err != nil {
+    totalbranches := 0
+    if branches, err := entity.LocalBranches(); err != nil {
         return err
     } else {
+        totalbranches = len(branches)
         for i, b := range branches {
             if b == entity.Branch {
                 currentindex = i
@@ -29,15 +30,8 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
             fmt.Fprintln(out, tab() + b)
         }
     }
-    _, y := out.Size()
-    if currentindex > y-1 {
-        if err := out.SetOrigin(0, currentindex - int(0.5*float32(y))); err != nil {
-            return err
-        }
-    } else {
-        if err := out.SetOrigin(0, 0); err != nil {
-            return err
-        }
+    if err = gui.smartAnchorRelativeToLine(out, currentindex, totalbranches); err != nil {
+        return err
     }
     return nil
 }
@@ -53,7 +47,7 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
     if err = entity.Checkout(entity.NextBranch()); err != nil {
         return err
     }
-    
+
     if err = gui.updateBranch(g, entity); err != nil {
         return err
     }

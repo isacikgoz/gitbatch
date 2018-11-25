@@ -5,7 +5,8 @@ import (
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
-    "log"
+    "strings"
+    "regexp"
 )
 
 func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
@@ -19,10 +20,12 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 
     cyan := color.New(color.FgCyan)
     green := color.New(color.FgGreen)
+    totalcommits := 0
     currentindex := 0
     if commits, err := entity.Commits(); err != nil {
         return err
     } else {
+        totalcommits = len(commits)
         for i, c := range commits {
             if c.Hash == entity.Commit.Hash {
                 currentindex = i
@@ -32,15 +35,8 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
             fmt.Fprintln(out, tab() + cyan.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
         }
     }
-    _, y := out.Size()
-    if currentindex > y-1 {
-        if err := out.SetOrigin(0, currentindex - int(0.5*float32(y))); err != nil {
-            return err
-        }
-    } else {
-        if err := out.SetOrigin(0, 0); err != nil {
-            return err
-        }
+    if err = gui.smartAnchorRelativeToLine(out, currentindex, totalcommits); err != nil {
+        return err
     }
     return nil
 }
@@ -66,35 +62,34 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
-
+    cyan := color.New(color.FgCyan)
     v, err := g.SetView("commitdetail", 5, 3, maxX-5, maxY-3)
     if err != nil {
         if err != gocui.ErrUnknownView {
              return err
         }
         v.Title = " Commit Detail "
-        v.Highlight = true
         v.Overwrite = true
-        v.SelFgColor = gocui.ColorGreen
+        v.Wrap = true
 
         main, _ := g.View("main")
 
         entity, err := gui.getSelectedRepository(g, main)
         if err != nil {
-            log.Fatal(err)
             return err
         }
-
-        detail, err := entity.CommitDetail()
-        if err != nil {
-            return err
-        }
-        fmt.Fprintln(v, detail)
+        commit := entity.Commit
+        commitDetail := "Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author + "\n" + commit.Time.String() + "\n" + "\n" + "\t" + commit.Message + "\n"
+        fmt.Fprintln(v, commitDetail)
         diff, err := entity.Diff(entity.Commit.Hash)
         if err != nil {
             return err
         }
-        fmt.Fprintln(v, diff)
+        colorized := colorizeDiff(diff)
+        for _, line := range colorized{
+            fmt.Fprintln(v, line)
+        }
+        
     }
     
     gui.updateKeyBindingsViewForCommitDetailView(g)
@@ -167,4 +162,30 @@ func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
         }
     }
     return nil
+}
+
+func colorizeDiff(original string) (colorized []string) {
+    cyan := color.New(color.FgCyan)
+    green := color.New(color.FgGreen)
+    red := color.New(color.FgRed)
+    colorized = strings.Split(original, "\n")
+    re := regexp.MustCompile(`@@ .+ @@`)
+    for i, line := range colorized {
+        if len(line) > 0 {
+            if line[0] == '-' {
+                colorized[i] = red.Sprint(line)
+            } else if line [0] == '+' {
+                colorized[i] = green.Sprint(line)
+            } else if re.MatchString(line) {
+                s := re.FindString(line)
+                colorized[i] = cyan.Sprint(s) + line[len(s):]
+            } else {
+                continue
+            }
+        } else {
+            continue
+        }
+        
+    }
+    return colorized
 }

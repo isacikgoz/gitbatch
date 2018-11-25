@@ -34,7 +34,10 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		return nil, err
 	}
 	pushable, pullable := UpstreamDifferenceCount(directory)
-	headRef, _ := r.Head()
+	headRef, err := r.Head()
+	if err != nil {
+		return nil, err
+	}
 	branch := headRef.Name().Short()
 	remotes, err := remoteBranches(r)
 	commit, _ := lastCommit(r)

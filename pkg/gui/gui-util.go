@@ -197,6 +197,30 @@ func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
     return rs, nil
 }
 
+func (gui *Gui) smartAnchorRelativeToLine(v *gocui.View,  currentindex, totallines int) error {
+
+    _, y := v.Size()
+    if currentindex >= int(0.5*float32(y)) && totallines - currentindex + int(0.5*float32(y)) >= y{
+        if err := v.SetOrigin(0, currentindex - int(0.5*float32(y))); err != nil {
+            return err
+        }
+    } else if totallines - currentindex <  y && totallines > y {
+        if err := v.SetOrigin(0, totallines -y ); err != nil {
+            return err
+        }
+    } else if totallines - currentindex <=  int(0.5*float32(y)) && totallines > y -1  && currentindex > y {
+        if err := v.SetOrigin(0, currentindex - int(0.5*float32(y))); err != nil {
+            return err
+        }
+    } else {
+        if err := v.SetOrigin(0, 0); err != nil {
+            return err
+        }
+    }
+    return nil
+
+}
+
 func selectionIndicator() string {
     return green.Sprint("→ ")
 }

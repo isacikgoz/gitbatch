@@ -3,7 +3,6 @@ package gui
 import (
     "github.com/jroimartin/gocui"
     "fmt"
-    // "sync"
 )
 
 func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {

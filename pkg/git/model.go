@@ -47,11 +47,3 @@ func (entity *RepoEntity) DisplayString() string{
 		return prefix + string(white.Sprint(entity.Name))
 	}
 }
-
-func (entity *RepoEntity) Branches() (branches []string, err error) {
-    localBranches, err := entity.LocalBranches()
-    if err != nil {
-        return nil, err
-    }
-    return localBranches, nil
-}
