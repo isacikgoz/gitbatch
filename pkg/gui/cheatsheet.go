@@ -7,7 +7,6 @@ import (
 
 func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
-
     v, err := g.SetView(cheatSheetViewFeature.Name, maxX/2-25, maxY/2-10, maxX/2+25, maxY/2+10)
     if err != nil {
             if err != gocui.ErrUnknownView {
@@ -30,7 +29,6 @@ func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) closeCheatSheetView(g *gocui.Gui, v *gocui.View) error {
-
     if err := g.DeleteView(v.Name()); err != nil {
         return nil
     }

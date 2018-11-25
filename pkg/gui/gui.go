@@ -34,10 +34,10 @@ var (
     pullViewFeature = viewFeature{Name: "pull", Title: " Execution Parameters "}
     commitdetailViewFeature = viewFeature{Name: "commitdetail", Title: " Commit Detail "}
     cheatSheetViewFeature = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
+    errorViewFeature = viewFeature{Name: "error", Title: " Error "}
 )
 
 func NewGui(directoies []string) (*Gui, error) {
-
     initialState := guiState{
         Directories: directoies,
     }
@@ -48,12 +48,10 @@ func NewGui(directoies []string) (*Gui, error) {
 }
 
 func (gui *Gui) Run() error {
-
     g, err := gocui.NewGui(gocui.OutputNormal)
     if err != nil {
         return err
     }
-
     go func(g_ui *Gui) {
         maxX, maxY := g.Size()
         v, err := g.SetView(loadingViewFeature.Name, maxX/2-10, maxY/2-1, maxX/2+10, maxY/2+1)
@@ -81,11 +79,9 @@ func (gui *Gui) Run() error {
     if err := gui.generateKeybindings(); err != nil {
         return err
     }
-
     if err := gui.keybindings(g); err != nil {
         return err
     }
-
     if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
         return err
     }
@@ -94,7 +90,6 @@ func (gui *Gui) Run() error {
 
 func (gui *Gui) layout(g *gocui.Gui) error {
     maxX, maxY := g.Size()
-
     if v, err := g.SetView(mainViewFeature.Name, 0, 0, int(0.55*float32(maxX))-1, maxY-2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
@@ -105,7 +100,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.SelFgColor = gocui.ColorBlack
         v.Overwrite = true
     }
-
     if v, err := g.SetView(branchViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.20*float32(maxY))-1); err != nil {
         if err != gocui.ErrUnknownView {
             return err
@@ -114,7 +108,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = false
         v.Autoscroll = false
     }
-
     if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), int(0.20*float32(maxY)), maxX-1, int(0.40*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
@@ -123,7 +116,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = false
         v.Overwrite = true
     }
-
     if v, err := g.SetView(commitViewFeature.Name, int(0.55*float32(maxX)), int(0.40*float32(maxY))+1, maxX-1, int(0.73*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
@@ -132,7 +124,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = false
         v.Autoscroll = false
     }
-
     if v, err := g.SetView(scheduleViewFeature.Name, int(0.55*float32(maxX)), int(0.73*float32(maxY))+1, maxX-1, int(0.85*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
@@ -141,7 +132,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = true
         v.Autoscroll = true
     }
-
     if v, err := g.SetView(jobsViewFeature.Name, int(0.55*float32(maxX)), int(0.85*float32(maxY))+1, maxX-1, maxY-2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
@@ -150,7 +140,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = true
         v.Autoscroll = true
     }
-
     if v, err := g.SetView(keybindingsViewFeature.Name, -1, maxY-2, maxX, maxY); err != nil {
         if err != gocui.ErrUnknownView {
             return err

@@ -17,9 +17,11 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
             v.Wrap = false
             mrs, _ := gui.getMarkedEntities()
             for _, r := range mrs {
-                line := r.Name + " : " + r.GetActiveRemote() + "/" + r.Branch + " → " + r.GetActiveBranch()
+                line := green.Sprint(r.Name) + " : " + r.GetActiveRemote() + "/" + r.Branch + green.Sprint(" → ") + r.GetActiveBranch()
                 fmt.Fprintln(v, line)
             }
+            ps := red.Sprint("Note:") + " After execution you will be notified"
+            fmt.Fprintln(v, "\n" + ps)
     }
     gui.updateKeyBindingsView(g, pullViewFeature.Name)
     if _, err := g.SetCurrentView(pullViewFeature.Name); err != nil {
@@ -30,59 +32,46 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
 
-        if err := g.DeleteView(v.Name()); err != nil {
-            return nil
-        }
-        if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
-            return err
-        }
-        gui.updateKeyBindingsView(g, mainViewFeature.Name)
-
+    if err := g.DeleteView(v.Name()); err != nil {
+        return nil
+    }
+    if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
+        return err
+    }
+    gui.refreshMain(g)
+    gui.updateKeyBindingsView(g, mainViewFeature.Name)
     return nil
 }
 
 func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
-
-    updateKeyBindingsViewForExecution(g)
-
+    // somehow this fucntion called after this method returns, strange?
+    go g.Update(func(g *gocui.Gui) error {
+        err := updateKeyBindingsViewForExecution(g)
+        if err != nil {
+            return err
+        }
+        return nil
+    })
+    
     mrs, _ := gui.getMarkedEntities()
     for _, mr := range mrs {
-        // here we will be waiting
+       // here we will be waiting
         mr.PullTest()
         gui.updateCommits(g, mr)
         mr.Unmark()
     }
-    gui.closePullView(g,v)
-    gui.refreshMain(g)
-    gui.updateJobs(g)
-
     return nil
 }
 
 func updateKeyBindingsViewForExecution(g *gocui.Gui) error {
-
     v, err := g.View(keybindingsViewFeature.Name)
     if err != nil {
         return err
     }
     v.Clear()
-    v.BgColor = gocui.ColorRed
-    v.FgColor = gocui.ColorWhite
+    v.BgColor = gocui.ColorGreen
+    v.FgColor = gocui.ColorBlack
     v.Frame = false
-    fmt.Fprintln(v, " PULLING REPOSITORIES")
+    fmt.Fprintln(v, " Execution Completed; c: close/cancel")
     return nil
-}
-
-func (gui *Gui) updatePullViewWithExec(g *gocui.Gui) {
-
-    v, err := g.View(pullViewFeature.Name)
-    if err != nil {
-        return
-    }
-
-    g.Update(func(g *gocui.Gui) error {
-        v.Clear()
-        fmt.Fprintln(v, "Pulling...")
-        return nil
-    })
 }

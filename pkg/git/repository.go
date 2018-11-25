@@ -42,7 +42,6 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	remotes, err := remoteBranches(r)
 	commit, _ := lastCommit(r)
 	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], commit, false, isClean(r, fileInfo.Name())}
-	
 	return entity, nil
 }
 

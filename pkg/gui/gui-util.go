@@ -20,19 +20,15 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
     if err := gui.updateRemotes(g, entity); err != nil {
         return err
     }
-
     if err := gui.updateBranch(g, entity); err != nil {
         return err
     }
-
     if err := gui.updateCommits(g, entity); err != nil {
          return err
     }
-
     if err := gui.updateSchedule(g, entity); err != nil {
          return err
     }
-
     if err := gui.updateJobs(g); err != nil {
          return err
     }

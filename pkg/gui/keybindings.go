@@ -169,6 +169,14 @@ func (gui *Gui) generateKeybindings() error {
             Display:     "enter",
             Description: "Execute",
             Vital:       true,
+        },{
+            View:        errorViewFeature.Name,
+            Key:         'c',
+            Modifier:    gocui.ModNone,
+            Handler:     gui.closeErrorView,
+            Display:     "c",
+            Description: "close/cancel",
+            Vital:       true,
         },
     }
     return nil
@@ -184,7 +192,6 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 }
 
 func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
-
     v, err := g.View(keybindingsViewFeature.Name)
     if err != nil {
         return err

@@ -8,7 +8,6 @@ import (
 
 func (gui *Gui) updateJobs(g *gocui.Gui) error {
     var err error
-
     out, err := g.View(jobsViewFeature.Name)
     if err != nil {
         return err
@@ -24,7 +23,6 @@ func (gui *Gui) updateJobs(g *gocui.Gui) error {
     if pullJobs > 0 {
         fcolor = green
     }
-    
     jobs := strconv.Itoa(pullJobs) + " repositories to pull"
     fmt.Fprintln(out, fcolor.Sprint(jobs))
     return nil

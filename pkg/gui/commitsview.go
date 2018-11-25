@@ -10,7 +10,6 @@ import (
 
 func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
     var err error
-
     out, err := g.View(commitViewFeature.Name)
     if err != nil {
         return err
@@ -40,16 +39,13 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 
 func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
     var err error
-
     entity, err := gui.getSelectedRepository(g, v)
     if err != nil {
         return err
     }
-
     if err = entity.NextCommit(); err != nil {
         return err
     }
-
     if err = gui.updateCommits(g, entity); err != nil {
         return err
     }
@@ -94,7 +90,6 @@ func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) closeCommitDetailView(g *gocui.Gui, v *gocui.View) error {
-
         if err := g.DeleteView(v.Name()); err != nil {
             return nil
         }
@@ -154,7 +149,6 @@ func colorizeDiff(original string) (colorized []string) {
         } else {
             continue
         }
-        
     }
     return colorized
 }

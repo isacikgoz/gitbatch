@@ -9,7 +9,6 @@ import (
 )
 
 func (gui *Gui) fillMain(g *gocui.Gui) error {
-
     g.Update(func(g *gocui.Gui) error {
         v, err := g.View(mainViewFeature.Name)
         if err != nil {
@@ -39,7 +38,6 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
     if v != nil {
         cx, cy := v.Cursor()
         ox, oy := v.Origin()
-
         ly := len(gui.State.Repositories) -1
 
         // if we are at the end we just return
@@ -99,14 +97,19 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEnt
 }
 
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
-
     if r, err := gui.getSelectedRepository(g, v); err != nil {
         return err
     } else {
         if err != nil {
             return err
         }
-        if r.Marked != true {
+        if !r.Clean {
+            if err = gui.openErrorView(g, "Stage your changes before pull", "You should manually resolve this issue"); err != nil {
+                return err
+            }
+            return nil
+        }
+        if !r.Marked {
             r.Mark()
         } else {
             r.Unmark()
@@ -120,7 +123,9 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
     for _, r := range gui.State.Repositories {
-        r.Mark()
+        if r.Clean {
+            r.Mark()
+        }
     }
     if err := gui.refreshMain(g); err !=nil {
         return err
@@ -156,7 +161,6 @@ func (gui *Gui) refreshMain(g *gocui.Gui) error {
 func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
     var wg sync.WaitGroup
     var mu sync.Mutex
-
     for _, r := range gui.State.Repositories {
         wg.Add(1)
         go func(repo *git.RepoEntity){
@@ -175,7 +179,6 @@ func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
 func displayString(entity *git.RepoEntity) string{
     prefix := string(blue.Sprint("↑")) + " " + entity.Pushables + " " +
      string(blue.Sprint("↓")) + " " + entity.Pullables + string(red.Sprint(" → ")) + string(cyan.Sprint(entity.Branch)) + " "
-
     if entity.Marked {
         return prefix + string(green.Sprint(entity.Name))
     } else if !entity.Clean {
