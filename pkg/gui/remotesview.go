@@ -22,12 +22,12 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
     } else {
         totalRemotes = len(list)
         for i, r := range list {
-            if r == entity.Remote {
+            if r.Reference.Hash().String() == entity.Remote.Reference.Hash().String() {
                 currentindex = i
-                fmt.Fprintln(out, selectionIndicator() + r)
+                fmt.Fprintln(out, selectionIndicator() + r.Name)
                 continue
             } 
-            fmt.Fprintln(out, tab() + r)
+            fmt.Fprintln(out, tab() + r.Name)
         }
     }
     if err = gui.smartAnchorRelativeToLine(out, currentindex, totalRemotes); err != nil {
@@ -44,7 +44,7 @@ func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
         return err
     }
 
-    if _, err = entity.NextRemote(); err != nil {
+    if err = entity.NextRemote(); err != nil {
         return err
     }
 

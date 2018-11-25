@@ -22,3 +22,33 @@ func UpstreamDifferenceCount(repoPath string) (string, string) {
 	}
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
 }
+
+func (entity *RepoEntity) FetchWithGit(remote string) error {
+	args := []string{"fetch", remote}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (entity *RepoEntity) MergeWithGit(mergeTo, mergeFrom string) error {
+	if err := entity.Checkout(mergeTo); err != nil {
+		return err
+	}
+	args := []string{"merge", mergeFrom}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (entity *RepoEntity) CheckoutWithGit(branch string) error {
+	args := []string{"checkout", branch}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return err
+	}
+	return nil
+}

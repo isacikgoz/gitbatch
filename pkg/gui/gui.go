@@ -29,7 +29,6 @@ var (
     remoteViewFeature = viewFeature{Name: "remotes", Title: " Remotes "}
     commitViewFeature = viewFeature{Name: "commits", Title: " Commits "}
     scheduleViewFeature = viewFeature{Name: "schedule", Title: " Schedule "}
-    jobsViewFeature = viewFeature{Name: "jobs", Title: " Jobs "}
     keybindingsViewFeature = viewFeature{Name: "keybindings", Title: " Keybindings "}
     pullViewFeature = viewFeature{Name: "pull", Title: " Execution Parameters "}
     commitdetailViewFeature = viewFeature{Name: "commitdetail", Title: " Commit Detail "}
@@ -124,19 +123,11 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = false
         v.Autoscroll = false
     }
-    if v, err := g.SetView(scheduleViewFeature.Name, int(0.55*float32(maxX)), int(0.73*float32(maxY))+1, maxX-1, int(0.85*float32(maxY))); err != nil {
+    if v, err := g.SetView(scheduleViewFeature.Name, int(0.55*float32(maxX)), int(0.73*float32(maxY))+1, maxX-1, maxY-2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
         v.Title = scheduleViewFeature.Title
-        v.Wrap = true
-        v.Autoscroll = true
-    }
-    if v, err := g.SetView(jobsViewFeature.Name, int(0.55*float32(maxX)), int(0.85*float32(maxY))+1, maxX-1, maxY-2); err != nil {
-        if err != gocui.ErrUnknownView {
-            return err
-        }
-        v.Title = jobsViewFeature.Title
         v.Wrap = true
         v.Autoscroll = true
     }

@@ -116,7 +116,6 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
         }
         gui.refreshMain(g)
         gui.updateSchedule(g, r)
-        gui.updateJobs(g)
     }
     return nil
 }
@@ -130,7 +129,6 @@ func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
     if err := gui.refreshMain(g); err !=nil {
         return err
     }
-    gui.updateJobs(g)
     return nil
 }
 
@@ -141,7 +139,6 @@ func (gui *Gui) unMarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
     if err := gui.refreshMain(g); err !=nil {
         return err
     }
-    gui.updateJobs(g)
     return nil
 }
 

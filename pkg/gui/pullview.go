@@ -3,6 +3,7 @@ package gui
 import (
     "github.com/jroimartin/gocui"
     "fmt"
+    "strconv"
 )
 
 func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
@@ -14,10 +15,12 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
                     return err
             }
             v.Title = pullViewFeature.Title
-            v.Wrap = false
+            v.Wrap = true
             mrs, _ := gui.getMarkedEntities()
+            jobs := strconv.Itoa(len(mrs)) + " repositories to fetch & merge:"
+            fmt.Fprintln(v, jobs)
             for _, r := range mrs {
-                line := green.Sprint(r.Name) + " : " + r.GetActiveRemote() + "/" + r.Branch + green.Sprint(" → ") + r.GetActiveBranch()
+                line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch
                 fmt.Fprintln(v, line)
             }
             ps := red.Sprint("Note:") + " After execution you will be notified"
@@ -56,7 +59,7 @@ func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
     mrs, _ := gui.getMarkedEntities()
     for _, mr := range mrs {
        // here we will be waiting
-        mr.PullTest()
+        mr.Pull()
         gui.updateCommits(g, mr)
         mr.Unmark()
     }

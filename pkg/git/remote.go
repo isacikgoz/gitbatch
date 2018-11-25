@@ -6,7 +6,12 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 )
 
-func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
+type Remote struct {
+	Name      string
+	Reference *plumbing.Reference
+}
+
+func (entity *RepoEntity) GetRemotes() (remotes []*Remote, err error) {
 
 	r := entity.Repository
     if list, err := remoteBranches(&r); err != nil {
@@ -20,37 +25,40 @@ func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
     return remotes, nil
 }
 
-func (entity *RepoEntity) NextRemote() (string, error) {
+func (entity *RepoEntity) NextRemote() error {
 
 	remotes, err := remoteBranches(&entity.Repository)
 	if err != nil {
-		return entity.Remote, err
+		return err
 	}
 
 	currentRemoteIndex := 0
 	for i, remote := range remotes {
-		if remote == entity.Remote {
+		if remote.Reference.Hash() == entity.Remote.Reference.Hash() {
 			currentRemoteIndex = i
 		}
 	}
-
+	// WARNING: DIDN'T CHECK THE LIFE CYCLE
 	if currentRemoteIndex == len(remotes)-1 {
 		entity.Remote = remotes[0]
 	} else {
 		entity.Remote = remotes[currentRemoteIndex+1]
 	}
 	
-	return entity.Remote, nil
+	return nil
 }
 
-func remoteBranches(r *git.Repository) (remotes []string, err error) {
+func remoteBranches(r *git.Repository) (remotes []*Remote, err error) {
 	bs, err := remoteBranchesIter(r.Storer)
 	if err != nil {
 		return remotes, err
 	}
 	defer bs.Close()
 	err = bs.ForEach(func(b *plumbing.Reference) error {
-		remotes = append(remotes, b.Name().Short())
+		remotes = append(remotes, &Remote{
+			Name: b.Name().Short(),
+			Reference: b,
+			})
 		return nil
 	})
 	if err != nil {
