@@ -14,9 +14,7 @@ func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err e
 		// increment wait counter by one because we run a single goroutine
 		// below
 		wg.Add(1)
-
 		go func(d string) {
-
 			// decrement the wait counter by one, we call it in a defer so it's
 			// called at the end of this goroutine
 			defer wg.Done()
@@ -24,7 +22,6 @@ func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err e
 			if err != nil {
 				return
 			}
-
 			// lock so we don't get a race if multiple go routines try to add
 			// to the same entities
 			mu.Lock()
@@ -32,10 +29,8 @@ func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err e
 			mu.Unlock()
 		}(dir)
 	}
-
 	// wait until the wait counter is zero, this happens if all goroutines have
 	// finished
 	wg.Wait()
-
 	return entities, nil
 }

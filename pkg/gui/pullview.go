@@ -3,68 +3,71 @@ package gui
 import (
     "github.com/jroimartin/gocui"
     "fmt"
+    "strconv"
 )
 
 func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
 
-    v, err := g.SetView("pull", maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
+    v, err := g.SetView(pullViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
     if err != nil {
             if err != gocui.ErrUnknownView {
                     return err
             }
-            v.Title = " " + "Execution Parameters" + " "
-            v.Wrap = false
+            v.Title = pullViewFeature.Title
+            v.Wrap = true
             mrs, _ := gui.getMarkedEntities()
+            jobs := strconv.Itoa(len(mrs)) + " repositories to fetch & merge:"
+            fmt.Fprintln(v, jobs)
             for _, r := range mrs {
-                line := r.Name + " : " + r.GetActiveRemote() + "/" + r.Branch + " → " + r.GetActiveBranch()
+                line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch
                 fmt.Fprintln(v, line)
             }
+            ps := red.Sprint("Note:") + " After execution you will be notified"
+            fmt.Fprintln(v, "\n" + ps)
     }
-    gui.updateKeyBindingsViewForPullView(g)
-    if _, err := g.SetCurrentView("pull"); err != nil {
+    gui.updateKeyBindingsView(g, pullViewFeature.Name)
+    if _, err := g.SetCurrentView(pullViewFeature.Name); err != nil {
         return err
     }
     return nil
 }
 
 func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
- 
-        if err := g.DeleteView(v.Name()); err != nil {
-            return nil
-        }
-        if _, err := g.SetCurrentView("main"); err != nil {
-            return err
-        }
-        gui.updateKeyBindingsViewForMainView(g)
-    
+
+    if err := g.DeleteView(v.Name()); err != nil {
+        return nil
+    }
+    if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
+        return err
+    }
+    gui.refreshMain(g)
+    gui.updateKeyBindingsView(g, mainViewFeature.Name)
     return nil
 }
 
 func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
-    gui.updateKeyBindingsViewForExecution(g)
+    // somehow this fucntion called after this method returns, strange?
+    go g.Update(func(g *gocui.Gui) error {
+        err := updateKeyBindingsViewForExecution(g)
+        if err != nil {
+            return err
+        }
+        return nil
+    })
+    
     mrs, _ := gui.getMarkedEntities()
-
-    gui.updateKeyBindingsViewForExecution(g)
     for _, mr := range mrs {
-
-        gui.updatePullViewWithExec(g)
-
-        // here we will be waiting
+       // here we will be waiting
         mr.Pull()
         gui.updateCommits(g, mr)
         mr.Unmark()
     }
-
-    gui.refreshMain(g)
-    gui.updateSchedule(g)
-    gui.closePullView(g, v)
     return nil
 }
 
-func (gui *Gui) updateKeyBindingsViewForPullView(g *gocui.Gui) error {
-
-    v, err := g.View("keybindings")
+func updateKeyBindingsViewForExecution(g *gocui.Gui) error {
+    v, err := g.View(keybindingsViewFeature.Name)
     if err != nil {
         return err
     }
@@ -72,35 +75,6 @@ func (gui *Gui) updateKeyBindingsViewForPullView(g *gocui.Gui) error {
     v.BgColor = gocui.ColorGreen
     v.FgColor = gocui.ColorBlack
     v.Frame = false
-    fmt.Fprintln(v, "c: cancel | ↑ ↓: navigate | enter: execute")
+    fmt.Fprintln(v, " Execution Completed; c: close/cancel")
     return nil
-}
-
-
-func (gui *Gui) updateKeyBindingsViewForExecution(g *gocui.Gui) error {
-
-    v, err := g.View("keybindings")
-    if err != nil {
-        return err
-    }
-    v.Clear()
-    v.BgColor = gocui.ColorRed
-    v.FgColor = gocui.ColorWhite
-    v.Frame = false
-    fmt.Fprintln(v, " PULLING REPOSITORIES")
-    return nil
-}
-
-func (gui *Gui) updatePullViewWithExec(g *gocui.Gui) {
-    
-    v, err := g.View("pull")
-    if err != nil {
-        return
-    }
-    
-    g.Update(func(g *gocui.Gui) error {
-        v.Clear()
-        fmt.Fprintln(v, "Pulling...")
-        return nil
-    })
 }

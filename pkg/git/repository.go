@@ -2,9 +2,9 @@ package git
 
 import (
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
 	"os"
 	"time"
+	"strings"
 )
 
 type RepoEntity struct {
@@ -14,7 +14,8 @@ type RepoEntity struct {
 	Pushables  string
 	Pullables  string
 	Branch     string
-	Remote     string
+	Remote     *Remote
+	Commit     *Commit
 	Marked     bool
 	Clean      bool
 }
@@ -33,10 +34,14 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		return nil, err
 	}
 	pushable, pullable := UpstreamDifferenceCount(directory)
-	branch, err := CurrentBranchName(directory)
-	remotes, err := getRemotes(r)
-	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], false, isClean(r, fileInfo.Name())}
-	
+	headRef, err := r.Head()
+	if err != nil {
+		return nil, err
+	}
+	branch := headRef.Name().Short()
+	remotes, err := remoteBranches(r)
+	commit, _ := lastCommit(r)
+	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], commit, false, isClean(r, fileInfo.Name())}
 	return entity, nil
 }
 
@@ -62,52 +67,32 @@ func (entity *RepoEntity) Unmark() {
 }
 
 func (entity *RepoEntity) Pull() error {
-	w, err := entity.Repository.Worktree()
-	if err != nil {
+	// TODO: Migrate this code to src-d/go-git
+	// 2018-11-25: tried but it fails, will investigate.
+	rm := entity.Remote.Reference.Name().Short()
+	remote := strings.Split(rm, "/")[0]
+	if err := entity.FetchWithGit(remote); err != nil {
 		return err
 	}
-	rf := plumbing.NewBranchReferenceName(entity.Branch)
-	rm := entity.Remote
-	err = w.Pull(&git.PullOptions{
-		RemoteName: rm,
-		ReferenceName: rf,
-		})
-	if err != nil {
+	if err := entity.MergeWithGit(entity.Branch, remote); err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (entity *RepoEntity) PullTest() error {
 	time.Sleep(5 * time.Second)
-
 	return nil
 }
 
 func (entity *RepoEntity) Fetch() error {
+	rm := entity.Remote.Reference.Name().Short()
+	remote := strings.Split(rm, "/")[0]
 	err := entity.Repository.Fetch(&git.FetchOptions{
-		RemoteName: entity.Remote,
+		RemoteName: remote,
 		})
 	if err != nil {
 		return err
 	}
-
 	return nil
-}
-
-func (entity *RepoEntity) GetActiveBranch() string{
-	headRef, _ := entity.Repository.Head()
-	return headRef.Name().String()
-}
-
-func (entity *RepoEntity) GetActiveRemote() string {
-	if list, err := entity.Repository.Remotes(); err != nil {
-        return ""
-    } else {
-        for _, r := range list {
-        	return r.Config().Name
-        }
-    }
-    return ""
 }

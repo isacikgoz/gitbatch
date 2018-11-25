@@ -3,12 +3,12 @@ package git
 import (
 	"strings"
 	"github.com/isacikgoz/gitbatch/pkg/command"
-	"github.com/isacikgoz/gitbatch/pkg/utils"
 )
 
 
 // UpstreamDifferenceCount checks how many pushables/pullables there are for the
 // current branch
+// TODO: get pull pushes to remote branch vs local branch
 func UpstreamDifferenceCount(repoPath string) (string, string) {
 	args := []string{"rev-list", "@{u}..HEAD", "--count"}
 	pushableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -23,27 +23,32 @@ func UpstreamDifferenceCount(repoPath string) (string, string) {
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
 }
 
-func CurrentBranchName(repoPath string) (string, error) {
-	args := []string{"symbolic-ref", "--short", "HEAD"}
-	branchName, err := command.RunCommandWithOutput(repoPath, "git", args)
+func (entity *RepoEntity) FetchWithGit(remote string) error {
+	args := []string{"fetch", remote}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
-		args = []string{"rev-parse", "--short", "HEAD"}
-		branchName, err = command.RunCommandWithOutput(repoPath, "git", args)
-		if err != nil {
-			return "", err
-		}
+		return err
 	}
-	return utils.TrimTrailingNewline(branchName), nil
+	return nil
 }
 
-func (entity *RepoEntity) IsClean() (bool, error) {
-	worktree, err := entity.Repository.Worktree()
-	if err != nil {
-		return true, nil
+func (entity *RepoEntity) MergeWithGit(mergeTo, mergeFrom string) error {
+	if err := entity.Checkout(mergeTo); err != nil {
+		return err
 	}
-	status, err := worktree.Status()
+	args := []string{"merge", mergeFrom}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
-		return status.IsClean(), nil
+		return err
 	}
-	return false, nil
+	return nil
+}
+
+func (entity *RepoEntity) CheckoutWithGit(branch string) error {
+	args := []string{"checkout", branch}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return err
+	}
+	return nil
 }
