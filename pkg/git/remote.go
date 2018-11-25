@@ -6,16 +6,17 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 )
 
-func getRemotes(r *git.Repository) (remotes []string, err error) {
+func (entity *RepoEntity) GetRemotes() (remotes []string, err error) {
 
-    if list, err := r.Remotes(); err != nil {
+	r := entity.Repository
+    if list, err := remoteBranches(&r); err != nil {
         return remotes, err
     } else {
         for _, r := range list {
-        	remoteString := r.Config().Name
-            remotes = append(remotes, remoteString)
+            remotes = append(remotes, r)
         }
     }
+
     return remotes, nil
 }
 

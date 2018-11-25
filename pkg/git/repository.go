@@ -81,13 +81,11 @@ func (entity *RepoEntity) Pull() error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (entity *RepoEntity) PullTest() error {
 	time.Sleep(5 * time.Second)
-
 	return nil
 }
 
@@ -98,7 +96,6 @@ func (entity *RepoEntity) Fetch() error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

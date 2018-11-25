@@ -33,12 +33,8 @@ type guiState struct {
 // NewGui builds a new gui handler
 func NewGui(directoies []string) (*Gui, error) {
 
-    rs, err := git.LoadRepositoryEntities(directoies)
-    if err != nil {
-        return nil, err
-    }
     initialState := guiState{
-        Repositories: rs,
+        Directories: directoies,
     }
 	gui := &Gui{
 		State: initialState,
@@ -54,10 +50,33 @@ func (gui *Gui) Run() error {
     if err != nil {
         return err
     }
+
+    go func(g_ui *Gui) {
+        maxX, maxY := g.Size()
+        v, err := g.SetView("loading", maxX/2-10, maxY/2-1, maxX/2+10, maxY/2+1)
+        if err != nil {
+            if err != gocui.ErrUnknownView {
+                    return 
+            }
+
+            fmt.Fprintln(v, "Loading...")
+            
+        }
+        if _, err := g.SetCurrentView("loading"); err != nil {
+            return
+        }
+       
+        rs, err := git.LoadRepositoryEntities(g_ui.State.Directories)
+        if err != nil {
+            return
+        }
+        g_ui.State.Repositories = rs
+        gui.fillMain(g)
+
+    }(gui)
+
     defer g.Close()
-
     gui.g = g
-
     g.SetManagerFunc(gui.layout)
 
     if err := gui.keybindings(g); err != nil {
@@ -67,6 +86,7 @@ func (gui *Gui) Run() error {
     if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
         return err
     }
+
     return nil
 }
 
@@ -114,13 +134,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.SelBgColor = gocui.ColorWhite
         v.SelFgColor = gocui.ColorBlack
         v.Overwrite = true
-        for _, r := range gui.State.Repositories {
-            fmt.Fprintln(v, r.DisplayString())
-        }
-
-        if _, err = gui.setCurrentViewOnTop(g, "main"); err != nil {
-            return err
-        }
     }
 
     if v, err := g.SetView("branch", int(0.55*float32(maxX)), 0, maxX-1, int(0.20*float32(maxY))-1); err != nil {

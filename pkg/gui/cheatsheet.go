@@ -35,14 +35,13 @@ func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) closeCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 
-        if err := g.DeleteView(v.Name()); err != nil {
-            return nil
-        }
-        if _, err := g.SetCurrentView("main"); err != nil {
-            return err
-        }
-        gui.updateKeyBindingsViewForMainView(g)
-
+    if err := g.DeleteView(v.Name()); err != nil {
+        return nil
+    }
+    if _, err := g.SetCurrentView("main"); err != nil {
+        return err
+    }
+    gui.updateKeyBindingsViewForMainView(g)
     return nil
 }
 

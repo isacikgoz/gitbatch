@@ -1,7 +1,6 @@
 package gui
 
 import (
-    "github.com/fatih/color"
     "github.com/isacikgoz/gitbatch/pkg/git"
     "github.com/jroimartin/gocui"
     "fmt"
@@ -18,8 +17,6 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
     }
     out.Clear()
 
-    cyan := color.New(color.FgCyan)
-    green := color.New(color.FgGreen)
     totalcommits := 0
     currentindex := 0
     if commits, err := entity.Commits(); err != nil {
@@ -56,13 +53,11 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
     if err = gui.updateCommits(g, entity); err != nil {
         return err
     }
-
     return nil
 }
 
 func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
-    cyan := color.New(color.FgCyan)
     v, err := g.SetView("commitdetail", 5, 3, maxX-5, maxY-3)
     if err != nil {
         if err != gocui.ErrUnknownView {
@@ -89,7 +84,6 @@ func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
         for _, line := range colorized{
             fmt.Fprintln(v, line)
         }
-        
     }
     
     gui.updateKeyBindingsViewForCommitDetailView(g)
@@ -128,24 +122,12 @@ func (gui *Gui) updateKeyBindingsViewForCommitDetailView(g *gocui.Gui) error {
 
 func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
     if v != nil {
-        cx, cy := v.Cursor()
         ox, oy := v.Origin()
+        _, vy := v.Size()
 
         // TODO: do something when it hits bottom
-        // also it woulf be nice to emulate less buttons
-        // or at least page-up/page-down buttons
-
-        // ly := len(gui.State.Repositories) -1
-
-        // // if we are at the end we just return
-        // if cy+oy == ly {
-        //     return nil
-        // }
-        if err := v.SetCursor(cx, cy+1); err != nil {
-            
-            if err := v.SetOrigin(ox, oy+1); err != nil {
-                return err
-            }
+        if err := v.SetOrigin(ox, oy+vy/2); err != nil {
+            return err
         }
     }
     return nil
@@ -154,9 +136,14 @@ func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
     if v != nil {
         ox, oy := v.Origin()
-        cx, cy := v.Cursor()
-        if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
-            if err := v.SetOrigin(ox, oy-1); err != nil {
+        _, vy := v.Size()
+
+        if oy-vy/2 > 0 {
+            if err := v.SetOrigin(ox, oy-vy/2); err != nil {
+                return err
+            }
+        } else if oy-vy/2 <= 0{
+            if err := v.SetOrigin(0, 0); err != nil {
                 return err
             }
         }
@@ -165,9 +152,6 @@ func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func colorizeDiff(original string) (colorized []string) {
-    cyan := color.New(color.FgCyan)
-    green := color.New(color.FgGreen)
-    red := color.New(color.FgRed)
     colorized = strings.Split(original, "\n")
     re := regexp.MustCompile(`@@ .+ @@`)
     for i, line := range colorized {

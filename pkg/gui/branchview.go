@@ -59,6 +59,5 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
     if err = gui.refreshMain(g); err != nil {
         return err
     }
-
     return nil
 }

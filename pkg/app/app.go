@@ -18,10 +18,6 @@ func Setup(directories []string) (*App, error) {
 	}
 
 	var err error
-	// entities, err := createRepositoryEntities(directories)
-	// if err != nil {
-	// 	return app, err
-	// }
 
 	app.Gui, err = gui.NewGui(directories)
 	if err != nil {
