@@ -20,7 +20,7 @@ func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
             jobs := strconv.Itoa(len(mrs)) + " repositories to fetch & merge:"
             fmt.Fprintln(v, jobs)
             for _, r := range mrs {
-                line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch
+                line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch.Name
                 fmt.Fprintln(v, line)
             }
             ps := red.Sprint("Note:") + " After execution you will be notified"

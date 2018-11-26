@@ -5,12 +5,29 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
-func (entity *RepoEntity) GetActiveBranch() string{
-	headRef, _ := entity.Repository.Head()
-	return headRef.Name().Short()
+type Branch struct {
+	Name       string
+	Reference  *plumbing.Reference
+	Pushables  string
+	Pullables  string
+	Clean      bool
 }
 
-func (entity *RepoEntity) LocalBranches() (lbs []string, err error){
+func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
+	headRef, _ := entity.Repository.Head()
+	localBranches, err := entity.LocalBranches()
+	if err != nil {
+		return nil
+	}
+	for _, lb := range localBranches {
+		if lb.Name == headRef.Name().Short() {
+			return lb
+		}
+	}
+	return nil
+}
+
+func (entity *RepoEntity) LocalBranches() (lbs []*Branch, err error) {
 	branches, err := entity.Repository.Branches()
 	if err != nil {
 		return nil, err
@@ -18,14 +35,17 @@ func (entity *RepoEntity) LocalBranches() (lbs []string, err error){
 	defer branches.Close()
 	branches.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() == plumbing.HashReference {
-        	lbs = append(lbs, b.Name().Short())
+			push, pull := UpstreamDifferenceCount(entity.AbsPath)
+			clean := entity.isClean()
+			branch := &Branch{Name: b.Name().Short(), Reference: b, Pushables: push, Pullables: pull, Clean: clean}
+        	lbs = append(lbs, branch)
     	}
     	return nil
 	})
 	return lbs, err
 }
 
-func (entity *RepoEntity) NextBranch() string{
+func (entity *RepoEntity) NextBranch() *Branch {
 
 	currentBranch := entity.GetActiveBranch()
 	localBranches, err := entity.LocalBranches()
@@ -35,7 +55,7 @@ func (entity *RepoEntity) NextBranch() string{
 
 	currentBranchIndex := 0
 	for i, lbs := range localBranches {
-		if lbs == currentBranch {
+		if lbs.Name == currentBranch.Name {
 			currentBranchIndex = i
 		}
 	}
@@ -46,8 +66,8 @@ func (entity *RepoEntity) NextBranch() string{
 	return localBranches[currentBranchIndex+1]
 }
 
-func (entity *RepoEntity) Checkout(branchName string) error {
-	if branchName == entity.Branch {
+func (entity *RepoEntity) Checkout(branch *Branch) error {
+	if branch.Name == entity.Branch.Name {
 		return nil
 	}
 	w, err := entity.Repository.Worktree()
@@ -55,23 +75,22 @@ func (entity *RepoEntity) Checkout(branchName string) error {
 		return err
 	}
 	if err = w.Checkout(&git.CheckoutOptions{
-		Branch: plumbing.NewBranchReferenceName(branchName),
+		Branch: branch.Reference.Name(),
 	}); err != nil {
 		return err
 	}
-	entity.Branch = branchName
-	entity.Pushables, entity.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+	entity.Branch = branch
 	return nil
 }
 
-func (entity *RepoEntity) IsClean() (bool, error) {
+func (entity *RepoEntity) isClean() bool {
 	worktree, err := entity.Repository.Worktree()
 	if err != nil {
-		return true, nil
+		return true
 	}
 	status, err := worktree.Status()
 	if err != nil {
-		return status.IsClean(), nil
+		return false
 	}
-	return false, nil
+	return status.IsClean()
 }

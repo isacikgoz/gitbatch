@@ -103,7 +103,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
         if err != nil {
             return err
         }
-        if !r.Clean {
+        if !r.Branch.Clean {
             if err = gui.openErrorView(g, "Stage your changes before pull", "You should manually resolve this issue"); err != nil {
                 return err
             }
@@ -122,7 +122,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
     for _, r := range gui.State.Repositories {
-        if r.Clean {
+        if r.Branch.Clean {
             r.Mark()
         }
     }
@@ -174,11 +174,11 @@ func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
 }
 
 func displayString(entity *git.RepoEntity) string{
-    prefix := string(blue.Sprint("↑")) + " " + entity.Pushables + " " +
-     string(blue.Sprint("↓")) + " " + entity.Pullables + string(red.Sprint(" → ")) + string(cyan.Sprint(entity.Branch)) + " "
+    prefix := string(blue.Sprint("↑")) + " " + entity.Branch.Pushables + " " +
+     string(blue.Sprint("↓")) + " " + entity.Branch.Pullables + string(red.Sprint(" → ")) + string(cyan.Sprint(entity.Branch.Name)) + " "
     if entity.Marked {
         return prefix + string(green.Sprint(entity.Name))
-    } else if !entity.Clean {
+    } else if !entity.Branch.Clean {
         return prefix + string(orange.Sprint(entity.Name))
     } else {
         return prefix + string(white.Sprint(entity.Name))

@@ -22,12 +22,12 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
     } else {
         totalbranches = len(branches)
         for i, b := range branches {
-            if b == entity.Branch {
+            if b.Name == entity.Branch.Name {
                 currentindex = i
-                fmt.Fprintln(out, selectionIndicator() + b)
+                fmt.Fprintln(out, selectionIndicator() + b.Name)
                 continue
             } 
-            fmt.Fprintln(out, tab() + b)
+            fmt.Fprintln(out, tab() + b.Name)
         }
     }
     if err = gui.smartAnchorRelativeToLine(out, currentindex, totalbranches); err != nil {

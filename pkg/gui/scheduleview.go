@@ -16,7 +16,7 @@ func (gui *Gui) updateSchedule(g *gocui.Gui, entity *git.RepoEntity) error {
     }
     out.Clear()
     if entity.Marked {
-        s := green.Sprint("$") + " git checkout " + entity.Branch + " " + green.Sprint("✓")
+        s := green.Sprint("$") + " git checkout " + entity.Branch.Name + " " + green.Sprint("✓")
         fmt.Fprintln(out, s)
         rm := entity.Remote.Reference.Name().Short()
         remote := strings.Split(rm, "/")[0]

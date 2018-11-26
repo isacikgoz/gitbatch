@@ -11,13 +11,10 @@ type RepoEntity struct {
 	Name       string
 	AbsPath    string
 	Repository git.Repository
-	Pushables  string
-	Pullables  string
-	Branch     string
+	Branch     *Branch
 	Remote     *Remote
 	Commit     *Commit
 	Marked     bool
-	Clean      bool
 }
 
 func InitializeRepository(directory string) (entity *RepoEntity, err error) {
@@ -33,29 +30,17 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		return nil, err
 	}
-	pushable, pullable := UpstreamDifferenceCount(directory)
-	headRef, err := r.Head()
-	if err != nil {
-		return nil, err
-	}
-	branch := headRef.Name().Short()
 	remotes, err := remoteBranches(r)
 	commit, _ := lastCommit(r)
-	entity = &RepoEntity{fileInfo.Name(), directory, *r, pushable, pullable, branch, remotes[0], commit, false, isClean(r, fileInfo.Name())}
+	entity = &RepoEntity{Name: fileInfo.Name(),
+						AbsPath: directory,
+						Repository: *r,
+						Remote: remotes[0],
+						Commit: commit,
+						Marked: false,
+		}
+	entity.Branch = entity.GetActiveBranch()
 	return entity, nil
-}
-
-func isClean(r *git.Repository, name string) bool {
-	w, err := r.Worktree()
-	if err != nil {
-		return false
-	}
-	// TODO: This function is incredibly slow
-	s, err := w.Status()
-	if err != nil {
-		return false
-	}
-	return s.IsClean()
 }
 
 func (entity *RepoEntity) Mark() {
@@ -74,7 +59,7 @@ func (entity *RepoEntity) Pull() error {
 	if err := entity.FetchWithGit(remote); err != nil {
 		return err
 	}
-	if err := entity.MergeWithGit(entity.Branch, remote); err != nil {
+	if err := entity.MergeWithGit(remote); err != nil {
 		return err
 	}
 	return nil
