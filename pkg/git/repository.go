@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 	"strings"
+	"errors"
 )
 
 type RepoEntity struct {
@@ -30,16 +31,21 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		return nil, err
 	}
-	remotes, err := remoteBranches(r)
+	
 	commit, _ := lastCommit(r)
 	entity = &RepoEntity{Name: fileInfo.Name(),
 						AbsPath: directory,
 						Repository: *r,
-						Remote: remotes[0],
 						Commit: commit,
 						Marked: false,
 		}
 	entity.Branch = entity.GetActiveBranch()
+	remotes, err := remoteBranches(r)
+	if len(remotes) > 0 {
+		entity.Remote = remotes[0]
+	} else {
+		return entity, errors.New("There is no remote for this repository: " + directory)
+	}
 	return entity, nil
 }
 
