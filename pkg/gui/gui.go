@@ -49,7 +49,6 @@ var (
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}
 	scheduleViewFeature     = viewFeature{Name: "schedule", Title: " Schedule "}
 	keybindingsViewFeature  = viewFeature{Name: "keybindings", Title: " Keybindings "}
-	execViewFeature         = viewFeature{Name: "execution", Title: " Execution Parameters "}
 	commitdetailViewFeature = viewFeature{Name: "commitdetail", Title: " Commit Detail "}
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}

@@ -11,7 +11,6 @@ import (
 type Job struct {
 	JobType JobType
 	Entity  *git.RepoEntity
-	Args    []string
 }
 
 type JobQueue struct {
@@ -32,14 +31,26 @@ func CreateJob() (j *Job, err error) {
 
 func (job *Job) start() error {
 	time.Sleep(2*time.Second)
-	job.Entity.Marked = false
+	job.Entity.State = git.Working
+	// TODO: Handle errors?
 	switch mode := job.JobType; mode {
 	case Fetch:
-		job.Entity.PullTest()
+		if err := job.Entity.Fetch(); err != nil {
+			job.Entity.State = git.Fail
+			return nil
+		}
+		job.Entity.RefreshPushPull()
+		job.Entity.State = git.Success
 	case Pull:
-		job.Entity.PullTest()
+		if err := job.Entity.Pull(); err != nil {
+			job.Entity.State = git.Fail
+			return nil
+		}
+		job.Entity.RefreshPushPull()
+		job.Entity.State = git.Success
 	default:
-		return errors.New("Unknown job type")
+		job.Entity.State = git.Available
+		return nil
 	}
 	return nil
 }
@@ -61,19 +72,19 @@ func (jobQueue *JobQueue) AddJob(j *Job) error {
 	return nil
 }
 
-func (jobQueue *JobQueue) StartNext() (finished bool, err error) {
+func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 	finished = false
 	if len(jobQueue.series) < 1 {
 		finished = true
-		return finished, nil
+		return nil, finished, nil
 	}
 	i := len(jobQueue.series)-1
 	lastJob := jobQueue.series[i]
 	jobQueue.series = jobQueue.series[:i]
 	if err = lastJob.start(); err != nil {
-		return finished, err
+		return lastJob, finished, err
 	}
-	return finished, nil
+	return lastJob, finished, nil
 }
 
 func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {

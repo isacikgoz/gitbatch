@@ -70,10 +70,10 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	}); err != nil {
 		return err
 	}
-	branch.Pushables, branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 	entity.loadCommits()
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
+	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 	return nil
 }
 
@@ -87,4 +87,8 @@ func (entity *RepoEntity) isClean() bool {
 		return false
 	}
 	return status.IsClean()
+}
+
+func (entity *RepoEntity) RefreshPushPull() {
+	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 }

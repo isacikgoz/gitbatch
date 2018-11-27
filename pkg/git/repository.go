@@ -20,7 +20,7 @@ type RepoEntity struct {
 	Remotes    []*Remote
 	Commit     *Commit
 	Commits    []*Commit
-	Marked     bool
+	State      RepoState
 }
 
 type RepoState uint8
@@ -28,8 +28,9 @@ type RepoState uint8
 const (
 	Available RepoState = 0 
 	Queued    RepoState = 1
-	Success   RepoState = 2
-	Fail      RepoState = 3
+	Working   RepoState = 2
+	Success   RepoState = 3
+	Fail      RepoState = 4
 )
 
 func InitializeRepository(directory string) (entity *RepoEntity, err error) {
@@ -49,7 +50,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
 		Repository: *r,
-		Marked:     false,
+		State:     Available,
 	}
 	entity.loadLocalBranches()
 	entity.loadCommits()
@@ -67,14 +68,6 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		return entity, errors.New("There is no remote for this repository: " + directory)
 	}
 	return entity, nil
-}
-
-func (entity *RepoEntity) Mark() {
-	entity.Marked = true
-}
-
-func (entity *RepoEntity) Unmark() {
-	entity.Marked = false
 }
 
 func (entity *RepoEntity) Pull() error {
@@ -106,12 +99,6 @@ func (entity *RepoEntity) Fetch() error {
 	}
 	entity.Refresh()
 	entity.Checkout(entity.Branch)
-	// err := entity.Repository.Fetch(&git.FetchOptions{
-	// 	RemoteName: remote,
-	// 	})
-	// if err != nil {
-	// 	return err
-	// }
 	return nil
 }
 func (entity *RepoEntity) Refresh() error {

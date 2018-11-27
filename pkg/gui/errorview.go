@@ -18,7 +18,7 @@ func (gui *Gui) openErrorView(g *gocui.Gui, message string, note string) error {
 		v.Wrap = true
 		ps := red.Sprint("Note:") + " " + note
 		fmt.Fprintln(v, message)
-		fmt.Fprintln(v, "\n"+ps)
+		fmt.Fprintln(v, ps)
 	}
 	gui.updateKeyBindingsView(g, errorViewFeature.Name)
 	if _, err := g.SetCurrentView(errorViewFeature.Name); err != nil {

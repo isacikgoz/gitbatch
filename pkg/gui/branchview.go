@@ -44,7 +44,8 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	if err = entity.Checkout(entity.NextBranch()); err != nil {
-		if err = gui.openErrorView(g, "Stage your changes before checkout", "You should manually manage this issue"); err != nil {
+		if err = gui.openErrorView(g, "Please commit your changes or stash them before you switch branches",
+		"You should manually resolve this issue"); err != nil {
 			return err
 		}
 		return nil

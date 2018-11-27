@@ -3,7 +3,7 @@ package gui
 import (
 	"fmt"
 	"regexp"
-	"sync"
+	// "sync"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/job"
@@ -111,50 +111,34 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 			}
 			return nil
 		}
-		if !r.Marked {
-			err := gui.State.Queue.AddJob(&job.Job{
-				JobType: job.Fetch,
-				Entity:  r,
-				Args:    make([]string, 0),
-			})
-			if err != nil {
-				if err = gui.openErrorView(g, "This repository is already queued for another operation", 
-					"You switch mode and deselect to remove operaton from the queue"); err != nil {
-					return err
-				}
+		if r.State == git.Available || r.State == git.Success {
+			var jt job.JobType
+			switch mode := gui.State.Mode.ModeID; mode {
+			case FetchMode:
+				jt = job.Fetch
+			case PullMode:
+				jt = job.Pull
+			default:
 				return nil
 			}
-			r.Mark()
-		} else {
+			err := gui.State.Queue.AddJob(&job.Job{
+				JobType: jt,
+				Entity:  r,
+			})
+			if err != nil {
+				return err
+			}
+			r.State = git.Queued
+		} else if r.State == git.Queued {
 			err := gui.State.Queue.RemoveFromQueue(r)
 			if err != nil {
 				return err
 			}
-			r.Unmark()
+			r.State = git.Available
+		} else {
+			return nil
 		}
 		gui.refreshMain(g)
-	}
-	return nil
-}
-
-func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
-	for _, r := range gui.State.Repositories {
-		if r.Branch.Clean {
-			r.Mark()
-		}
-	}
-	if err := gui.refreshMain(g); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (gui *Gui) unMarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
-	for _, r := range gui.State.Repositories {
-		r.Unmark()
-	}
-	if err := gui.refreshMain(g); err != nil {
-		return err
 	}
 	return nil
 }
@@ -172,24 +156,6 @@ func (gui *Gui) refreshMain(g *gocui.Gui) error {
 	return nil
 }
 
-func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-	for _, r := range gui.State.Repositories {
-		wg.Add(1)
-		go func(repo *git.RepoEntity) {
-			defer wg.Done()
-			if repo.Marked {
-				mu.Lock()
-				rs = append(rs, repo)
-				mu.Unlock()
-			}
-		}(r)
-	}
-	wg.Wait()
-	return rs, nil
-}
-
 func displayString(entity *git.RepoEntity) string {
 	prefix := ""
 	if entity.Branch.Pushables != "?" {
@@ -199,8 +165,12 @@ func displayString(entity *git.RepoEntity) string {
 		prefix = prefix + magenta.Sprint("?") + string(yellow.Sprint(" → "))
 	}
 	prefix = prefix + string(cyan.Sprint(entity.Branch.Name)) + " "
-	if entity.Marked {
+	if entity.State == 1 {
 		return prefix + string(green.Sprint(entity.Name))
+	} else if entity.State == 2 {
+		return prefix + string(green.Sprint(entity.Name))
+	} else if entity.State == 4 {
+		return prefix + string(red.Sprint(entity.Name))
 	} else if !entity.Branch.Clean {
 		return prefix + string(yellow.Sprint(entity.Name))
 	} else {
