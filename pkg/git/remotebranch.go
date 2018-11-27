@@ -1,10 +1,11 @@
 package git
 
 import (
+	"strings"
+
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
-	"strings"
 )
 
 type RemoteBranch struct {
@@ -25,7 +26,7 @@ func (remote *Remote) NextRemoteBranch() error {
 	} else {
 		remote.Branch = remote.Branches[currentRemoteIndex+1]
 	}
-	
+
 	return nil
 }
 
@@ -39,9 +40,9 @@ func (remote *Remote) loadRemoteBranches(r *git.Repository) error {
 	err = bs.ForEach(func(b *plumbing.Reference) error {
 		if strings.Split(b.Name().Short(), "/")[0] == remote.Name {
 			remote.Branches = append(remote.Branches, &RemoteBranch{
-				Name: b.Name().Short(),
+				Name:      b.Name().Short(),
 				Reference: b,
-				})
+			})
 		}
 		return nil
 	})

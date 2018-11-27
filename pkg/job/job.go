@@ -1,15 +1,15 @@
 package job
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 )
 
 type Job struct {
-    JobType       JobType
-    RepoID        string
-    Name          string
-    Args          []string
+	JobType JobType
+	RepoID  string
+	Name    string
+	Args    []string
 }
 
 type JobQueue struct {
@@ -19,8 +19,8 @@ type JobQueue struct {
 type JobType string
 
 const (
-    Fetch JobType = "FETCH"
-    Pull  JobType = "PULL"
+	Fetch JobType = "FETCH"
+	Pull  JobType = "PULL"
 )
 
 func CreateJob() (j *Job, err error) {
@@ -68,7 +68,7 @@ func (jobQueue *JobQueue) StartNext() error {
 func (jobQueue *JobQueue) RemoveFromQueue(repoID string) error {
 	removed := false
 	for i, job := range jobQueue.series {
-		if job.RepoID == repoID{
+		if job.RepoID == repoID {
 			jobQueue.series = append(jobQueue.series[:i], jobQueue.series[i+1:]...)
 			removed = true
 		}

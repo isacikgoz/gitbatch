@@ -1,13 +1,10 @@
 package git
 
-import (
-)
-
 type Remote struct {
-	Name      string
-	URL       []string
-	Branch    *RemoteBranch
-	Branches  []*RemoteBranch
+	Name     string
+	URL      []string
+	Branch   *RemoteBranch
+	Branches []*RemoteBranch
 }
 
 func (entity *RepoEntity) NextRemote() error {
@@ -23,7 +20,7 @@ func (entity *RepoEntity) NextRemote() error {
 	} else {
 		entity.Remote = entity.Remotes[currentRemoteIndex+1]
 	}
-	
+
 	return nil
 }
 
@@ -34,16 +31,16 @@ func (entity *RepoEntity) loadRemotes() error {
 	remotes, err := r.Remotes()
 	for _, rm := range remotes {
 
-			remote := &Remote{
-				Name: rm.Config().Name,
-				URL: rm.Config().URLs,
-				}
-			remote.loadRemoteBranches(&r)
-			if len(remote.Branches) > 0 {
-				remote.Branch = remote.Branches[0]
-			}
-			entity.Remotes = append(entity.Remotes, remote)
-		
+		remote := &Remote{
+			Name: rm.Config().Name,
+			URL:  rm.Config().URLs,
+		}
+		remote.loadRemoteBranches(&r)
+		if len(remote.Branches) > 0 {
+			remote.Branch = remote.Branches[0]
+		}
+		entity.Remotes = append(entity.Remotes, remote)
+
 	}
 	if err != nil {
 		return err

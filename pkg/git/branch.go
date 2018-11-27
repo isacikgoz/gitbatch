@@ -6,11 +6,11 @@ import (
 )
 
 type Branch struct {
-	Name       string
-	Reference  *plumbing.Reference
-	Pushables  string
-	Pullables  string
-	Clean      bool
+	Name      string
+	Reference *plumbing.Reference
+	Pushables string
+	Pullables string
+	Clean     bool
 }
 
 func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
@@ -35,9 +35,9 @@ func (entity *RepoEntity) loadLocalBranches() error {
 			push, pull := UpstreamDifferenceCount(entity.AbsPath)
 			clean := entity.isClean()
 			branch := &Branch{Name: b.Name().Short(), Reference: b, Pushables: push, Pullables: pull, Clean: clean}
-        	lbs = append(lbs, branch)
-    	}
-    	return nil
+			lbs = append(lbs, branch)
+		}
+		return nil
 	})
 	entity.Branches = lbs
 	return err

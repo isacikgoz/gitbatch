@@ -1,11 +1,12 @@
 package git
 
 import (
-	"gopkg.in/src-d/go-git.v4"
-    "github.com/isacikgoz/gitbatch/pkg/utils"
+	"errors"
 	"os"
 	"time"
-	"errors"
+
+	"github.com/isacikgoz/gitbatch/pkg/utils"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 type RepoEntity struct {
@@ -36,11 +37,11 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		return nil, err
 	}
 	entity = &RepoEntity{RepoID: utils.NewHash(),
-						Name: fileInfo.Name(),
-						AbsPath: directory,
-						Repository: *r,
-						Marked: false,
-		}
+		Name:       fileInfo.Name(),
+		AbsPath:    directory,
+		Repository: *r,
+		Marked:     false,
+	}
 	entity.loadLocalBranches()
 	entity.loadCommits()
 	if len(entity.Commits) > 0 {

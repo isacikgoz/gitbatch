@@ -2,9 +2,9 @@ package git
 
 import (
 	"strings"
+
 	"github.com/isacikgoz/gitbatch/pkg/command"
 )
-
 
 // UpstreamDifferenceCount checks how many pushables/pullables there are for the
 // current branch

@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"strings"
-	"regexp"
-	"math/rand"
-	"time"
-	"fmt"
 	"crypto/sha1"
+	"fmt"
+	"math/rand"
+	"regexp"
+	"strings"
+	"time"
 )
 
 var characterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
