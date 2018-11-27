@@ -9,8 +9,15 @@ import (
 
 func (gui *Gui) openExecConfirmationView(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
+    err := gui.State.Queue.StartNext()
+    if err != nil {
+        return err
+    }
+    if mrs,_ := gui.getMarkedEntities(); len(mrs) < 1 {
+        return nil
+    }
 
-    v, err := g.SetView(execViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
+    v, err = g.SetView(execViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
     if err != nil {
             if err != gocui.ErrUnknownView {
                     return err
@@ -35,14 +42,21 @@ func (gui *Gui) openExecConfirmationView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) closeExecView(g *gocui.Gui, v *gocui.View) error {
-
+    go g.Update(func(g *gocui.Gui) error {
+        mainView,_ := g.View(mainViewFeature.Name)
+        entity, err := gui.getSelectedRepository(g, mainView)
+        if err != nil {
+            return err
+        }
+        gui.updateCommits(g, entity)
+        return nil
+    })
     if err := g.DeleteView(v.Name()); err != nil {
         return nil
     }
     if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
         return err
     }
-    gui.refreshMain(g)
     gui.updateKeyBindingsView(g, mainViewFeature.Name)
     return nil
 }
@@ -62,13 +76,24 @@ func (gui *Gui) execute(g *gocui.Gui, v *gocui.View) error {
        // here we will be waiting
         switch mode := gui.State.Mode.ModeID; mode {
         case FetchMode:
-            mr.Fetch()
+            err := mr.Fetch()
+            if err != nil {
+                cv, _ := g.View(execViewFeature.Name)
+                gui.closeExecView(g, cv)
+                gui.openErrorView(g, err.Error(), "An error occured, manual resolving reuqired")
+                return nil
+            }
         case PullMode:
-            mr.Pull()
+            err := mr.Pull()
+            if err != nil {
+                cv, _ := g.View(execViewFeature.Name)
+                gui.closeExecView(g, cv)
+                gui.openErrorView(g, err.Error(), "It maybe a conflict, manual resolving reuqired")
+                return nil
+            }
         default:
             return errors.New("No mode is selected")
         }
-        gui.refreshViews(g, mr)
         mr.Unmark()
         gui.refreshMain(g)
     }

@@ -2,6 +2,7 @@ package gui
 
 import (
     "github.com/isacikgoz/gitbatch/pkg/git"
+    "github.com/isacikgoz/gitbatch/pkg/job"
     "github.com/jroimartin/gocui"
     "fmt"
 )
@@ -16,6 +17,7 @@ type guiState struct {
     Repositories []*git.RepoEntity
     Directories  []string
     Mode         mode
+    Queue        *job.JobQueue
 }
 
 type viewFeature struct {
@@ -40,8 +42,9 @@ const (
 var (
     mainViewFeature = viewFeature{Name: "main", Title: " Matched Repositories "}
     loadingViewFeature = viewFeature{Name: "loading", Title: " Loading in Progress "}
-    branchViewFeature = viewFeature{Name: "branch", Title: " Branches "}
+    branchViewFeature = viewFeature{Name: "branch", Title: " Local Branches "}
     remoteViewFeature = viewFeature{Name: "remotes", Title: " Remotes "}
+    remoteBranchViewFeature = viewFeature{Name: "remotebranches", Title: " Remote Branches "}
     commitViewFeature = viewFeature{Name: "commits", Title: " Commits "}
     scheduleViewFeature = viewFeature{Name: "schedule", Title: " Schedule "}
     keybindingsViewFeature = viewFeature{Name: "keybindings", Title: " Keybindings "}
@@ -58,6 +61,7 @@ func NewGui(directoies []string) (*Gui, error) {
     initialState := guiState{
         Directories: directoies,
         Mode:        fetchMode,
+        Queue:       job.CreateJobQueue(),
     }
 	gui := &Gui{
 		State: initialState,
@@ -118,7 +122,23 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.SelFgColor = gocui.ColorBlack
         v.Overwrite = true
     }
-    if v, err := g.SetView(branchViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.20*float32(maxY))-1); err != nil {
+    if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.10*float32(maxY))); err != nil {
+        if err != gocui.ErrUnknownView {
+            return err
+        }
+        v.Title = remoteViewFeature.Title
+        v.Wrap = false
+        v.Autoscroll = false
+    }
+    if v, err := g.SetView(remoteBranchViewFeature.Name, int(0.55*float32(maxX)), int(0.10*float32(maxY))+1, maxX-1, int(0.35*float32(maxY))); err != nil {
+        if err != gocui.ErrUnknownView {
+            return err
+        }
+        v.Title = remoteBranchViewFeature.Title
+        v.Wrap = false
+        v.Overwrite = false
+    }
+    if v, err := g.SetView(branchViewFeature.Name, int(0.55*float32(maxX)), int(0.35*float32(maxY))+1, maxX-1, int(0.60*float32(maxY))); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
@@ -126,29 +146,13 @@ func (gui *Gui) layout(g *gocui.Gui) error {
         v.Wrap = false
         v.Autoscroll = false
     }
-    if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), int(0.20*float32(maxY)), maxX-1, int(0.40*float32(maxY))); err != nil {
-        if err != gocui.ErrUnknownView {
-            return err
-        }
-        v.Title = remoteViewFeature.Title
-        v.Wrap = false
-        v.Overwrite = true
-    }
-    if v, err := g.SetView(commitViewFeature.Name, int(0.55*float32(maxX)), int(0.40*float32(maxY))+1, maxX-1, int(0.73*float32(maxY))); err != nil {
+    if v, err := g.SetView(commitViewFeature.Name, int(0.55*float32(maxX)), int(0.60*float32(maxY))+1, maxX-1, maxY-2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
         v.Title = commitViewFeature.Title
         v.Wrap = false
         v.Autoscroll = false
-    }
-    if v, err := g.SetView(scheduleViewFeature.Name, int(0.55*float32(maxX)), int(0.73*float32(maxY))+1, maxX-1, maxY-2); err != nil {
-        if err != gocui.ErrUnknownView {
-            return err
-        }
-        v.Title = scheduleViewFeature.Title
-        v.Wrap = true
-        v.Autoscroll = true
     }
     if v, err := g.SetView(keybindingsViewFeature.Name, -1, maxY-2, maxX, maxY); err != nil {
         if err != gocui.ErrUnknownView {

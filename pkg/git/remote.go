@@ -1,19 +1,19 @@
 package git
 
 import (
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 )
 
 type Remote struct {
 	Name      string
-	Reference *plumbing.Reference
+	URL       []string
+	Branch    *RemoteBranch
+	Branches  []*RemoteBranch
 }
 
 func (entity *RepoEntity) NextRemote() error {
 	currentRemoteIndex := 0
 	for i, remote := range entity.Remotes {
-		if remote.Reference.Hash() == entity.Remote.Reference.Hash() {
+		if remote.Name == entity.Remote.Name {
 			currentRemoteIndex = i
 		}
 	}
@@ -27,37 +27,26 @@ func (entity *RepoEntity) NextRemote() error {
 	return nil
 }
 
-func (entity *RepoEntity) loadRemoteBranches() error {
+func (entity *RepoEntity) loadRemotes() error {
 	r := entity.Repository
 	entity.Remotes = make([]*Remote, 0)
-	bs, err := remoteBranchesIter(r.Storer)
-	if err != nil {
-		return err
+
+	remotes, err := r.Remotes()
+	for _, rm := range remotes {
+
+			remote := &Remote{
+				Name: rm.Config().Name,
+				URL: rm.Config().URLs,
+				}
+			remote.loadRemoteBranches(&r)
+			if len(remote.Branches) > 0 {
+				remote.Branch = remote.Branches[0]
+			}
+			entity.Remotes = append(entity.Remotes, remote)
+		
 	}
-	defer bs.Close()
-	err = bs.ForEach(func(b *plumbing.Reference) error {
-		entity.Remotes = append(entity.Remotes, &Remote{
-			Name: b.Name().Short(),
-			Reference: b,
-			})
-		return nil
-	})
 	if err != nil {
 		return err
 	}
 	return err
-}
-
-func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) {
-	refs, err := s.IterReferences()
-	if err != nil {
-		return nil, err
-	}
-
-	return storer.NewReferenceFilteredIter(func(ref *plumbing.Reference) bool {
-		if ref.Type() == plumbing.HashReference {
-			return ref.Name().IsRemote()
-		}
-		return false
-	}, refs), nil
 }

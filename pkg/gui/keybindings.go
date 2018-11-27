@@ -75,6 +75,14 @@ func (gui *Gui) generateKeybindings() error {
             Vital:       false,
         },{
             View:        mainViewFeature.Name,
+            Key:         'z',
+            Modifier:    gocui.ModNone,
+            Handler:     gui.nextRemoteBranch,
+            Display:     "z",
+            Description: "Iterate over remote branches",
+            Vital:       false,
+        },{
+            View:        mainViewFeature.Name,
             Key:         's',
             Modifier:    gocui.ModNone,
             Handler:     gui.nextCommit,

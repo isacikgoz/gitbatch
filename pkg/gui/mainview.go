@@ -4,6 +4,7 @@ import (
     "fmt"
     "sync"
     "github.com/isacikgoz/gitbatch/pkg/git"
+    "github.com/isacikgoz/gitbatch/pkg/job"
     "github.com/jroimartin/gocui"
     "regexp"
 )
@@ -111,11 +112,23 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
         }
         if !r.Marked {
             r.Mark()
+            err := gui.State.Queue.AddJob(&job.Job{
+                    JobType: job.Fetch,
+                    RepoID: r.RepoID,
+                    Name: r.Name,
+                    Args: make([]string, 0),
+                })
+            if err != nil {
+                return err
+            }
         } else {
+            err := gui.State.Queue.RemoveFromQueue(r.RepoID)
+            if err != nil {
+                return err
+            }
             r.Unmark()
         }
         gui.refreshMain(g)
-        gui.updateSchedule(g, r)
     }
     return nil
 }
