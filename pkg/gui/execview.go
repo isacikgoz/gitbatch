@@ -3,42 +3,54 @@ package gui
 import (
 	"errors"
 	"fmt"
-	"strconv"
+	// "strconv"
 
 	"github.com/jroimartin/gocui"
 )
 
 func (gui *Gui) openExecConfirmationView(g *gocui.Gui, v *gocui.View) error {
-	maxX, maxY := g.Size()
-	err := gui.State.Queue.StartNext()
-	if err != nil {
-		return err
-	}
-	if mrs, _ := gui.getMarkedEntities(); len(mrs) < 1 {
-		return nil
-	}
+	// maxX, maxY := g.Size()
+	go func(gui_go *Gui, g_go *gocui.Gui) {
+		for {
+			finished, err := gui_go.State.Queue.StartNext()
+			g.Update(func(gu *gocui.Gui) error {
+				gui_go.refreshMain(gu)
+				return nil
+			})
+			if err != nil {
+				return
+			}
+			if finished {
+				return
+			} 
+		}
+	}(gui, g)
+	return nil
+	// if mrs, _ := gui.getMarkedEntities(); len(mrs) < 1 {
+	// 	return nil
+	// }
 
-	v, err = g.SetView(execViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = gui.State.Mode.DisplayString + " Confirmation"
-		v.Wrap = true
-		mrs, _ := gui.getMarkedEntities()
-		jobs := strconv.Itoa(len(mrs)) + " " + gui.State.Mode.ExecString + ":"
-		fmt.Fprintln(v, jobs)
-		for _, r := range mrs {
-			line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch.Name
-			fmt.Fprintln(v, line)
-		}
-		ps := red.Sprint("Note:") + " When " + gui.State.Mode.CommandString + " operation is completed, you will be notified."
-		fmt.Fprintln(v, "\n"+ps)
-	}
-	gui.updateKeyBindingsView(g, execViewFeature.Name)
-	if _, err := g.SetCurrentView(execViewFeature.Name); err != nil {
-		return err
-	}
+	// v, err := g.SetView(execViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
+	// if err != nil {
+	// 	if err != gocui.ErrUnknownView {
+	// 		return err
+	// 	}
+	// 	v.Title = gui.State.Mode.DisplayString + " Confirmation"
+	// 	v.Wrap = true
+	// 	mrs, _ := gui.getMarkedEntities()
+	// 	jobs := strconv.Itoa(len(mrs)) + " " + gui.State.Mode.ExecString + ":"
+	// 	fmt.Fprintln(v, jobs)
+	// 	for _, r := range mrs {
+	// 		line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch.Name
+	// 		fmt.Fprintln(v, line)
+	// 	}
+	// 	ps := red.Sprint("Note:") + " When " + gui.State.Mode.CommandString + " operation is completed, you will be notified."
+	// 	fmt.Fprintln(v, "\n"+ps)
+	// }
+	// gui.updateKeyBindingsView(g, execViewFeature.Name)
+	// if _, err := g.SetCurrentView(execViewFeature.Name); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 

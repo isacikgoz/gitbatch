@@ -3,12 +3,14 @@ package job
 import (
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/isacikgoz/gitbatch/pkg/git"
 )
 
 type Job struct {
 	JobType JobType
-	RepoID  string
-	Name    string
+	Entity  *git.RepoEntity
 	Args    []string
 }
 
@@ -29,11 +31,13 @@ func CreateJob() (j *Job, err error) {
 }
 
 func (job *Job) start() error {
+	time.Sleep(2*time.Second)
+	job.Entity.Marked = false
 	switch mode := job.JobType; mode {
 	case Fetch:
-		fmt.Println("Fetch operation is started")
+		job.Entity.PullTest()
 	case Pull:
-		fmt.Println("Pull operation is started")
+		job.Entity.PullTest()
 	default:
 		return errors.New("Unknown job type")
 	}
@@ -49,7 +53,7 @@ func CreateJobQueue() (jobQueue *JobQueue) {
 
 func (jobQueue *JobQueue) AddJob(j *Job) error {
 	for _, job := range jobQueue.series {
-		if job.RepoID == j.RepoID && job.JobType == j.JobType {
+		if job.Entity.RepoID == j.Entity.RepoID && job.JobType == j.JobType {
 			return errors.New("Same job already is in the queue")
 		}
 	}
@@ -57,18 +61,25 @@ func (jobQueue *JobQueue) AddJob(j *Job) error {
 	return nil
 }
 
-func (jobQueue *JobQueue) StartNext() error {
-	lastJob := jobQueue.series[len(jobQueue.series)-1]
-	if err := lastJob.start(); err != nil {
-		return err
+func (jobQueue *JobQueue) StartNext() (finished bool, err error) {
+	finished = false
+	if len(jobQueue.series) < 1 {
+		finished = true
+		return finished, nil
 	}
-	return nil
+	i := len(jobQueue.series)-1
+	lastJob := jobQueue.series[i]
+	jobQueue.series = jobQueue.series[:i]
+	if err = lastJob.start(); err != nil {
+		return finished, err
+	}
+	return finished, nil
 }
 
-func (jobQueue *JobQueue) RemoveFromQueue(repoID string) error {
+func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 	removed := false
 	for i, job := range jobQueue.series {
-		if job.RepoID == repoID {
+		if job.Entity.RepoID == entity.RepoID {
 			jobQueue.series = append(jobQueue.series[:i], jobQueue.series[i+1:]...)
 			removed = true
 		}

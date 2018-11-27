@@ -23,6 +23,15 @@ type RepoEntity struct {
 	Marked     bool
 }
 
+type RepoState uint8
+
+const (
+	Available RepoState = 0 
+	Queued    RepoState = 1
+	Success   RepoState = 2
+	Fail      RepoState = 3
+)
+
 func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	file, err := os.Open(directory)
 	if err != nil {

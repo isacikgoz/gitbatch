@@ -112,18 +112,21 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		if !r.Marked {
-			r.Mark()
 			err := gui.State.Queue.AddJob(&job.Job{
 				JobType: job.Fetch,
-				RepoID:  r.RepoID,
-				Name:    r.Name,
+				Entity:  r,
 				Args:    make([]string, 0),
 			})
 			if err != nil {
-				return err
+				if err = gui.openErrorView(g, "This repository is already queued for another operation", 
+					"You switch mode and deselect to remove operaton from the queue"); err != nil {
+					return err
+				}
+				return nil
 			}
+			r.Mark()
 		} else {
-			err := gui.State.Queue.RemoveFromQueue(r.RepoID)
+			err := gui.State.Queue.RemoveFromQueue(r)
 			if err != nil {
 				return err
 			}

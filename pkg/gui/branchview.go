@@ -29,7 +29,7 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 			fmt.Fprintln(out, selectionIndicator()+b.Name+suffix)
 			continue
 		}
-		fmt.Fprintln(out, tab()+b.Name+suffix)
+		fmt.Fprintln(out, tab()+b.Name)
 	}
 	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalbranches); err != nil {
 		return err

@@ -44,7 +44,6 @@ func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 		gui.State.Mode = fetchMode
 	}
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	gui.unMarkAllRepositories(g, v)
 	return nil
 }
 
