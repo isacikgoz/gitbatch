@@ -11,8 +11,9 @@ var (
     green = color.New(color.FgGreen)
     red = color.New(color.FgRed)
     cyan = color.New(color.FgCyan)
-    orange = color.New(color.FgYellow)
+    yellow = color.New(color.FgYellow)
     white = color.New(color.FgWhite)
+    magenta = color.New(color.FgMagenta)
 )
 
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
@@ -29,6 +30,20 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
     if err := gui.updateSchedule(g, entity); err != nil {
          return err
     }
+    return nil
+}
+
+func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
+    switch mode := gui.State.Mode.ModeID; mode {
+    case FetchMode:
+        gui.State.Mode = pullMode
+    case PullMode:
+        gui.State.Mode = fetchMode
+    default:
+        gui.State.Mode = fetchMode
+    }
+    gui.updateKeyBindingsView(g, mainViewFeature.Name)
+    gui.unMarkAllRepositories(g, v)
     return nil
 }
 
@@ -88,4 +103,17 @@ func selectionIndicator() string {
 
 func tab() string {
     return green.Sprint("  ")
+}
+
+func writeRightHandSide(v *gocui.View, text string, cx, cy int) error {
+    runes := []rune(text)
+    tl := len(runes)
+    lx, _ := v.Size()
+    v.MoveCursor(lx-tl, cy-1, true)
+    for i := tl-1; i >= 0; i-- {
+        v.EditDelete(true)
+        v.EditWrite(runes[i])
+    }
+    v.SetCursor(cx, cy)
+    return nil
 }

@@ -15,12 +15,27 @@ type Gui struct {
 type guiState struct {
     Repositories []*git.RepoEntity
     Directories  []string
+    Mode         mode
 }
 
 type viewFeature struct {
     Name  string
     Title string
 }
+
+type mode struct {
+    ModeID        ModeID
+    DisplayString string
+    CommandString string
+    ExecString    string
+}
+
+type ModeID int8
+
+const (
+    FetchMode ModeID = 0
+    PullMode  ModeID = 1
+)
 
 var (
     mainViewFeature = viewFeature{Name: "main", Title: " Matched Repositories "}
@@ -30,15 +45,19 @@ var (
     commitViewFeature = viewFeature{Name: "commits", Title: " Commits "}
     scheduleViewFeature = viewFeature{Name: "schedule", Title: " Schedule "}
     keybindingsViewFeature = viewFeature{Name: "keybindings", Title: " Keybindings "}
-    pullViewFeature = viewFeature{Name: "pull", Title: " Execution Parameters "}
+    execViewFeature = viewFeature{Name: "execution", Title: " Execution Parameters "}
     commitdetailViewFeature = viewFeature{Name: "commitdetail", Title: " Commit Detail "}
     cheatSheetViewFeature = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
     errorViewFeature = viewFeature{Name: "error", Title: " Error "}
+
+    fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch", ExecString : "repositories will be fetched"}
+    pullMode = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull", ExecString : "repositories will be pulled"}
 )
 
 func NewGui(directoies []string) (*Gui, error) {
     initialState := guiState{
         Directories: directoies,
+        Mode:        fetchMode,
     }
 	gui := &Gui{
 		State: initialState,

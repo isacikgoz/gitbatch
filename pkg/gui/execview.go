@@ -4,36 +4,37 @@ import (
     "github.com/jroimartin/gocui"
     "fmt"
     "strconv"
+    "errors"
 )
 
-func (gui *Gui) openPullView(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) openExecConfirmationView(g *gocui.Gui, v *gocui.View) error {
     maxX, maxY := g.Size()
 
-    v, err := g.SetView(pullViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
+    v, err := g.SetView(execViewFeature.Name, maxX/2-35, maxY/2-5, maxX/2+35, maxY/2+5)
     if err != nil {
             if err != gocui.ErrUnknownView {
                     return err
             }
-            v.Title = pullViewFeature.Title
+            v.Title = gui.State.Mode.DisplayString + " Confirmation"
             v.Wrap = true
             mrs, _ := gui.getMarkedEntities()
-            jobs := strconv.Itoa(len(mrs)) + " repositories to fetch & merge:"
+            jobs := strconv.Itoa(len(mrs)) + " " + gui.State.Mode.ExecString + ":"
             fmt.Fprintln(v, jobs)
             for _, r := range mrs {
                 line := " - " + green.Sprint(r.Name) + ": " + r.Remote.Name + green.Sprint(" → ") + r.Branch.Name
                 fmt.Fprintln(v, line)
             }
-            ps := red.Sprint("Note:") + " After execution you will be notified"
+            ps := red.Sprint("Note:") + " When " + gui.State.Mode.CommandString  + " operation is completed, you will be notified."
             fmt.Fprintln(v, "\n" + ps)
     }
-    gui.updateKeyBindingsView(g, pullViewFeature.Name)
-    if _, err := g.SetCurrentView(pullViewFeature.Name); err != nil {
+    gui.updateKeyBindingsView(g, execViewFeature.Name)
+    if _, err := g.SetCurrentView(execViewFeature.Name); err != nil {
         return err
     }
     return nil
 }
 
-func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) closeExecView(g *gocui.Gui, v *gocui.View) error {
 
     if err := g.DeleteView(v.Name()); err != nil {
         return nil
@@ -46,7 +47,7 @@ func (gui *Gui) closePullView(g *gocui.Gui, v *gocui.View) error {
     return nil
 }
 
-func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) execute(g *gocui.Gui, v *gocui.View) error {
     // somehow this fucntion called after this method returns, strange?
     go g.Update(func(g *gocui.Gui) error {
         err := updateKeyBindingsViewForExecution(g)
@@ -59,9 +60,17 @@ func (gui *Gui) executePull(g *gocui.Gui, v *gocui.View) error {
     mrs, _ := gui.getMarkedEntities()
     for _, mr := range mrs {
        // here we will be waiting
-        mr.Pull()
-        gui.updateCommits(g, mr)
+        switch mode := gui.State.Mode.ModeID; mode {
+        case FetchMode:
+            mr.Fetch()
+        case PullMode:
+            mr.Pull()
+        default:
+            return errors.New("No mode is selected")
+        }
+        gui.refreshViews(g, mr)
         mr.Unmark()
+        gui.refreshMain(g)
     }
     return nil
 }
@@ -75,6 +84,6 @@ func updateKeyBindingsViewForExecution(g *gocui.Gui) error {
     v.BgColor = gocui.ColorGreen
     v.FgColor = gocui.ColorBlack
     v.Frame = false
-    fmt.Fprintln(v, " Execution Completed; c: close/cancel")
+    fmt.Fprintln(v, " Operation Completed; c: close/cancel")
     return nil
 }

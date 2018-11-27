@@ -174,12 +174,18 @@ func (gui *Gui) getMarkedEntities() (rs []*git.RepoEntity, err error) {
 }
 
 func displayString(entity *git.RepoEntity) string{
-    prefix := string(blue.Sprint("↑")) + " " + entity.Branch.Pushables + " " +
-     string(blue.Sprint("↓")) + " " + entity.Branch.Pullables + string(red.Sprint(" → ")) + string(cyan.Sprint(entity.Branch.Name)) + " "
+    prefix := ""
+    if entity.Branch.Pushables != "?" {
+        prefix = prefix + string(blue.Sprint("↑")) + "" + entity.Branch.Pushables + " " +
+     string(blue.Sprint("↓")) + "" + entity.Branch.Pullables + string(magenta.Sprint(" → "))
+    } else {
+        prefix = prefix + magenta.Sprint("?") + string(yellow.Sprint(" → "))
+    }
+    prefix = prefix + string(cyan.Sprint(entity.Branch.Name)) + " "
     if entity.Marked {
         return prefix + string(green.Sprint(entity.Name))
     } else if !entity.Branch.Clean {
-        return prefix + string(orange.Sprint(entity.Name))
+        return prefix + string(yellow.Sprint(entity.Name))
     } else {
         return prefix + string(white.Sprint(entity.Name))
     }

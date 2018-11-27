@@ -15,11 +15,7 @@ type Branch struct {
 
 func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
 	headRef, _ := entity.Repository.Head()
-	localBranches, err := entity.LocalBranches()
-	if err != nil {
-		return nil
-	}
-	for _, lb := range localBranches {
+	for _, lb := range entity.Branches {
 		if lb.Name == headRef.Name().Short() {
 			return lb
 		}
@@ -27,10 +23,11 @@ func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
 	return nil
 }
 
-func (entity *RepoEntity) LocalBranches() (lbs []*Branch, err error) {
+func (entity *RepoEntity) loadLocalBranches() error {
+	lbs := make([]*Branch, 0)
 	branches, err := entity.Repository.Branches()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer branches.Close()
 	branches.ForEach(func(b *plumbing.Reference) error {
@@ -42,28 +39,22 @@ func (entity *RepoEntity) LocalBranches() (lbs []*Branch, err error) {
     	}
     	return nil
 	})
-	return lbs, err
+	entity.Branches = lbs
+	return err
 }
 
 func (entity *RepoEntity) NextBranch() *Branch {
-
-	currentBranch := entity.GetActiveBranch()
-	localBranches, err := entity.LocalBranches()
-	if err != nil {
-		return currentBranch
-	}
-
+	currentBranch := entity.Branch
 	currentBranchIndex := 0
-	for i, lbs := range localBranches {
+	for i, lbs := range entity.Branches {
 		if lbs.Name == currentBranch.Name {
 			currentBranchIndex = i
 		}
 	}
-
-	if currentBranchIndex == len(localBranches)-1 {
-		return localBranches[0]
+	if currentBranchIndex == len(entity.Branches)-1 {
+		return entity.Branches[0]
 	}
-	return localBranches[currentBranchIndex+1]
+	return entity.Branches[currentBranchIndex+1]
 }
 
 func (entity *RepoEntity) Checkout(branch *Branch) error {
@@ -79,6 +70,9 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	}); err != nil {
 		return err
 	}
+	branch.Pushables, branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+	entity.loadCommits()
+	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
 	return nil
 }

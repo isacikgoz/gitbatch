@@ -32,6 +32,15 @@ func (entity *RepoEntity) FetchWithGit(remote string) error {
 	return nil
 }
 
+func (entity *RepoEntity) PullWithGit(remote, branch string) error {
+	args := []string{"pull", remote, branch}
+	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 	args := []string{"merge", mergeFrom}
 	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)

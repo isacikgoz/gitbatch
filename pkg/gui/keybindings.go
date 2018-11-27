@@ -31,7 +31,15 @@ func (gui *Gui) generateKeybindings() error {
             Modifier:    gocui.ModNone,
             Handler:     gui.quit,
             Display:     "q",
-            Description: "Quit from application",
+            Description: "Quit",
+            Vital:       true,
+        },{
+            View:        mainViewFeature.Name,
+            Key:         gocui.KeyTab,
+            Modifier:    gocui.ModNone,
+            Handler:     gui.switchMode,
+            Display:     "tab",
+            Description: "Switch mode",
             Vital:       true,
         },{
             View:        mainViewFeature.Name,
@@ -39,7 +47,7 @@ func (gui *Gui) generateKeybindings() error {
             Modifier:    gocui.ModNone,
             Handler:     gui.cursorUp,
             Display:     "↑",
-            Description: "Cursor up",
+            Description: "Up",
             Vital:       true,
         },{
             View:        mainViewFeature.Name,
@@ -47,7 +55,7 @@ func (gui *Gui) generateKeybindings() error {
             Modifier:    gocui.ModNone,
             Handler:     gui.cursorDown,
             Display:     "↓",
-            Description: "Cursor down",
+            Description: "Down",
             Vital:       true,
         },{
             View:        mainViewFeature.Name,
@@ -93,7 +101,7 @@ func (gui *Gui) generateKeybindings() error {
             View:        mainViewFeature.Name,
             Key:         gocui.KeyEnter,
             Modifier:    gocui.ModNone,
-            Handler:     gui.openPullView,
+            Handler:     gui.openExecConfirmationView,
             Display:     "enter",
             Description: "Execute jobs",
             Vital:       true,
@@ -103,7 +111,7 @@ func (gui *Gui) generateKeybindings() error {
             Modifier:    gocui.ModNone,
             Handler:     gui.markRepository,
             Display:     "space",
-            Description: "Select repository",
+            Description: "Select",
             Vital:       true,
         },{
             View:        mainViewFeature.Name,
@@ -111,7 +119,7 @@ func (gui *Gui) generateKeybindings() error {
             Modifier:    gocui.ModNone,
             Handler:     gui.markAllRepositories,
             Display:     "a",
-            Description: "Select all repositories",
+            Description: "Select all",
             Vital:       false,
         },{
             View:        mainViewFeature.Name,
@@ -119,7 +127,7 @@ func (gui *Gui) generateKeybindings() error {
             Modifier:    gocui.ModNone,
             Handler:     gui.unMarkAllRepositories,
             Display:     "d",
-            Description: "Deselect all repositories",
+            Description: "Deselect all",
             Vital:       false,
         },{
             View:        commitdetailViewFeature.Name,
@@ -154,18 +162,18 @@ func (gui *Gui) generateKeybindings() error {
             Description: "close/cancel",
             Vital:       true,
         },{
-            View:        pullViewFeature.Name,
+            View:        execViewFeature.Name,
             Key:         'c',
             Modifier:    gocui.ModNone,
-            Handler:     gui.closePullView,
+            Handler:     gui.closeExecView,
             Display:     "c",
             Description: "close/cancel",
             Vital:       true,
         },{
-            View:        pullViewFeature.Name,
+            View:        execViewFeature.Name,
             Key:         gocui.KeyEnter,
             Modifier:    gocui.ModNone,
-            Handler:     gui.executePull,
+            Handler:     gui.execute,
             Display:     "enter",
             Description: "Execute",
             Vital:       true,
@@ -205,6 +213,14 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
             binding := " " + k.Display + ": " + k.Description + " |"
             fmt.Fprint(v, binding)
         }
+    }
+    switch mode := gui.State.Mode.ModeID; mode {
+    case FetchMode:
+        writeRightHandSide(v, "Fetch", 0, 0)
+    case PullMode:
+        writeRightHandSide(v, "Pull", 0, 0)
+    default:
+        writeRightHandSide(v, "No-Mode", 0, 0)
     }
     return nil
 }

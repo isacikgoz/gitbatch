@@ -16,20 +16,15 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
     }
     out.Clear()
 
-    totalcommits := 0
     currentindex := 0
-    if commits, err := entity.Commits(); err != nil {
-        return err
-    } else {
-        totalcommits = len(commits)
-        for i, c := range commits {
-            if c.Hash == entity.Commit.Hash {
-                currentindex = i
-                fmt.Fprintln(out, selectionIndicator() + green.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
-                continue
-            } 
-            fmt.Fprintln(out, tab() + cyan.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
-        }
+    totalcommits := len(entity.Commits)
+    for i, c := range entity.Commits {
+        if c.Hash == entity.Commit.Hash {
+            currentindex = i
+            fmt.Fprintln(out, selectionIndicator() + green.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
+            continue
+        } 
+        fmt.Fprintln(out, tab() + cyan.Sprint(c.Hash[:git.Hashlimit]) + " " + c.Message)
     }
     if err = gui.smartAnchorRelativeToLine(out, currentindex, totalcommits); err != nil {
         return err
@@ -70,7 +65,7 @@ func (gui *Gui) showCommitDetail(g *gocui.Gui, v *gocui.View) error {
             return err
         }
         commit := entity.Commit
-        commitDetail := "Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author + "\n" + commit.Time.String() + "\n" + "\n" + "\t" + commit.Message + "\n"
+        commitDetail := "Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author + "\n" + commit.Time.String() + "\n" + "\n" + "\t\t" + commit.Message + "\n"
         fmt.Fprintln(v, commitDetail)
         diff, err := entity.Diff(entity.Commit.Hash)
         if err != nil {
