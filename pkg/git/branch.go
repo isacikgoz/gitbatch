@@ -3,6 +3,7 @@ package git
 import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"strings"
 )
 
 type Branch struct {
@@ -91,4 +92,26 @@ func (entity *RepoEntity) isClean() bool {
 
 func (entity *RepoEntity) RefreshPushPull() {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+}
+
+func (entity *RepoEntity) PushDiffsToUpstream() error {
+	hashes := UpstreamPushDiffs(entity.AbsPath)
+	if hashes != "?" {
+		sliced := strings.Split(hashes, "\n")
+		for _, s := range sliced {
+			GitShow(entity.AbsPath, s)
+		}
+	}
+	return nil
+}
+
+func (entity *RepoEntity) PullDiffsToUpstream() error {
+	hashes := UpstreamPullDiffs(entity.AbsPath)
+	if hashes != "?" {
+		sliced := strings.Split(hashes, "\n")
+		for _, s := range sliced {
+			GitShow(entity.AbsPath, s)
+		}
+	}
+	return nil
 }
