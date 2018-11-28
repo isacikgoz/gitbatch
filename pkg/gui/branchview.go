@@ -18,15 +18,9 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 	currentindex := 0
 	totalbranches := len(entity.Branches)
 	for i, b := range entity.Branches {
-		var suffix string
-		if !b.Clean {
-			suffix = " " + yellow.Sprint("✗")
-		} else {
-			suffix = " " + green.Sprint("✔")
-		}
 		if b.Name == entity.Branch.Name {
 			currentindex = i
-			fmt.Fprintln(out, selectionIndicator()+b.Name+suffix)
+			fmt.Fprintln(out, selectionIndicator()+b.Name)
 			continue
 		}
 		fmt.Fprintln(out, tab()+b.Name)

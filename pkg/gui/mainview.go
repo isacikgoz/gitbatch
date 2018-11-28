@@ -2,7 +2,7 @@ package gui
 
 import (
 	"fmt"
-	"regexp"
+	// "regexp"
 	// "sync"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
@@ -80,21 +80,22 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEntity, error) {
-	var l string
+	// var l string
 	var err error
 	var r *git.RepoEntity
 
 	_, cy := v.Cursor()
-	if l, err = v.Line(cy); err != nil {
+	if _, err = v.Line(cy); err != nil {
 		return r, err
 	}
-	rg := regexp.MustCompile(` → .+ `)
-	ss := rg.Split(l, 5)
-	for _, sr := range gui.State.Repositories {
-		if ss[len(ss)-1] == sr.Name {
-			return sr, nil
-		}
-	}
+	return gui.State.Repositories[cy], nil
+	// rg := regexp.MustCompile(` → .+ `)
+	// ss := rg.Split(l, 5)
+	// for _, sr := range gui.State.Repositories {
+	// 	if ss[len(ss)-1] == sr.Name {
+	// 		return sr, nil
+	// 	}
+	// }
 	return r, err
 }
 
@@ -165,15 +166,17 @@ func displayString(entity *git.RepoEntity) string {
 		prefix = prefix + magenta.Sprint("?") + string(yellow.Sprint(" → "))
 	}
 	prefix = prefix + string(cyan.Sprint(entity.Branch.Name)) + " "
-	if entity.State == 1 {
-		return prefix + string(green.Sprint(entity.Name))
-	} else if entity.State == 2 {
-		return prefix + string(green.Sprint(entity.Name))
-	} else if entity.State == 4 {
-		return prefix + string(red.Sprint(entity.Name))
+	if entity.State == git.Queued {
+		return prefix + entity.Name + " " + string(green.Sprint("•") + " ")
+	} else if entity.State == git.Working {
+		return prefix + entity.Name + " " + string(blue.Sprint("•") + " ")
+	} else if entity.State == git.Success {
+		return prefix + entity.Name + " " + string(green.Sprint("✔") + " ")
+	} else if entity.State == git.Fail {
+		return prefix + entity.Name + " " + string(red.Sprint("✗") + " ")
 	} else if !entity.Branch.Clean {
-		return prefix + string(yellow.Sprint(entity.Name))
+		return prefix + entity.Name + " " + string(yellow.Sprint("✗") + " ")
 	} else {
-		return prefix + string(white.Sprint(entity.Name))
+		return prefix + entity.Name
 	}
 }
