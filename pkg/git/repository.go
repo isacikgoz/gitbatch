@@ -46,7 +46,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		return nil, err
 	}
-	entity = &RepoEntity{RepoID: utils.NewHash(),
+	entity = &RepoEntity{RepoID: utils.RandomString(8),
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
 		Repository: *r,
@@ -60,10 +60,14 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		return entity, errors.New("There is no commit for this repository: " + directory)
 	}
 	entity.loadRemotes()
-	entity.Branch = entity.GetActiveBranch()
+	entity.Branch = entity.getActiveBranch()
 	if len(entity.Remotes) > 0 {
 		// TODO: tend to take origin/master as default
 		entity.Remote = entity.Remotes[0]
+		// TODO: same code on 3 different occasion, maybe something wrong?
+		if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err !=nil {
+		// probably couldn't find, but its ok.
+		}
 	} else {
 		return entity, errors.New("There is no remote for this repository: " + directory)
 	}
@@ -101,6 +105,17 @@ func (entity *RepoEntity) Fetch() error {
 	entity.Checkout(entity.Branch)
 	return nil
 }
+
+func (entity *RepoEntity) Merge() error {
+	entity.Checkout(entity.Branch)
+	if err := entity.MergeWithGit(entity.Remote.Branch.Name); err != nil {
+		entity.Refresh()
+		return err
+	}
+	entity.Refresh()
+	return nil
+}
+
 func (entity *RepoEntity) Refresh() error {
 	r, err := git.PlainOpen(entity.AbsPath)
 	if err != nil {

@@ -1,6 +1,7 @@
 package git
 
 import (
+	"errors"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4"
@@ -26,7 +27,6 @@ func (remote *Remote) NextRemoteBranch() error {
 	} else {
 		remote.Branch = remote.Branches[currentRemoteIndex+1]
 	}
-
 	return nil
 }
 
@@ -64,4 +64,14 @@ func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) 
 		}
 		return false
 	}, refs), nil
+}
+
+func (remote *Remote) switchRemoteBranch(remoteBranchName string) error {
+	for _, rb := range remote.Branches {
+		if rb.Name == remoteBranchName {
+			remote.Branch = rb
+			return nil
+		}
+	}
+	return errors.New("Remote branch not found.")
 }

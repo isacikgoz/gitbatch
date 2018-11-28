@@ -20,7 +20,10 @@ func (entity *RepoEntity) NextRemote() error {
 	} else {
 		entity.Remote = entity.Remotes[currentRemoteIndex+1]
 	}
-
+	// TODO: same code on 3 different occasion, maybe something wrong?
+	if err := entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err !=nil {
+		// probably couldn't find, but its ok.
+	}
 	return nil
 }
 

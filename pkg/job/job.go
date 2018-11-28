@@ -20,8 +20,9 @@ type JobQueue struct {
 type JobType string
 
 const (
-	Fetch JobType = "FETCH"
-	Pull  JobType = "PULL"
+	Fetch JobType = "fetch"
+	Pull  JobType = "pull"
+	Merge JobType = "merge"
 )
 
 func CreateJob() (j *Job, err error) {
@@ -43,6 +44,13 @@ func (job *Job) start() error {
 		job.Entity.State = git.Success
 	case Pull:
 		if err := job.Entity.Pull(); err != nil {
+			job.Entity.State = git.Fail
+			return nil
+		}
+		job.Entity.RefreshPushPull()
+		job.Entity.State = git.Success
+	case Merge:
+		if err := job.Entity.Merge(); err != nil {
 			job.Entity.State = git.Fail
 			return nil
 		}
@@ -99,4 +107,15 @@ func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 		return errors.New("There is no job with given repoID")
 	}
 	return nil
+}
+
+func (jobQueue *JobQueue) IsInTheQueue(entity *git.RepoEntity) (inTheQueue bool, jt JobType) {
+	inTheQueue = false
+	for _, job := range jobQueue.series {
+		if job.Entity.RepoID == entity.RepoID {
+			inTheQueue = true
+			jt = job.JobType
+		}
+	}
+	return inTheQueue, jt
 }

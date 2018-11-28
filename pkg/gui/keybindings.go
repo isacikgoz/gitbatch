@@ -49,7 +49,7 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.cursorUp,
 			Display:     "↑",
 			Description: "Up",
-			Vital:       true,
+			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -57,7 +57,7 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.cursorDown,
 			Display:     "↓",
 			Description: "Down",
-			Vital:       true,
+			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         'b',
@@ -76,10 +76,10 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'z',
+			Key:         'e',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.nextRemoteBranch,
-			Display:     "z",
+			Display:     "e",
 			Description: "Iterate over remote branches",
 			Vital:       false,
 		}, {
@@ -92,10 +92,10 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'x',
+			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.showCommitDetail,
-			Display:     "x",
+			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       false,
 		}, {
@@ -104,8 +104,8 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.openCheatSheetView,
 			Display:     "c",
-			Description: "Open cheatsheet window",
-			Vital:       false,
+			Description: "Controls",
+			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyEnter,
@@ -120,7 +120,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.markRepository,
 			Display:     "space",
-			Description: "Select",
+			Description: "Add to queue",
 			Vital:       true,
 		}, {
 			View:        commitdetailViewFeature.Name,
@@ -185,19 +185,32 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	v.BgColor = gocui.ColorWhite
 	v.FgColor = gocui.ColorBlack
 	v.Frame = false
-	for _, k := range gui.KeyBindings {
-		if k.View == viewName && k.Vital {
-			binding := " " + k.Display + ": " + k.Description + " |"
-			fmt.Fprint(v, binding)
-		}
-	}
+	fmt.Fprint(v, ws)
+	modeLabel := ""
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
-		writeRightHandSide(v, "Fetch", 0, 0)
+		v.BgColor = gocui.ColorBlue
+		v.FgColor = gocui.ColorWhite
+		modeLabel = fetchSymbol + ws + bold.Sprint("FETCH")
 	case PullMode:
-		writeRightHandSide(v, "Pull", 0, 0)
+		v.BgColor = gocui.ColorMagenta
+		v.FgColor = gocui.ColorWhite
+		modeLabel = pullSymbol + ws + bold.Sprint("PULL")
+	case MergeMode:
+		v.BgColor = gocui.ColorCyan
+		v.FgColor = gocui.ColorBlack
+		modeLabel = mergeSymbol + ws + black.Sprint(bold.Sprint("MERGE"))
 	default:
-		writeRightHandSide(v, "No-Mode", 0, 0)
+		modeLabel = "No mode selected"
+	}
+
+	fmt.Fprint(v, ws + modeLabel + ws + modeSeperator)
+
+	for _, k := range gui.KeyBindings {
+		if k.View == viewName && k.Vital {
+			binding := keyBindingSeperator + ws + k.Display + ":" + ws + k.Description + ws
+			fmt.Fprint(v, binding)
+		}
 	}
 	return nil
 }

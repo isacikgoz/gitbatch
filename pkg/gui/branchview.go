@@ -18,18 +18,12 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 	currentindex := 0
 	totalbranches := len(entity.Branches)
 	for i, b := range entity.Branches {
-		var suffix string
-		if !b.Clean {
-			suffix = " " + yellow.Sprint("✗")
-		} else {
-			suffix = " " + green.Sprint("✔")
-		}
 		if b.Name == entity.Branch.Name {
 			currentindex = i
-			fmt.Fprintln(out, selectionIndicator()+b.Name+suffix)
+			fmt.Fprintln(out, selectionIndicator+b.Name)
 			continue
 		}
-		fmt.Fprintln(out, tab()+b.Name)
+		fmt.Fprintln(out, tab+b.Name)
 	}
 	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalbranches); err != nil {
 		return err
@@ -54,6 +48,9 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	if err = gui.updateCommits(g, entity); err != nil {
+		return err
+	}
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}
 	if err = gui.refreshMain(g); err != nil {

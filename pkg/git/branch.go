@@ -1,9 +1,11 @@
 package git
 
 import (
+	"github.com/isacikgoz/gitbatch/pkg/utils"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"strings"
+	"regexp"
 )
 
 type Branch struct {
@@ -14,7 +16,7 @@ type Branch struct {
 	Clean     bool
 }
 
-func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
+func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
 	headRef, _ := entity.Repository.Head()
 	for _, lb := range entity.Branches {
 		if lb.Name == headRef.Name().Short() {
@@ -75,43 +77,60 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+	// TODO: same code on 3 different occasion, maybe something wrong?
+	// make this conditional on global scale
+	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err !=nil {
+		// probably couldn't find, but its ok.
+		return nil
+	}
 	return nil
 }
 
 func (entity *RepoEntity) isClean() bool {
-	worktree, err := entity.Repository.Worktree()
-	if err != nil {
-		return true
+	// this method is painfully slow
+	// worktree, err := entity.Repository.Worktree()
+	// if err != nil {
+	// 	return true
+	// }
+	// status, err := worktree.Status()
+	// if err != nil {
+	// 	return false
+	// }
+	// return status.IsClean()
+	status := entity.StatusWithGit()
+	status = utils.TrimTrailingNewline(status)
+	if status != "?" {
+		verbose := strings.Split(status, "\n")
+		lastLine := verbose[len(verbose)-1]
+		if strings.Contains(lastLine, "working tree clean") {
+			return true
+		}
 	}
-	status, err := worktree.Status()
-	if err != nil {
-		return false
-	}
-	return status.IsClean()
+	return false
 }
 
 func (entity *RepoEntity) RefreshPushPull() {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 }
 
-func (entity *RepoEntity) PushDiffsToUpstream() error {
-	hashes := UpstreamPushDiffs(entity.AbsPath)
-	if hashes != "?" {
-		sliced := strings.Split(hashes, "\n")
-		for _, s := range sliced {
-			GitShow(entity.AbsPath, s)
-		}
-	}
-	return nil
-}
-
-func (entity *RepoEntity) PullDiffsToUpstream() error {
+func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
+	remoteCommits := make([]*Commit, 0)
 	hashes := UpstreamPullDiffs(entity.AbsPath)
+	re := regexp.MustCompile(`\r?\n`)
 	if hashes != "?" {
 		sliced := strings.Split(hashes, "\n")
 		for _, s := range sliced {
-			GitShow(entity.AbsPath, s)
+			if len(s) == 40 {
+				commit := &Commit{
+				Hash: s,
+				Author: GitShowEmail(entity.AbsPath, s),
+				Message: re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
+				Time: GitShowDate(entity.AbsPath, s),
+				CommitType: RemoteCommit,
+			}
+			remoteCommits = append(remoteCommits, commit)
+			}
 		}
 	}
-	return nil
+	return remoteCommits, nil
 }

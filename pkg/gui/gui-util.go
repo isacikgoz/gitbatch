@@ -1,20 +1,9 @@
 package gui
 
 import (
-	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/utils"
 	"github.com/jroimartin/gocui"
-)
-
-var (
-	blue    = color.New(color.FgBlue)
-	green   = color.New(color.FgGreen)
-	red     = color.New(color.FgRed)
-	cyan    = color.New(color.FgCyan)
-	yellow  = color.New(color.FgYellow)
-	white   = color.New(color.FgWhite)
-	magenta = color.New(color.FgMagenta)
 )
 
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
@@ -39,6 +28,8 @@ func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	case FetchMode:
 		gui.State.Mode = pullMode
 	case PullMode:
+		gui.State.Mode = mergeMode
+	case MergeMode:
 		gui.State.Mode = fetchMode
 	default:
 		gui.State.Mode = fetchMode
@@ -95,14 +86,6 @@ func (gui *Gui) smartAnchorRelativeToLine(v *gocui.View, currentindex, totalline
 		}
 	}
 	return nil
-}
-
-func selectionIndicator() string {
-	return green.Sprint("→ ")
-}
-
-func tab() string {
-	return green.Sprint("  ")
 }
 
 func writeRightHandSide(v *gocui.View, text string, cx, cy int) error {

@@ -30,7 +30,6 @@ type mode struct {
 	ModeID        ModeID
 	DisplayString string
 	CommandString string
-	ExecString    string
 }
 
 type ModeID int8
@@ -38,6 +37,7 @@ type ModeID int8
 const (
 	FetchMode ModeID = 0
 	PullMode  ModeID = 1
+	MergeMode ModeID = 2
 )
 
 var (
@@ -53,8 +53,9 @@ var (
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
 
-	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch", ExecString: "repositories will be fetched"}
-	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull", ExecString: "repositories will be pulled"}
+	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
+	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
+	mergeMode  = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 )
 
 func NewGui(directoies []string) (*Gui, error) {
@@ -118,8 +119,8 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		v.Title = mainViewFeature.Title
 		v.Highlight = true
-		v.SelBgColor = gocui.ColorWhite
-		v.SelFgColor = gocui.ColorBlack
+		// v.SelBgColor = gocui.ColorWhite
+		v.SelFgColor = gocui.ColorGreen
 		v.Overwrite = true
 	}
 	if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.10*float32(maxY))); err != nil {

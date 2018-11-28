@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/utils"
+
 	"github.com/jroimartin/gocui"
 )
 
@@ -21,14 +21,14 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 	totalRemotes := len(entity.Remotes)
 	if totalRemotes > 0 {
 		for i, r := range entity.Remotes {
-			URLtype, shortURL := utils.TrimRemoteURL(r.URL[0])
-			suffix := "(" + URLtype + ")" + " " + shortURL
+			_, shortURL := trimRemoteURL(r.URL[0])
+			suffix := shortURL
 			if r.Name == entity.Remote.Name {
 				currentindex = i
-				fmt.Fprintln(out, selectionIndicator()+r.Name+": "+suffix)
+				fmt.Fprintln(out, selectionIndicator+r.Name+": "+suffix)
 				continue
 			}
-			fmt.Fprintln(out, tab()+r.Name+": "+suffix)
+			fmt.Fprintln(out, tab+r.Name+": "+suffix)
 		}
 		if err = gui.smartAnchorRelativeToLine(out, currentindex, totalRemotes); err != nil {
 			return err
