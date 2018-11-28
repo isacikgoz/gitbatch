@@ -13,7 +13,7 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 				gui_go.refreshMain(gu)
 				return nil
 			})
-			defer indicateQueueFinished(g_go)
+			defer gui.updateKeyBindingsView(g, mainViewFeature.Name)
 			if err != nil {
 				return
 			}
@@ -36,14 +36,6 @@ func indicateQueueStarted(g *gocui.Gui) error {
 		return err
 	}
 	v.BgColor = gocui.ColorGreen
-	return nil
-}
-
-func indicateQueueFinished(g *gocui.Gui) error {
-	v, err := g.View(keybindingsViewFeature.Name)
-	if err != nil {
-		return err
-	}
-	v.BgColor = gocui.ColorWhite
+	v.FgColor = gocui.ColorBlack
 	return nil
 }

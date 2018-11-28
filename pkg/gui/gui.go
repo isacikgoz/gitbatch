@@ -118,6 +118,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		v.Title = mainViewFeature.Title
 		v.Highlight = true
+		// v.SelBgColor = gocui.ColorWhite
 		v.SelFgColor = gocui.ColorGreen
 		v.Overwrite = true
 	}

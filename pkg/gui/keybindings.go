@@ -185,19 +185,31 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	v.BgColor = gocui.ColorWhite
 	v.FgColor = gocui.ColorBlack
 	v.Frame = false
-	for _, k := range gui.KeyBindings {
-		if k.View == viewName && k.Vital {
-			binding := " " + k.Display + ": " + k.Description + " ░"
-			fmt.Fprint(v, binding)
-		}
-	}
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
-		writeRightHandSide(v, " ⭠ Fetch", 0, 0)
+		v.BgColor = gocui.ColorBlue
+		v.FgColor = gocui.ColorWhite
+		fmt.Fprint(v, " ↓ Fetch Mode █▓▒")
 	case PullMode:
-		writeRightHandSide(v, " ⭠ Pull", 0, 0)
+		v.BgColor = gocui.ColorMagenta
+		v.FgColor = gocui.ColorWhite
+		fmt.Fprint(v, " ↓↳ Pull Mode █▓▒")
 	default:
 		writeRightHandSide(v, "No-Mode", 0, 0)
 	}
+	for _, k := range gui.KeyBindings {
+		if k.View == viewName && k.Vital {
+			binding := "░ " + k.Display + ": " + k.Description + " "
+			fmt.Fprint(v, binding)
+		}
+	}
+	// switch mode := gui.State.Mode.ModeID; mode {
+	// case FetchMode:
+	// 	writeRightHandSide(v, " ⭠ Fetch", 0, 0)
+	// case PullMode:
+	// 	writeRightHandSide(v, " ⭠ Pull", 0, 0)
+	// default:
+	// 	writeRightHandSide(v, "No-Mode", 0, 0)
+	// }
 	return nil
 }
