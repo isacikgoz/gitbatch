@@ -85,3 +85,13 @@ func (entity *RepoEntity) CheckoutWithGit(branch string) error {
 	}
 	return nil
 }
+
+// GitStatus returns the plaintext short status of the repo
+func (entity *RepoEntity) StatusWithGit() string {
+	args := []string{"status"}
+	status, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return "?"
+	}
+	return status
+}

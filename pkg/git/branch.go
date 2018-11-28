@@ -1,6 +1,7 @@
 package git
 
 import (
+	"github.com/isacikgoz/gitbatch/pkg/utils"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"strings"
@@ -85,15 +86,26 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 }
 
 func (entity *RepoEntity) isClean() bool {
-	worktree, err := entity.Repository.Worktree()
-	if err != nil {
-		return true
+	// this method is painfully slow
+	// worktree, err := entity.Repository.Worktree()
+	// if err != nil {
+	// 	return true
+	// }
+	// status, err := worktree.Status()
+	// if err != nil {
+	// 	return false
+	// }
+	// return status.IsClean()
+	status := entity.StatusWithGit()
+	status = utils.TrimTrailingNewline(status)
+	if status != "?" {
+		verbose := strings.Split(status, "\n")
+		lastLine := verbose[len(verbose)-1]
+		if strings.Contains(lastLine, "working tree clean") {
+			return true
+		}
 	}
-	status, err := worktree.Status()
-	if err != nil {
-		return false
-	}
-	return status.IsClean()
+	return false
 }
 
 func (entity *RepoEntity) RefreshPushPull() {
