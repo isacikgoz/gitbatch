@@ -56,6 +56,9 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 	if err = gui.updateCommits(g, entity); err != nil {
 		return err
 	}
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
+		return err
+	}
 	if err = gui.refreshMain(g); err != nil {
 		return err
 	}

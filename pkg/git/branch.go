@@ -14,7 +14,7 @@ type Branch struct {
 	Clean     bool
 }
 
-func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
+func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
 	headRef, _ := entity.Repository.Head()
 	for _, lb := range entity.Branches {
 		if lb.Name == headRef.Name().Short() {
@@ -75,6 +75,12 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+	// TODO: same code on 3 different occasion, maybe something wrong?
+	// make this conditional on global scale
+	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err !=nil {
+		// probably couldn't find, but its ok.
+		return nil
+	}
 	return nil
 }
 
