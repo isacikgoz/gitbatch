@@ -49,7 +49,7 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.cursorUp,
 			Display:     "↑",
 			Description: "Up",
-			Vital:       true,
+			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -57,7 +57,7 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.cursorDown,
 			Display:     "↓",
 			Description: "Down",
-			Vital:       true,
+			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         'b',
@@ -104,8 +104,8 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.openCheatSheetView,
 			Display:     "c",
-			Description: "Open cheatsheet window",
-			Vital:       false,
+			Description: "Controls",
+			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyEnter,
@@ -120,7 +120,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.markRepository,
 			Display:     "space",
-			Description: "Select",
+			Description: "Add to queue",
 			Vital:       true,
 		}, {
 			View:        commitdetailViewFeature.Name,
