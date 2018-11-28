@@ -76,10 +76,10 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'z',
+			Key:         'e',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.nextRemoteBranch,
-			Display:     "z",
+			Display:     "e",
 			Description: "Iterate over remote branches",
 			Vital:       false,
 		}, {
@@ -92,10 +92,10 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'x',
+			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.showCommitDetail,
-			Display:     "x",
+			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       false,
 		}, {
@@ -186,25 +186,25 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	v.FgColor = gocui.ColorBlack
 	v.Frame = false
 	fmt.Fprint(v, ws)
-
+	modeLabel := ""
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
 		v.BgColor = gocui.ColorBlue
 		v.FgColor = gocui.ColorWhite
-		fmt.Fprint(v, "↓ Fetch Mode")
+		modeLabel = fetchSymbol + ws + bold.Sprint("FETCH")
 	case PullMode:
 		v.BgColor = gocui.ColorMagenta
 		v.FgColor = gocui.ColorWhite
-		fmt.Fprint(v, "↓↳ Pull Mode")
+		modeLabel = pullSymbol + ws + bold.Sprint("PULL")
 	case MergeMode:
 		v.BgColor = gocui.ColorCyan
 		v.FgColor = gocui.ColorBlack
-		fmt.Fprint(v, "↳ Merge Mode")
+		modeLabel = mergeSymbol + ws + black.Sprint(bold.Sprint("MERGE"))
 	default:
-		writeRightHandSide(v, "No-Mode", 0, 0)
+		modeLabel = "No mode selected"
 	}
 
-	fmt.Fprint(v, ws + modeSeperator)
+	fmt.Fprint(v, ws + modeLabel + ws + modeSeperator)
 
 	for _, k := range gui.KeyBindings {
 		if k.View == viewName && k.Vital {

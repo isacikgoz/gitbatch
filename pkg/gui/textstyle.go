@@ -3,11 +3,23 @@ package gui
 import (
 	"regexp"
 
+	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/job"
 )
 
 var (
+	black   = color.New(color.FgBlack)
+	blue    = color.New(color.FgBlue)
+	green   = color.New(color.FgGreen)
+	red     = color.New(color.FgRed)
+	cyan    = color.New(color.FgCyan)
+	yellow  = color.New(color.FgYellow)
+	white   = color.New(color.FgWhite)
+	magenta = color.New(color.FgMagenta)
+
+	bold = color.New(color.Bold)
+
 	maxBranchLength = 15
 	maxRepositoryLength = 20
 
@@ -24,7 +36,11 @@ var (
 	successSymbol = "✔"
 	failSymbol = "✗"
 
-	modeSeperator = "▓▒"
+	fetchSymbol = "↓"
+	pullSymbol = "↓↳"
+	mergeSymbol = "↳"
+
+	modeSeperator = ""
 	keyBindingSeperator = "░"
 
 	selectionIndicator = string(green.Sprint("→")) + ws
