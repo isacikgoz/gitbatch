@@ -2,7 +2,6 @@ package git
 
 import (
 	"regexp"
-	"time"
 
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
@@ -17,13 +16,16 @@ type Commit struct {
 	Hash    string
 	Author  string
 	Message string
-	Time    time.Time
+	Time    string
+	CommitType    CommitType
 }
 
-func newCommit(hash, author, message string, time time.Time) (commit *Commit) {
-	commit = &Commit{hash, author, message, time}
-	return commit
-}
+type CommitType string
+
+const (
+	LocalCommit CommitType = "local"
+	RemoteCommit CommitType = "remote"
+)
 
 func (entity *RepoEntity) NextCommit() error {
 	currentCommitIndex := 0
@@ -56,11 +58,20 @@ func (entity *RepoEntity) loadCommits() error {
 		return err
 	}
 	defer cIter.Close()
-
+	rmcs, err := entity.pullDiffsToUpstream()
+	for _, rmc := range rmcs {
+		entity.Commits = append(entity.Commits, rmc)
+	}
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
 		re := regexp.MustCompile(`\r?\n`)
-		commit := newCommit(re.ReplaceAllString(c.Hash.String(), " "), c.Author.Email, re.ReplaceAllString(c.Message, " "), c.Author.When)
+		commit := &Commit{
+			Hash: re.ReplaceAllString(c.Hash.String(), " "),
+			Author: c.Author.Email,
+			Message: re.ReplaceAllString(c.Message, " "),
+			Time: c.Author.When.String(),
+			CommitType: LocalCommit,
+		}
 		entity.Commits = append(entity.Commits, commit)
 
 		return nil

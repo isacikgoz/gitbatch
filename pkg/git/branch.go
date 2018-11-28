@@ -5,6 +5,7 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"strings"
+	"regexp"
 )
 
 type Branch struct {
@@ -112,24 +113,24 @@ func (entity *RepoEntity) RefreshPushPull() {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 }
 
-func (entity *RepoEntity) PushDiffsToUpstream() error {
-	hashes := UpstreamPushDiffs(entity.AbsPath)
-	if hashes != "?" {
-		sliced := strings.Split(hashes, "\n")
-		for _, s := range sliced {
-			GitShow(entity.AbsPath, s)
-		}
-	}
-	return nil
-}
-
-func (entity *RepoEntity) PullDiffsToUpstream() error {
+func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
+	remoteCommits := make([]*Commit, 0)
 	hashes := UpstreamPullDiffs(entity.AbsPath)
+	re := regexp.MustCompile(`\r?\n`)
 	if hashes != "?" {
 		sliced := strings.Split(hashes, "\n")
 		for _, s := range sliced {
-			GitShow(entity.AbsPath, s)
+			if len(s) == 40 {
+				commit := &Commit{
+				Hash: s,
+				Author: GitShowEmail(entity.AbsPath, s),
+				Message: re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
+				Time: GitShowDate(entity.AbsPath, s),
+				CommitType: RemoteCommit,
+			}
+			remoteCommits = append(remoteCommits, commit)
+			}
 		}
 	}
-	return nil
+	return remoteCommits, nil
 }

@@ -50,6 +50,33 @@ func GitShow(repoPath, hash string) string {
 	return diff
 }
 
+func GitShowEmail(repoPath, hash string) string {
+	args := []string{"show", "--quiet", "--pretty=format:%ae", hash}
+	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	if err != nil {
+		return "?"
+	}
+	return diff
+}
+
+func GitShowBody(repoPath, hash string) string {
+	args := []string{"show", "--quiet", "--pretty=format:%B", hash}
+	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	if err != nil {
+		return err.Error()
+	}
+	return diff
+}
+
+func GitShowDate(repoPath, hash string) string {
+	args := []string{"show", "--quiet", "--pretty=format:%ai", hash}
+	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	if err != nil {
+		return "?"
+	}
+	return diff
+}
+
 func (entity *RepoEntity) FetchWithGit(remote string) error {
 	args := []string{"fetch", remote}
 	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
