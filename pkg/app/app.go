@@ -1,14 +1,15 @@
 package app
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/gui"
 	"io"
+
+	"github.com/isacikgoz/gitbatch/pkg/gui"
 )
 
 // App struct
 type App struct {
 	closers []io.Closer
-	Gui *gui.Gui
+	Gui     *gui.Gui
 }
 
 // Setup bootstrap a new application

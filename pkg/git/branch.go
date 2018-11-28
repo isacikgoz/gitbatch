@@ -3,14 +3,15 @@ package git
 import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"strings"
 )
 
 type Branch struct {
-	Name       string
-	Reference  *plumbing.Reference
-	Pushables  string
-	Pullables  string
-	Clean      bool
+	Name      string
+	Reference *plumbing.Reference
+	Pushables string
+	Pullables string
+	Clean     bool
 }
 
 func (entity *RepoEntity) GetActiveBranch() (branch *Branch) {
@@ -35,9 +36,9 @@ func (entity *RepoEntity) loadLocalBranches() error {
 			push, pull := UpstreamDifferenceCount(entity.AbsPath)
 			clean := entity.isClean()
 			branch := &Branch{Name: b.Name().Short(), Reference: b, Pushables: push, Pullables: pull, Clean: clean}
-        	lbs = append(lbs, branch)
-    	}
-    	return nil
+			lbs = append(lbs, branch)
+		}
+		return nil
 	})
 	entity.Branches = lbs
 	return err
@@ -70,10 +71,10 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	}); err != nil {
 		return err
 	}
-	branch.Pushables, branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 	entity.loadCommits()
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
+	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 	return nil
 }
 
@@ -87,4 +88,30 @@ func (entity *RepoEntity) isClean() bool {
 		return false
 	}
 	return status.IsClean()
+}
+
+func (entity *RepoEntity) RefreshPushPull() {
+	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+}
+
+func (entity *RepoEntity) PushDiffsToUpstream() error {
+	hashes := UpstreamPushDiffs(entity.AbsPath)
+	if hashes != "?" {
+		sliced := strings.Split(hashes, "\n")
+		for _, s := range sliced {
+			GitShow(entity.AbsPath, s)
+		}
+	}
+	return nil
+}
+
+func (entity *RepoEntity) PullDiffsToUpstream() error {
+	hashes := UpstreamPullDiffs(entity.AbsPath)
+	if hashes != "?" {
+		sliced := strings.Split(hashes, "\n")
+		for _, s := range sliced {
+			GitShow(entity.AbsPath, s)
+		}
+	}
+	return nil
 }

@@ -1,11 +1,12 @@
 package git
 
 import (
+	"regexp"
+	"time"
+
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"regexp"
-	"time"
 )
 
 var (
@@ -13,10 +14,10 @@ var (
 )
 
 type Commit struct {
-	Hash string
-	Author string
+	Hash    string
+	Author  string
 	Message string
-	Time time.Time
+	Time    time.Time
 }
 
 func newCommit(hash, author, message string, time time.Time) (commit *Commit) {
@@ -25,7 +26,7 @@ func newCommit(hash, author, message string, time time.Time) (commit *Commit) {
 }
 
 func (entity *RepoEntity) NextCommit() error {
-    currentCommitIndex := 0
+	currentCommitIndex := 0
 	for i, cs := range entity.Commits {
 		if cs.Hash == entity.Commit.Hash {
 			currentCommitIndex = i
@@ -43,32 +44,32 @@ func (entity *RepoEntity) loadCommits() error {
 	r := entity.Repository
 	entity.Commits = make([]*Commit, 0)
 	ref, err := r.Head()
-    if err != nil {
-        return err
-    }
-
-    cIter, err := r.Log(&git.LogOptions{
-    	From: ref.Hash(),
-		Order: git.LogOrderCommitterTime,
-	})    
 	if err != nil {
-        return err
-    }
+		return err
+	}
+
+	cIter, err := r.Log(&git.LogOptions{
+		From:  ref.Hash(),
+		Order: git.LogOrderCommitterTime,
+	})
+	if err != nil {
+		return err
+	}
 	defer cIter.Close()
 
-    // ... just iterates over the commits
-    err = cIter.ForEach(func(c *object.Commit) error {
-    	re := regexp.MustCompile(`\r?\n`)
-    	commit := newCommit(re.ReplaceAllString(c.Hash.String(), " "), c.Author.Email, re.ReplaceAllString(c.Message, " "), c.Author.When)
-        entity.Commits = append(entity.Commits, commit)
+	// ... just iterates over the commits
+	err = cIter.ForEach(func(c *object.Commit) error {
+		re := regexp.MustCompile(`\r?\n`)
+		commit := newCommit(re.ReplaceAllString(c.Hash.String(), " "), c.Author.Email, re.ReplaceAllString(c.Message, " "), c.Author.When)
+		entity.Commits = append(entity.Commits, commit)
 
-        return nil
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 	// entity.Commits = commits
-    return nil
+	return nil
 }
 
 func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
@@ -79,12 +80,12 @@ func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 			currentCommitIndex = i
 		}
 	}
-	if len(entity.Commits) -currentCommitIndex <= 1 {
+	if len(entity.Commits)-currentCommitIndex <= 1 {
 		return "there is no diff", nil
 	}
 
 	commits, err := entity.Repository.Log(&git.LogOptions{
-    	From: plumbing.NewHash(entity.Commit.Hash), //plumbing.NewHash(entity.Commits[currentCommitIndex].Hash),
+		From:  plumbing.NewHash(entity.Commit.Hash), //plumbing.NewHash(entity.Commits[currentCommitIndex].Hash),
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
@@ -92,18 +93,18 @@ func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 	}
 
 	currentCommit, err := commits.Next()
-		if err != nil {
-			return "", err
-		}
+	if err != nil {
+		return "", err
+	}
 	currentTree, err := currentCommit.Tree()
 	if err != nil {
 		return diff, err
 	}
 
 	prevCommit, err := commits.Next()
-		if err != nil {
-			return "", err
-		}
+	if err != nil {
+		return "", err
+	}
 	prevTree, err := prevCommit.Tree()
 	if err != nil {
 		return diff, err
@@ -115,11 +116,11 @@ func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 	}
 
 	for _, c := range changes {
-			patch, err := c.Patch()
-			if err != nil {
-				break
-			}
-			diff = diff + patch.String() + "\n"
+		patch, err := c.Patch()
+		if err != nil {
+			break
+		}
+		diff = diff + patch.String() + "\n"
 	}
 	return diff, nil
 }

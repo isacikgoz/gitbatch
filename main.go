@@ -1,26 +1,27 @@
 package main
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/app"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"log"
 	"os"
-    "path/filepath"
+	"path/filepath"
 	"strings"
+
+	"github.com/isacikgoz/gitbatch/pkg/app"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	currentDir, err    = os.Getwd()
-	dir                = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
-	repoPattern        = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
+	currentDir, err = os.Getwd()
+	dir             = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
+	repoPattern     = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
 )
 
 func main() {
 	kingpin.Parse()
 	repositories := FindRepos(*dir)
 
-	app, err := app.Setup(repositories) 
+	app, err := app.Setup(repositories)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,5 +68,3 @@ func FilterRepos(files []os.FileInfo) []os.FileInfo {
 	}
 	return filteredRepos
 }
-
-
