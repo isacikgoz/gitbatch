@@ -39,6 +39,8 @@ func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	case FetchMode:
 		gui.State.Mode = pullMode
 	case PullMode:
+		gui.State.Mode = mergeMode
+	case MergeMode:
 		gui.State.Mode = fetchMode
 	default:
 		gui.State.Mode = fetchMode
@@ -95,14 +97,6 @@ func (gui *Gui) smartAnchorRelativeToLine(v *gocui.View, currentindex, totalline
 		}
 	}
 	return nil
-}
-
-func selectionIndicator() string {
-	return green.Sprint("→ ")
-}
-
-func tab() string {
-	return green.Sprint("  ")
 }
 
 func writeRightHandSide(v *gocui.View, text string, cx, cy int) error {

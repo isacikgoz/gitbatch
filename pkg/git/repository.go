@@ -46,7 +46,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		return nil, err
 	}
-	entity = &RepoEntity{RepoID: utils.NewHash(),
+	entity = &RepoEntity{RepoID: utils.RandomString(8),
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
 		Repository: *r,
@@ -105,6 +105,17 @@ func (entity *RepoEntity) Fetch() error {
 	entity.Checkout(entity.Branch)
 	return nil
 }
+
+func (entity *RepoEntity) Merge() error {
+	entity.Checkout(entity.Branch)
+	if err := entity.MergeWithGit(entity.Remote.Branch.Name); err != nil {
+		entity.Refresh()
+		return err
+	}
+	entity.Refresh()
+	return nil
+}
+
 func (entity *RepoEntity) Refresh() error {
 	r, err := git.PlainOpen(entity.AbsPath)
 	if err != nil {

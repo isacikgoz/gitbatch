@@ -20,10 +20,10 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 	for i, b := range entity.Branches {
 		if b.Name == entity.Branch.Name {
 			currentindex = i
-			fmt.Fprintln(out, selectionIndicator()+b.Name)
+			fmt.Fprintln(out, selectionIndicator+b.Name)
 			continue
 		}
-		fmt.Fprintln(out, tab()+b.Name)
+		fmt.Fprintln(out, tab+b.Name)
 	}
 	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalbranches); err != nil {
 		return err

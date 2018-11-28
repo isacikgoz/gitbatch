@@ -22,10 +22,10 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	for i, c := range entity.Commits {
 		if c.Hash == entity.Commit.Hash {
 			currentindex = i
-			fmt.Fprintln(out, selectionIndicator()+green.Sprint(c.Hash[:git.Hashlimit])+" "+c.Message)
+			fmt.Fprintln(out, selectionIndicator+green.Sprint(c.Hash[:git.Hashlimit])+" "+c.Message)
 			continue
 		}
-		fmt.Fprintln(out, tab()+cyan.Sprint(c.Hash[:git.Hashlimit])+" "+c.Message)
+		fmt.Fprintln(out, tab+cyan.Sprint(c.Hash[:git.Hashlimit])+" "+c.Message)
 	}
 	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalcommits); err != nil {
 		return err

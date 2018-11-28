@@ -185,31 +185,32 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	v.BgColor = gocui.ColorWhite
 	v.FgColor = gocui.ColorBlack
 	v.Frame = false
+	fmt.Fprint(v, ws)
+
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
 		v.BgColor = gocui.ColorBlue
 		v.FgColor = gocui.ColorWhite
-		fmt.Fprint(v, " ↓ Fetch Mode █▓▒")
+		fmt.Fprint(v, "↓ Fetch Mode")
 	case PullMode:
 		v.BgColor = gocui.ColorMagenta
 		v.FgColor = gocui.ColorWhite
-		fmt.Fprint(v, " ↓↳ Pull Mode █▓▒")
+		fmt.Fprint(v, "↓↳ Pull Mode")
+	case MergeMode:
+		v.BgColor = gocui.ColorCyan
+		v.FgColor = gocui.ColorBlack
+		fmt.Fprint(v, "↳ Merge Mode")
 	default:
 		writeRightHandSide(v, "No-Mode", 0, 0)
 	}
+
+	fmt.Fprint(v, ws + modeSeperator)
+
 	for _, k := range gui.KeyBindings {
 		if k.View == viewName && k.Vital {
-			binding := "░ " + k.Display + ": " + k.Description + " "
+			binding := keyBindingSeperator + ws + k.Display + ":" + ws + k.Description + ws
 			fmt.Fprint(v, binding)
 		}
 	}
-	// switch mode := gui.State.Mode.ModeID; mode {
-	// case FetchMode:
-	// 	writeRightHandSide(v, " ⭠ Fetch", 0, 0)
-	// case PullMode:
-	// 	writeRightHandSide(v, " ⭠ Pull", 0, 0)
-	// default:
-	// 	writeRightHandSide(v, "No-Mode", 0, 0)
-	// }
 	return nil
 }

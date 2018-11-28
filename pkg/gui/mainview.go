@@ -2,8 +2,6 @@ package gui
 
 import (
 	"fmt"
-	// "regexp"
-	// "sync"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/job"
@@ -17,7 +15,7 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 			return err
 		}
 		for _, r := range gui.State.Repositories {
-			fmt.Fprintln(v, displayString(r))
+			fmt.Fprintln(v, gui.displayString(r))
 		}
 		err = g.DeleteView(loadingViewFeature.Name)
 		if err != nil {
@@ -80,23 +78,13 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEntity, error) {
-	// var l string
-	var err error
 	var r *git.RepoEntity
 
 	_, cy := v.Cursor()
-	if _, err = v.Line(cy); err != nil {
+	if _, err := v.Line(cy); err != nil {
 		return r, err
 	}
 	return gui.State.Repositories[cy], nil
-	// rg := regexp.MustCompile(` → .+ `)
-	// ss := rg.Split(l, 5)
-	// for _, sr := range gui.State.Repositories {
-	// 	if ss[len(ss)-1] == sr.Name {
-	// 		return sr, nil
-	// 	}
-	// }
-	return r, err
 }
 
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
@@ -106,12 +94,6 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 		if err != nil {
 			return err
 		}
-		// if !r.Branch.Clean {
-		// 	if err = gui.openErrorView(g, "Stage your changes before pull", "You should manually resolve this issue"); err != nil {
-		// 		return err
-		// 	}
-		// 	return nil
-		// }
 		if r.State == git.Available || r.State == git.Success {
 			var jt job.JobType
 			switch mode := gui.State.Mode.ModeID; mode {
@@ -119,6 +101,8 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 				jt = job.Fetch
 			case PullMode:
 				jt = job.Pull
+			case MergeMode:
+				jt = job.Merge
 			default:
 				return nil
 			}
@@ -152,67 +136,7 @@ func (gui *Gui) refreshMain(g *gocui.Gui) error {
 	}
 	mainView.Clear()
 	for _, r := range gui.State.Repositories {
-		fmt.Fprintln(mainView, displayString(r))
+		fmt.Fprintln(mainView, gui.displayString(r))
 	}
 	return nil
 }
-
-func displayString(entity *git.RepoEntity) string {
-
-	prefix := ""
-	if entity.Branch.Pushables != "?" {
-		prefix = prefix + string(blue.Sprint("↖")) + " " + entity.Branch.Pushables + " " +
-			string(blue.Sprint("↘")) + " " + entity.Branch.Pullables + string(magenta.Sprint(" → "))
-	} else {
-		prefix = prefix + " " + magenta.Sprint("?") + string(yellow.Sprint(" → "))
-	}
-	branch := "" + entity.Branch.Name
-	if len(branch) > 16 {
-		branch = branch[:13] + "..."
-	}
-	prefix = prefix + string(cyan.Sprint(branch))
-	if !entity.Branch.Clean {
-		prefix = prefix + string(yellow.Sprint("✗") + " ")
-	} else {
-		prefix = prefix + " "
-	}
-	if entity.State == git.Queued {
-		return prefix + entity.Name + " " + string(green.Sprint("•") + " ")
-	} else if entity.State == git.Working {
-		return prefix + entity.Name + " " + string(blue.Sprint("•") + " ")
-	} else if entity.State == git.Success {
-		return prefix + entity.Name + " " + string(green.Sprint("✔") + " ")
-	} else if entity.State == git.Fail {
-		return prefix + entity.Name + " " + string(red.Sprint("✗") + " ")
-	} else {
-		return prefix + entity.Name
-	}
-}
-
-// func displayString(entity *git.RepoEntity) string {
-
-// 	prefix := ""
-// 	if entity.Branch.Pushables != "?" {
-// 		prefix = prefix + string(blue.Sprint("↑")) + " " + entity.Branch.Pushables + " " +
-// 			string(blue.Sprint("↓")) + " " + entity.Branch.Pullables + "  "
-// 	} else {
-// 		prefix = prefix + "        " + magenta.Sprint("?")
-// 	}
-// 	if !entity.Branch.Clean {
-// 		prefix = prefix + " " + string(yellow.Sprint("✗") + " ")
-// 	} else {
-// 		prefix = prefix + " " + string(magenta.Sprint("  "))
-// 	}
-// 	prefix = prefix  + " " + string(cyan.Sprint(entity.Branch.Name)) + "     "
-// 	if entity.State == git.Queued {
-// 		return prefix + entity.Name + " " + string(blue.Sprint("•") + " ")
-// 	} else if entity.State == git.Working {
-// 		return prefix + entity.Name + " " + string(blue.Sprint("•") + " ")
-// 	} else if entity.State == git.Success {
-// 		return prefix + entity.Name + " " + string(green.Sprint("✔") + " ")
-// 	} else if entity.State == git.Fail {
-// 		return prefix + entity.Name + " " + string(red.Sprint("✗") + " ")
-// 	} else {
-// 		return prefix + entity.Name
-// 	}
-// }
