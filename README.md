@@ -74,5 +74,6 @@ run the command the parent of your git repositories. For start-up options simply
 ## Credits
 - [go-git](https://github.com/src-d/go-git) for git interface
 - [gocui](https://github.com/jroimartin/gocui) for user interface
+- [lazygit](https://github.com/jesseduffield/lazygit) as app template
 - [color](https://github.com/fatih/color) for colored text
 - [kingpin](https://github.com/alecthomas/kingpin) for command-line flag&options
