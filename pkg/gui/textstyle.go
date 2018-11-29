@@ -55,7 +55,8 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 		prefix = prefix + pushable + ws + entity.Branch.Pushables + ws +
 			pullable + ws + entity.Branch.Pullables + ws + confidentArrow + ws
 	} else {
-		prefix = prefix + unkown + ws + unconfidentArrow + ws 
+		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) + ws +
+			pullable + ws + yellow.Sprint(entity.Branch.Pullables) + ws + unconfidentArrow + ws
 	}
 
 	branch := adjustTextLength(entity.Branch.Name, maxBranchLength)
