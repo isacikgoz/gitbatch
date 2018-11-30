@@ -7,9 +7,9 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// updates the remotebranchview for given entity
 func (gui *Gui) updateRemoteBranches(g *gocui.Gui, entity *git.RepoEntity) error {
 	var err error
-
 	out, err := g.View(remoteBranchViewFeature.Name)
 	if err != nil {
 		return err
@@ -33,17 +33,16 @@ func (gui *Gui) updateRemoteBranches(g *gocui.Gui, entity *git.RepoEntity) error
 	return nil
 }
 
+// iteration handler for the remotebranchview
 func (gui *Gui) nextRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	entity, err := gui.getSelectedRepository(g, v)
 	if err != nil {
 		return err
 	}
-
 	if err = entity.Remote.NextRemoteBranch(); err != nil {
 		return err
 	}
-
 	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}

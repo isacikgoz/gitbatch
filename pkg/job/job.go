@@ -8,11 +8,13 @@ import (
 	"github.com/isacikgoz/gitbatch/pkg/git"
 )
 
+// Job relates the type of the operation and the entity
 type Job struct {
 	JobType JobType
 	Entity  *git.RepoEntity
 }
 
+// only holds the slice of Jobs
 type JobQueue struct {
 	series []*Job
 }
@@ -25,14 +27,17 @@ const (
 	Merge JobType = "merge"
 )
 
+// creates a job struct and return its pointer
 func CreateJob() (j *Job, err error) {
 	fmt.Println("Job created.")
 	return j, nil
 }
 
+// starts the job
 func (job *Job) start() error {
-	time.Sleep(2*time.Second)
 	job.Entity.State = git.Working
+	// added for testing, TODO: remove
+	time.Sleep(time.Second)
 	// TODO: Handle errors?
 	switch mode := job.JobType; mode {
 	case Fetch:
@@ -63,6 +68,7 @@ func (job *Job) start() error {
 	return nil
 }
 
+// creates a jobqueue struct and initialize its slice then return its pointer
 func CreateJobQueue() (jobQueue *JobQueue) {
 	s := make([]*Job, 0)
 	return &JobQueue{
@@ -70,6 +76,7 @@ func CreateJobQueue() (jobQueue *JobQueue) {
 	}
 }
 
+// add job to the queue
 func (jobQueue *JobQueue) AddJob(j *Job) error {
 	for _, job := range jobQueue.series {
 		if job.Entity.RepoID == j.Entity.RepoID && job.JobType == j.JobType {
@@ -80,6 +87,7 @@ func (jobQueue *JobQueue) AddJob(j *Job) error {
 	return nil
 }
 
+// start the next job of the queue
 func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 	finished = false
 	if len(jobQueue.series) < 1 {
@@ -95,6 +103,8 @@ func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 	return lastJob, finished, nil
 }
 
+// delete it from the queue
+// TODO: it is not safe if the job has been started
 func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 	removed := false
 	for i, job := range jobQueue.series {
@@ -109,6 +119,8 @@ func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 	return nil
 }
 
+// since the job and entity is not tied with its own struct, this function
+// returns true if that entity is in the queue along with the jobs type
 func (jobQueue *JobQueue) IsInTheQueue(entity *git.RepoEntity) (inTheQueue bool, jt JobType) {
 	inTheQueue = false
 	for _, job := range jobQueue.series {

@@ -8,12 +8,16 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// Gui struct hold the gocui struct along with the gui's state, also keybindings
+// are tied with this struct in order to render those in different occasions
 type Gui struct {
 	g           *gocui.Gui
 	KeyBindings []*KeyBinding
 	State       guiState
 }
 
+// guiState struct holds the repositories, directiories, mode and queue of the 
+// gui object. These values are not static
 type guiState struct {
 	Repositories []*git.RepoEntity
 	Directories  []string
@@ -21,11 +25,14 @@ type guiState struct {
 	Queue        *job.JobQueue
 }
 
+// this struct encapsulates the name and title of a view. the name of a view is
+// passed around so much it is added so that I don't need to wirte names again
 type viewFeature struct {
 	Name  string
 	Title string
 }
 
+// mode of the gui
 type mode struct {
 	ModeID        ModeID
 	DisplayString string
@@ -49,7 +56,7 @@ var (
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}
 	scheduleViewFeature     = viewFeature{Name: "schedule", Title: " Schedule "}
 	keybindingsViewFeature  = viewFeature{Name: "keybindings", Title: " Keybindings "}
-	commitdetailViewFeature = viewFeature{Name: "commitdetail", Title: " Commit Detail "}
+	commitDiffViewFeature   = viewFeature{Name: "commitdiff", Title: " Commit Detail "}
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
 
@@ -58,6 +65,7 @@ var (
 	mergeMode  = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 )
 
+// create a Gui opject and fill it's state related entites
 func NewGui(directoies []string) (*Gui, error) {
 	initialState := guiState{
 		Directories: directoies,
@@ -70,13 +78,17 @@ func NewGui(directoies []string) (*Gui, error) {
 	return gui, nil
 }
 
+// run the main loop with intial values
 func (gui *Gui) Run() error {
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		return err
 	}
+
+	// start an async view apart from this loop to show loading screen
 	go func(g_ui *Gui) {
 		maxX, maxY := g.Size()
+		// TODO: view size can be handled in a more smart way
 		v, err := g.SetView(loadingViewFeature.Name, maxX/2-10, maxY/2-1, maxX/2+10, maxY/2+1)
 		if err != nil {
 			if err != gocui.ErrUnknownView {
@@ -111,6 +123,8 @@ func (gui *Gui) Run() error {
 	return nil
 }
 
+// set the layout and create views with their default size, name etc. values
+// TODO: window sizes can be handled better
 func (gui *Gui) layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 	if v, err := g.SetView(mainViewFeature.Name, 0, 0, int(0.55*float32(maxX))-1, maxY-2); err != nil {
@@ -167,6 +181,7 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 	return nil
 }
 
+// quit from the gui and end its loop
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }

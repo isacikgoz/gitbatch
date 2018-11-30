@@ -8,6 +8,8 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// this is the inital function for filling the values for the main view. the 
+// function waits a seperate routine to fill the gui's repositiory slice
 func (gui *Gui) fillMain(g *gocui.Gui) error {
 	g.Update(func(g *gocui.Gui) error {
 		v, err := g.View(mainViewFeature.Name)
@@ -34,6 +36,8 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 	return nil
 }
 
+// moves the cursor downwards for the main view and if it goes to bottom it 
+// prevents from going further
 func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
@@ -59,6 +63,7 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// moves the cursor upwards for the main view
 func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
@@ -77,6 +82,10 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// returns the entity at cursors position by taking its position in the gui's
+// slice of repositories. Since it is not a %100 percent safe methodology it may
+// rrequire a better implementation or the slice's order must be synchronized
+// with the views lines
 func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEntity, error) {
 	var r *git.RepoEntity
 
@@ -87,6 +96,8 @@ func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEnt
 	return gui.State.Repositories[cy], nil
 }
 
+// marking repostiry is simply adding the repostirory into the queue. the
+// function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	if r, err := gui.getSelectedRepository(g, v); err != nil {
 		return err
@@ -128,8 +139,8 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// refresh the main view and re-render the repository representations
 func (gui *Gui) refreshMain(g *gocui.Gui) error {
-
 	mainView, err := g.View(mainViewFeature.Name)
 	if err != nil {
 		return err

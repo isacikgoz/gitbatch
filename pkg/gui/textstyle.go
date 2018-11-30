@@ -48,6 +48,8 @@ var (
 	tab = ws + ws
 )
 
+// this fucntion handles the render and representation of the repository
+// TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	suffix := ""
 	prefix := ""
@@ -60,6 +62,8 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 			pullable + ws + yellow.Sprint(entity.Branch.Pullables) + ws + unconfidentArrow + ws
 	}
 
+	// some branch names can be really long, in that times I hope the first
+	// characters are important and meaningful
 	branch := adjustTextLength(entity.Branch.Name, maxBranchLength)
 	prefix = prefix + string(cyan.Sprint(branch))
 
@@ -69,6 +73,7 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 		prefix = prefix + ws 
 	}
 
+	// rendering the satus according to repository's state
 	if entity.State == git.Queued {
 		if inQueue, ty := gui.State.Queue.IsInTheQueue(entity); inQueue {
 		switch mode := ty; mode {
@@ -84,6 +89,7 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 		}
 		return prefix + entity.Name + ws + suffix
 	} else if entity.State == git.Working {
+		// TODO: maybe the type of the job can be written while its working?
 		return prefix + entity.Name + ws + green.Sprint(workingSymbol)
 	} else if entity.State == git.Success {
 		return prefix + entity.Name + ws + green.Sprint(successSymbol)
@@ -94,6 +100,7 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	}
 }
 
+// limit the text length for visual concerns
 func adjustTextLength(text string, maxLength int) (adjusted string) {
 	if len(text) > maxLength {
 		adjusted := text[:maxLength-2] + ".."
@@ -103,15 +110,20 @@ func adjustTextLength(text string, maxLength int) (adjusted string) {
 	}
 }
 
+// the remote link can be too verbose sometimes, so it is good to trim it
 func trimRemoteURL(url string) (urltype string, shorturl string) {
+	// lets trim the unnecessary .git extension of the url
 	regit := regexp.MustCompile(`.git`)
 	if regit.MatchString(url[len(url)-4:]) {
 		url = url[:len(url)-4]
 	}
+
+	// find out the protocol
 	ressh := regexp.MustCompile(`git@`)
 	rehttp := regexp.MustCompile(`http://`)
 	rehttps := regexp.MustCompile(`https://`)
 
+	// seperate the protocol and remote link
 	if ressh.MatchString(url) {
 		shorturl = ressh.Split(url, 5)[1]
 		urltype = "ssh"
