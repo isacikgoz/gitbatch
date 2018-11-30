@@ -6,6 +6,9 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// open the application controls
+// TODO: view size can handled better for such situations like too small
+// application area
 func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 	maxX, maxY := g.Size()
 	v, err := g.SetView(cheatSheetViewFeature.Name, maxX/2-25, maxY/2-10, maxX/2+25, maxY/2+10)
@@ -29,6 +32,7 @@ func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// close the application controls and do the clean job
 func (gui *Gui) closeCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil

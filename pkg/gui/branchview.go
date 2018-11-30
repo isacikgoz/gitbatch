@@ -7,6 +7,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// updates the branchview for given entity
 func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 	var err error
 	out, err := g.View("branch")
@@ -31,6 +32,7 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 	return nil
 }
 
+// iteration handler for the branchview
 func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	entity, err := gui.getSelectedRepository(g, v)
@@ -38,7 +40,7 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	if err = entity.Checkout(entity.NextBranch()); err != nil {
-		if err = gui.openErrorView(g, "Please commit your changes or stash them before you switch branches",
+		if err = gui.openErrorView(g, err.Error(),
 		"You should manually resolve this issue"); err != nil {
 			return err
 		}

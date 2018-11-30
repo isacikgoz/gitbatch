@@ -6,6 +6,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// refreshes the side views of the application for given git.RepoEntity struct
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 
 	if err := gui.updateRemotes(g, entity); err != nil {
@@ -23,6 +24,8 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 	return nil
 }
 
+// siwtch the app mode 
+// TODO: switching can be made with conventional iteration
 func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
@@ -38,6 +41,7 @@ func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// bring the view on the top by its name
 func (gui *Gui) setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
 	if _, err := g.SetCurrentView(name); err != nil {
 		return nil, err
@@ -65,8 +69,9 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
 	return nil
 }
 
+// this function handles the iteration of a side view and set its origin point
+// so that the selected line can be in the middle of the view
 func (gui *Gui) smartAnchorRelativeToLine(v *gocui.View, currentindex, totallines int) error {
-
 	_, y := v.Size()
 	if currentindex >= int(0.5*float32(y)) && totallines-currentindex+int(0.5*float32(y)) >= y {
 		if err := v.SetOrigin(0, currentindex-int(0.5*float32(y))); err != nil {
@@ -88,6 +93,8 @@ func (gui *Gui) smartAnchorRelativeToLine(v *gocui.View, currentindex, totalline
 	return nil
 }
 
+// this function writes the given text to rgiht hand side of the view
+// cx and cy values are important to get the cursor to its old position
 func writeRightHandSide(v *gocui.View, text string, cx, cy int) error {
 	runes := []rune(text)
 	tl := len(runes)

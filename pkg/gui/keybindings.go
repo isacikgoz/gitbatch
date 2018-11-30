@@ -6,6 +6,8 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// keybinding structs is helpful for not re-writinh the same function over and
+// over again. it hold useful values to generate a controls view
 type KeyBinding struct {
 	View        string
 	Handler     func(*gocui.Gui, *gocui.View) error
@@ -16,6 +18,7 @@ type KeyBinding struct {
 	Vital       bool
 }
 
+// generate the gui's controls a.k.a. keybindings
 func (gui *Gui) generateKeybindings() error {
 	gui.KeyBindings = []*KeyBinding{
 		{
@@ -110,7 +113,7 @@ func (gui *Gui) generateKeybindings() error {
 			View:        mainViewFeature.Name,
 			Key:         'd',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.showCommitDetail,
+			Handler:     gui.openCommitDiffView,
 			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       false,
@@ -139,15 +142,15 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Add to queue",
 			Vital:       true,
 		}, {
-			View:        commitdetailViewFeature.Name,
+			View:        commitDiffViewFeature.Name,
 			Key:         'c',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.closeCommitDetailView,
+			Handler:     gui.closeCommitDiffView,
 			Display:     "c",
 			Description: "close/cancel",
 			Vital:       true,
 		}, {
-			View:        commitdetailViewFeature.Name,
+			View:        commitDiffViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorUp,
@@ -155,7 +158,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Page up",
 			Vital:       true,
 		}, {
-			View:        commitdetailViewFeature.Name,
+			View:        commitDiffViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorDown,
@@ -163,7 +166,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Page down",
 			Vital:       true,
 		}, {
-			View:        commitdetailViewFeature.Name,
+			View:        commitDiffViewFeature.Name,
 			Key:         'k',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorUp,
@@ -171,7 +174,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Page up",
 			Vital:       false,
 		}, {
-			View:        commitdetailViewFeature.Name,
+			View:        commitDiffViewFeature.Name,
 			Key:         'j',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorDown,
@@ -199,6 +202,7 @@ func (gui *Gui) generateKeybindings() error {
 	return nil
 }
 
+// set the guis by iterating over a slice of the gui's keybindings struct
 func (gui *Gui) keybindings(g *gocui.Gui) error {
 	for _, k := range gui.KeyBindings {
 		if err := g.SetKeybinding(k.View, k.Key, k.Modifier, k.Handler); err != nil {
@@ -208,6 +212,8 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 	return nil
 }
 
+// the bottom line of the gui is mode indicator and keybindings view. Only the
+// important controls (marked as vital) are shown 
 func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	v, err := g.View(keybindingsViewFeature.Name)
 	if err != nil {

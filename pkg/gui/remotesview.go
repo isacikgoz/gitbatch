@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
-
 	"github.com/jroimartin/gocui"
 )
 
+// updates the remotesview for given entity
 func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 	var err error
-
 	out, err := g.View(remoteViewFeature.Name)
 	if err != nil {
 		return err
@@ -21,6 +20,7 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 	totalRemotes := len(entity.Remotes)
 	if totalRemotes > 0 {
 		for i, r := range entity.Remotes {
+			// TODO: maybe the text styling can be moved to textstyle.go file
 			_, shortURL := trimRemoteURL(r.URL[0])
 			suffix := shortURL
 			if r.Name == entity.Remote.Name {
@@ -37,6 +37,7 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 	return nil
 }
 
+// iteration handler for the remotesview
 func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	entity, err := gui.getSelectedRepository(g, v)

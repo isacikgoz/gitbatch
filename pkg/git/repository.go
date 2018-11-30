@@ -3,7 +3,6 @@ package git
 import (
 	"errors"
 	"os"
-	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/utils"
 	"gopkg.in/src-d/go-git.v4"
