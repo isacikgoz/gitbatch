@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/job"
+	"github.com/isacikgoz/gitbatch/pkg/queue"
 	"github.com/jroimartin/gocui"
 )
 
@@ -22,7 +22,7 @@ type guiState struct {
 	Repositories []*git.RepoEntity
 	Directories  []string
 	Mode         mode
-	Queue        *job.JobQueue
+	Queue        *queue.JobQueue
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
@@ -70,7 +70,7 @@ func NewGui(directoies []string) (*Gui, error) {
 	initialState := guiState{
 		Directories: directoies,
 		Mode:        fetchMode,
-		Queue:       job.CreateJobQueue(),
+		Queue:       queue.CreateJobQueue(),
 	}
 	gui := &Gui{
 		State: initialState,

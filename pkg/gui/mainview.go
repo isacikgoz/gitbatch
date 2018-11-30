@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/job"
+	"github.com/isacikgoz/gitbatch/pkg/queue"
 	"github.com/jroimartin/gocui"
 )
 
@@ -106,18 +106,18 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 		if r.State == git.Available || r.State == git.Success {
-			var jt job.JobType
+			var jt queue.JobType
 			switch mode := gui.State.Mode.ModeID; mode {
 			case FetchMode:
-				jt = job.Fetch
+				jt = queue.Fetch
 			case PullMode:
-				jt = job.Pull
+				jt = queue.Pull
 			case MergeMode:
-				jt = job.Merge
+				jt = queue.Merge
 			default:
 				return nil
 			}
-			err := gui.State.Queue.AddJob(&job.Job{
+			err := gui.State.Queue.AddJob(&queue.Job{
 				JobType: jt,
 				Entity:  r,
 			})

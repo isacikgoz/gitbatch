@@ -1,4 +1,4 @@
-package job
+package queue
 
 import (
 	"errors"
