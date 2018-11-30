@@ -8,10 +8,9 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-var (
-	Hashlimit = 7
-)
-
+// Commit is the lightweight version of go-git's Reference struct. it holds 
+// hash of the commit, author's e-mail address, Message (subject and body 
+// combined) commit date and commit type wheter it is local commit or a remote
 type Commit struct {
 	Hash    string
 	Author  string
@@ -20,6 +19,7 @@ type Commit struct {
 	CommitType    CommitType
 }
 
+// type of the commit; it can be local or remote (upstream diff)
 type CommitType string
 
 const (
@@ -27,6 +27,8 @@ const (
 	RemoteCommit CommitType = "remote"
 )
 
+// iterate over next commit of a branch
+// TODO: the commits entites can tied to branch instead ot the repository
 func (entity *RepoEntity) NextCommit() error {
 	currentCommitIndex := 0
 	for i, cs := range entity.Commits {
@@ -42,6 +44,8 @@ func (entity *RepoEntity) NextCommit() error {
 	return nil
 }
 
+// loads the local commits by simply using git log way. ALso, gets the upstream
+// diff commits
 func (entity *RepoEntity) loadCommits() error {
 	r := entity.Repository
 	entity.Commits = make([]*Commit, 0)
@@ -83,6 +87,9 @@ func (entity *RepoEntity) loadCommits() error {
 	return nil
 }
 
+
+// returns the diff to previous commit detail of the given hash of a specific
+// commit 
 func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 
 	currentCommitIndex := 0
@@ -95,8 +102,9 @@ func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 		return "there is no diff", nil
 	}
 
+	// maybe we dont need to log the repo again?
 	commits, err := entity.Repository.Log(&git.LogOptions{
-		From:  plumbing.NewHash(entity.Commit.Hash), //plumbing.NewHash(entity.Commits[currentCommitIndex].Hash),
+		From:  plumbing.NewHash(entity.Commit.Hash),
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
@@ -126,6 +134,7 @@ func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 		return "", err
 	}
 
+	// here we collect the actual diff
 	for _, c := range changes {
 		patch, err := c.Patch()
 		if err != nil {

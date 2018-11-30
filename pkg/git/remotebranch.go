@@ -9,11 +9,14 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 )
 
+// RemoteBranch is the wrapper of go-git's Reference struct. In addition to 
+// that, it also holds name of the remote branch
 type RemoteBranch struct {
 	Name      string
 	Reference *plumbing.Reference
 }
 
+// iterates to the next remote branch
 func (remote *Remote) NextRemoteBranch() error {
 	currentRemoteIndex := 0
 	for i, rb := range remote.Branches {
@@ -30,6 +33,8 @@ func (remote *Remote) NextRemoteBranch() error {
 	return nil
 }
 
+// search for the remote branches of the remote. It takes the go-git's repo
+// pointer in order to get storer struct
 func (remote *Remote) loadRemoteBranches(r *git.Repository) error {
 	remote.Branches = make([]*RemoteBranch, 0)
 	bs, err := remoteBranchesIter(r.Storer)
@@ -52,6 +57,8 @@ func (remote *Remote) loadRemoteBranches(r *git.Repository) error {
 	return err
 }
 
+// create an iterator for the references. it checks if the reference is a hash
+// reference
 func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) {
 	refs, err := s.IterReferences()
 	if err != nil {
@@ -66,6 +73,7 @@ func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) 
 	}, refs), nil
 }
 
+// switches to the given remote branch
 func (remote *Remote) switchRemoteBranch(remoteBranchName string) error {
 	for _, rb := range remote.Branches {
 		if rb.Name == remoteBranchName {

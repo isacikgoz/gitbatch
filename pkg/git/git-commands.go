@@ -23,6 +23,7 @@ func UpstreamDifferenceCount(repoPath string) (string, string) {
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
 }
 
+// Instead of returning the count, this method returns the hash list
 func UpstreamPushDiffs(repoPath string) string {
 	args := []string{"rev-list", "@{u}..HEAD"}
 	pushableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -32,6 +33,7 @@ func UpstreamPushDiffs(repoPath string) string {
 	return pushableCount
 }
 
+// Instead of returning the count, this method returns the hash list
 func UpstreamPullDiffs(repoPath string) string {
 	args := []string{"rev-list", "HEAD..@{u}"}
 	pullableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -41,6 +43,7 @@ func UpstreamPullDiffs(repoPath string) string {
 	return pullableCount
 }
 
+// Conventional git show command without any argument
 func GitShow(repoPath, hash string) string {
 	args := []string{"show", hash}
 	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -50,6 +53,7 @@ func GitShow(repoPath, hash string) string {
 	return diff
 }
 
+// get author's e-mail with git show command
 func GitShowEmail(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%ae", hash}
 	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -59,6 +63,7 @@ func GitShowEmail(repoPath, hash string) string {
 	return diff
 }
 
+// get body of the commit with git show
 func GitShowBody(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%B", hash}
 	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -68,6 +73,7 @@ func GitShowBody(repoPath, hash string) string {
 	return diff
 }
 
+// get commit's date with git show as string
 func GitShowDate(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%ai", hash}
 	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
@@ -77,6 +83,7 @@ func GitShowDate(repoPath, hash string) string {
 	return diff
 }
 
+// wrapper of the git fetch <remote> command
 func (entity *RepoEntity) FetchWithGit(remote string) error {
 	args := []string{"fetch", remote}
 	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -86,6 +93,7 @@ func (entity *RepoEntity) FetchWithGit(remote string) error {
 	return nil
 }
 
+// wrapper of the git pull <remote>/<branch> command
 func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 	args := []string{"pull", remote, branch}
 	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -95,6 +103,7 @@ func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 	return nil
 }
 
+// wrapper of the git merge <branch> command
 func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 	args := []string{"merge", mergeFrom}
 	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -104,6 +113,7 @@ func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 	return nil
 }
 
+// wrapper of the git checkout <branch> command
 func (entity *RepoEntity) CheckoutWithGit(branch string) error {
 	args := []string{"checkout", branch}
 	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
