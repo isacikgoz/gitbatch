@@ -22,9 +22,9 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	for i, c := range entity.Commits {
 		var body string = ""
 		if c.CommitType == git.LocalCommit {
-				body = cyan.Sprint(c.Hash[:git.Hashlimit])+" "+c.Message
+				body = cyan.Sprint(c.Hash[:hashLength])+" "+c.Message
 			} else {
-				body = yellow.Sprint(c.Hash[:git.Hashlimit])+" "+c.Message
+				body = yellow.Sprint(c.Hash[:hashLength])+" "+c.Message
 			}
 		if c.Hash == entity.Commit.Hash {
 			currentindex = i
