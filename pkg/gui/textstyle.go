@@ -22,6 +22,7 @@ var (
 
 	maxBranchLength = 15
 	maxRepositoryLength = 20
+	hashLength = 7
 
 	ws = " "
 	pushable = string(blue.Sprint("↖"))
