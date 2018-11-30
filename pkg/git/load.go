@@ -4,6 +4,8 @@ import (
 	"sync"
 )
 
+// initializes the go-git's repository obejcts with given slice of paths. since
+// this job is done parallel, the order of the directories is not kept
 func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err error) {
 	entities = make([]*RepoEntity, 0)
 

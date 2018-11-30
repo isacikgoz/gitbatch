@@ -8,6 +8,10 @@ import (
 	"regexp"
 )
 
+// Branch is the wrapper of go-git's Reference struct. In addition to that, it
+// also holds name of the branch, pullable and pushable commit count from the
+// branchs' upstream. It also tracks if the repository has unstaged or uncommit-
+// ed changes
 type Branch struct {
 	Name      string
 	Reference *plumbing.Reference
@@ -16,6 +20,8 @@ type Branch struct {
 	Clean     bool
 }
 
+// returns the active branch of the repository entity by simply getting the 
+// head reference and searching it from the entities branch slice
 func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
 	headRef, _ := entity.Repository.Head()
 	for _, lb := range entity.Branches {
@@ -26,6 +32,9 @@ func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
 	return nil
 }
 
+// search for branches in go-git way. It is useful to do so that checkout and 
+// checkout error handling can be handled by code rather than struggling with
+// git cammand and its output
 func (entity *RepoEntity) loadLocalBranches() error {
 	lbs := make([]*Branch, 0)
 	branches, err := entity.Repository.Branches()
@@ -46,6 +55,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 	return err
 }
 
+// checkouts the next branch
 func (entity *RepoEntity) NextBranch() *Branch {
 	currentBranch := entity.Branch
 	currentBranchIndex := 0
@@ -60,6 +70,8 @@ func (entity *RepoEntity) NextBranch() *Branch {
 	return entity.Branches[currentBranchIndex+1]
 }
 
+// checkout to given branch. If any errors occur, the method returns it instead
+// of returning nil
 func (entity *RepoEntity) Checkout(branch *Branch) error {
 	if branch.Name == entity.Branch.Name {
 		return nil
@@ -73,6 +85,8 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	}); err != nil {
 		return err
 	}
+
+	// after checking out we need to refresh some values such as;
 	entity.loadCommits()
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
@@ -86,17 +100,10 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	return nil
 }
 
+// checking the branch if it has any changes from its head revision. Initially 
+// I implemented this with go-git but it was incredibly slow and there is also
+// an issue about it: https://github.com/src-d/go-git/issues/844
 func (entity *RepoEntity) isClean() bool {
-	// this method is painfully slow
-	// worktree, err := entity.Repository.Worktree()
-	// if err != nil {
-	// 	return true
-	// }
-	// status, err := worktree.Status()
-	// if err != nil {
-	// 	return false
-	// }
-	// return status.IsClean()
 	status := entity.StatusWithGit()
 	status = utils.TrimTrailingNewline(status)
 	if status != "?" {
@@ -109,10 +116,13 @@ func (entity *RepoEntity) isClean() bool {
 	return false
 }
 
+// refreshes the active branchs pushable and pullable count
 func (entity *RepoEntity) RefreshPushPull() {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 }
 
+// this function creates the commit entities according to active branchs diffs
+// to *its* configured upstream
 func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 	remoteCommits := make([]*Commit, 0)
 	hashes := UpstreamPullDiffs(entity.AbsPath)

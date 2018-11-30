@@ -1,5 +1,8 @@
 package git
 
+// this struct is simply a collection of remote branches and wraps it with the
+// name of the remote and fetch/push urls. It also holds the *selected* remote
+// branch
 type Remote struct {
 	Name     string
 	URL      []string
@@ -7,6 +10,7 @@ type Remote struct {
 	Branches []*RemoteBranch
 }
 
+// iterate over next branch of a remote
 func (entity *RepoEntity) NextRemote() error {
 	currentRemoteIndex := 0
 	for i, remote := range entity.Remotes {
@@ -27,6 +31,8 @@ func (entity *RepoEntity) NextRemote() error {
 	return nil
 }
 
+// search for remotes in go-git way. It is the short way to get remotes but it
+// does not give any insght about remote branches
 func (entity *RepoEntity) loadRemotes() error {
 	r := entity.Repository
 	entity.Remotes = make([]*Remote, 0)
