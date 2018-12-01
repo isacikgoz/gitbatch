@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/isacikgoz/gitbatch/pkg/utils"
+	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"gopkg.in/src-d/go-git.v4"
 )
 
@@ -50,7 +50,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		return nil, err
 	}
-	entity = &RepoEntity{RepoID: utils.RandomString(8),
+	entity = &RepoEntity{RepoID: helpers.RandomString(8),
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
 		Repository: *r,

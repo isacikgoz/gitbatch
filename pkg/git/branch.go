@@ -1,7 +1,7 @@
 package git
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/utils"
+	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"strings"
@@ -105,7 +105,7 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 // an issue about it: https://github.com/src-d/go-git/issues/844
 func (entity *RepoEntity) isClean() bool {
 	status := entity.StatusWithGit()
-	status = utils.TrimTrailingNewline(status)
+	status = helpers.TrimTrailingNewline(status)
 	if status != "?" {
 		verbose := strings.Split(status, "\n")
 		lastLine := verbose[len(verbose)-1]

@@ -3,7 +3,7 @@ package git
 import (
 	"strings"
 
-	"github.com/isacikgoz/gitbatch/pkg/command"
+	"github.com/isacikgoz/gitbatch/pkg/helpers"
 )
 
 // UpstreamDifferenceCount checks how many pushables/pullables there are for the
@@ -11,12 +11,12 @@ import (
 // TODO: get pull pushes to remote branch vs local branch
 func UpstreamDifferenceCount(repoPath string) (string, string) {
 	args := []string{"rev-list", "@{u}..HEAD", "--count"}
-	pushableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
+	pushableCount, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?", "?"
 	}
 	args = []string{"rev-list", "HEAD..@{u}", "--count"}
-	pullableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
+	pullableCount, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?", "?"
 	}
@@ -26,7 +26,7 @@ func UpstreamDifferenceCount(repoPath string) (string, string) {
 // Instead of returning the count, this method returns the hash list
 func UpstreamPushDiffs(repoPath string) string {
 	args := []string{"rev-list", "@{u}..HEAD"}
-	pushableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
+	pushableCount, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?"
 	}
@@ -36,7 +36,7 @@ func UpstreamPushDiffs(repoPath string) string {
 // Instead of returning the count, this method returns the hash list
 func UpstreamPullDiffs(repoPath string) string {
 	args := []string{"rev-list", "HEAD..@{u}"}
-	pullableCount, err := command.RunCommandWithOutput(repoPath, "git", args)
+	pullableCount, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?"
 	}
@@ -46,7 +46,7 @@ func UpstreamPullDiffs(repoPath string) string {
 // Conventional git show command without any argument
 func GitShow(repoPath, hash string) string {
 	args := []string{"show", hash}
-	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?"
 	}
@@ -56,7 +56,7 @@ func GitShow(repoPath, hash string) string {
 // get author's e-mail with git show command
 func GitShowEmail(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%ae", hash}
-	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?"
 	}
@@ -66,7 +66,7 @@ func GitShowEmail(repoPath, hash string) string {
 // get body of the commit with git show
 func GitShowBody(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%B", hash}
-	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return err.Error()
 	}
@@ -76,7 +76,7 @@ func GitShowBody(repoPath, hash string) string {
 // get commit's date with git show as string
 func GitShowDate(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%ai", hash}
-	diff, err := command.RunCommandWithOutput(repoPath, "git", args)
+	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?"
 	}
@@ -86,7 +86,7 @@ func GitShowDate(repoPath, hash string) string {
 // wrapper of the git fetch <remote> command
 func (entity *RepoEntity) FetchWithGit(remote string) error {
 	args := []string{"fetch", remote}
-	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (entity *RepoEntity) FetchWithGit(remote string) error {
 // wrapper of the git pull <remote>/<branch> command
 func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 	args := []string{"pull", remote, branch}
-	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 // wrapper of the git merge <branch> command
 func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 	args := []string{"merge", mergeFrom}
-	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 // wrapper of the git checkout <branch> command
 func (entity *RepoEntity) CheckoutWithGit(branch string) error {
 	args := []string{"checkout", branch}
-	_, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (entity *RepoEntity) CheckoutWithGit(branch string) error {
 // GitStatus returns the plaintext short status of the repo
 func (entity *RepoEntity) StatusWithGit() string {
 	args := []string{"status"}
-	status, err := command.RunCommandWithOutput(entity.AbsPath, "git", args)
+	status, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
 	if err != nil {
 		return "?"
 	}

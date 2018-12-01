@@ -2,7 +2,7 @@ package gui
 
 import (
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/utils"
+	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"github.com/jroimartin/gocui"
 )
 
@@ -59,7 +59,7 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
 	if oy+cy <= ly {
 		return nil
 	}
-	newCy := utils.Min(ly, maxY)
+	newCy := helpers.Min(ly, maxY)
 	if err := v.SetCursor(cx, newCy); err != nil {
 		return err
 	}
