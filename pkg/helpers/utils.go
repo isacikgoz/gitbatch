@@ -18,7 +18,7 @@ func TrimTrailingNewline(str string) string {
 	return str
 }
 
-// find the minumum value of two int
+// find the minimum value of two int
 func Min(x, y int) int {
 	if x < y {
 		return x

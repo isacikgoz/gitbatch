@@ -1,22 +1,21 @@
 package app
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/isacikgoz/gitbatch/pkg/gui"
+	log "github.com/sirupsen/logrus"
 )
 
 // The App struct is responsible to hold app-wide related entities. Currently
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
-	Gui     *gui.Gui
+	Gui *gui.Gui
 }
 
 // If any pre-required operation is needed, setup will handle that task. It is
 // designed to be a wrapper for main method right now.
 func Setup(directory, repoPattern, logLevel string) (*App, error) {
 	// initiate the app and give it initial values
-	app := &App{
-	}
+	app := &App{}
 	setLogLevel(logLevel)
 	var err error
 	directories := generateDirectories(directory, repoPattern)
@@ -29,6 +28,7 @@ func Setup(directory, repoPattern, logLevel string) (*App, error) {
 		return app, err
 	}
 	// hopefull everything went smooth as butter
+	log.Trace("App configuration completed")
 	return app, nil
 }
 
@@ -55,6 +55,6 @@ func setLogLevel(logLevel string) {
 		log.SetLevel(log.FatalLevel)
 	}
 	log.WithFields(log.Fields{
-  		"level": logLevel,
-	}).Trace("logging set to level")
+		"level": logLevel,
+	}).Trace("logging level has been set")
 }

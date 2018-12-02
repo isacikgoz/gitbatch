@@ -8,8 +8,8 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// this is the inital function for filling the values for the main view. the 
-// function waits a seperate routine to fill the gui's repositiory slice
+// this is the initial function for filling the values for the main view. the
+// function waits a separate routine to fill the gui's repository slice
 func (gui *Gui) fillMain(g *gocui.Gui) error {
 	g.Update(func(g *gocui.Gui) error {
 		v, err := g.View(mainViewFeature.Name)
@@ -36,7 +36,7 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 	return nil
 }
 
-// moves the cursor downwards for the main view and if it goes to bottom it 
+// moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {

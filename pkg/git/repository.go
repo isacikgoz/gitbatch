@@ -29,14 +29,14 @@ type RepoEntity struct {
 type RepoState uint8
 
 const (
-	Available RepoState = 0 
+	Available RepoState = 0
 	Queued    RepoState = 1
 	Working   RepoState = 2
 	Success   RepoState = 3
 	Fail      RepoState = 4
 )
 
-// initializee a RepoEntity struct with its belongings. 
+// initializee a RepoEntity struct with its belongings.
 func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	file, err := os.Open(directory)
 	if err != nil {
@@ -54,7 +54,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
 		Repository: *r,
-		State:     Available,
+		State:      Available,
 	}
 	// after we intiate the struct we can fill its values
 	entity.loadLocalBranches()
@@ -74,8 +74,8 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 		// TODO: tend to take origin/master as default
 		entity.Remote = entity.Remotes[0]
 		// TODO: same code on 3 different occasion, maybe something wrong?
-		if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err !=nil {
-		// probably couldn't find, but its ok.
+		if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
+			// probably couldn't find, but its ok.
 		}
 	} else {
 		// if there is no remote, this project is totally useless actually
@@ -116,7 +116,7 @@ func (entity *RepoEntity) Fetch() error {
 	return nil
 }
 
-// Incorporates changes from the named commits or branches into the current 
+// Incorporates changes from the named commits or branches into the current
 // branch
 func (entity *RepoEntity) Merge() error {
 	entity.Checkout(entity.Branch)

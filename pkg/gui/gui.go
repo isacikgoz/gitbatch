@@ -6,6 +6,7 @@ import (
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/queue"
 	"github.com/jroimartin/gocui"
+	log "github.com/sirupsen/logrus"
 )
 
 // Gui struct hold the gocui struct along with the gui's state, also keybindings
@@ -16,7 +17,7 @@ type Gui struct {
 	State       guiState
 }
 
-// guiState struct holds the repositories, directiories, mode and queue of the 
+// guiState struct holds the repositories, directiories, mode and queue of the
 // gui object. These values are not static
 type guiState struct {
 	Repositories []*git.RepoEntity
@@ -62,7 +63,7 @@ var (
 
 	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
-	mergeMode  = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
+	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 )
 
 // create a Gui opject and fill it's state related entites
@@ -78,7 +79,7 @@ func NewGui(directoies []string) (*Gui, error) {
 	return gui, nil
 }
 
-// run the main loop with intial values
+// run the main loop with initial values
 func (gui *Gui) Run() error {
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
@@ -92,15 +93,18 @@ func (gui *Gui) Run() error {
 		v, err := g.SetView(loadingViewFeature.Name, maxX/2-10, maxY/2-1, maxX/2+10, maxY/2+1)
 		if err != nil {
 			if err != gocui.ErrUnknownView {
+				log.Warn("Loading view cannot be created.")
 				return
 			}
 			fmt.Fprintln(v, "Loading...")
 		}
 		if _, err := g.SetCurrentView(loadingViewFeature.Name); err != nil {
+			log.Warn("Loading view cannot be focused.")
 			return
 		}
 		rs, err := git.LoadRepositoryEntities(g_ui.State.Directories)
 		if err != nil {
+			log.Error("Error while loading repositories.")
 			return
 		}
 		g_ui.State.Repositories = rs
@@ -112,12 +116,15 @@ func (gui *Gui) Run() error {
 	g.SetManagerFunc(gui.layout)
 
 	if err := gui.generateKeybindings(); err != nil {
+		log.Error("Keybindings could not be created.")
 		return err
 	}
 	if err := gui.keybindings(g); err != nil {
+		log.Error("Keybindings could not be set.")
 		return err
 	}
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		log.Error("Error in the main loop. " + err.Error())
 		return err
 	}
 	return nil

@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// generateDirectories is to find all the files in given path. This method 
+// generateDirectories is to find all the files in given path. This method
 // does not check if the given file is a valid git repositories
 func generateDirectories(directory string, repoPattern string) (directories []string) {
 	files, err := ioutil.ReadDir(directory)
@@ -30,9 +30,9 @@ func generateDirectories(directory string, repoPattern string) (directories []st
 		// if we cannot open it, simply continue to iteration and don't consider
 		if err != nil {
 			log.WithFields(log.Fields{
-    			"file": file,
-    			"directory":   directory,
-  			}).Trace("Failed to open file in the directory")
+				"file":      file,
+				"directory": directory,
+			}).Trace("Failed to open file in the directory")
 			continue
 		}
 		dir, err := filepath.Abs(file.Name())
@@ -46,7 +46,7 @@ func generateDirectories(directory string, repoPattern string) (directories []st
 	return directories
 }
 
-// takes a fileInfo slice and returns it with the ones matches with the 
+// takes a fileInfo slice and returns it with the ones matches with the
 // repoPattern string
 func filterDirectories(files []os.FileInfo, repoPattern string) []os.FileInfo {
 	var filteredRepos []os.FileInfo

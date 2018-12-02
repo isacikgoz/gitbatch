@@ -213,7 +213,7 @@ func (gui *Gui) keybindings(g *gocui.Gui) error {
 }
 
 // the bottom line of the gui is mode indicator and keybindings view. Only the
-// important controls (marked as vital) are shown 
+// important controls (marked as vital) are shown
 func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	v, err := g.View(keybindingsViewFeature.Name)
 	if err != nil {
@@ -242,7 +242,7 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 		modeLabel = "No mode selected"
 	}
 
-	fmt.Fprint(v, ws + modeLabel + ws + modeSeperator)
+	fmt.Fprint(v, ws+modeLabel+ws+modeSeperator)
 
 	for _, k := range gui.KeyBindings {
 		if k.View == viewName && k.Vital {

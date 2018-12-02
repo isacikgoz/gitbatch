@@ -24,7 +24,7 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 	return nil
 }
 
-// siwtch the app mode 
+// siwtch the app mode
 // TODO: switching can be made with conventional iteration
 func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	switch mode := gui.State.Mode.ModeID; mode {

@@ -41,7 +41,7 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 	}
 	if err = entity.Checkout(entity.NextBranch()); err != nil {
 		if err = gui.openErrorView(g, err.Error(),
-		"You should manually resolve this issue"); err != nil {
+			"You should manually resolve this issue"); err != nil {
 			return err
 		}
 		return nil

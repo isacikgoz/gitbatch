@@ -3,11 +3,10 @@ package main
 import (
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/isacikgoz/gitbatch/pkg/app"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
-
 
 var (
 	// take this as default directory if user does not start app with -d flag

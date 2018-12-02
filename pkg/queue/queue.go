@@ -94,7 +94,7 @@ func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 		finished = true
 		return nil, finished, nil
 	}
-	i := len(jobQueue.series)-1
+	i := len(jobQueue.series) - 1
 	lastJob := jobQueue.series[i]
 	jobQueue.series = jobQueue.series[:i]
 	if err = lastJob.start(); err != nil {

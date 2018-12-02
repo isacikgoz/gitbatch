@@ -19,12 +19,12 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	currentindex := 0
 	totalcommits := len(entity.Commits)
 	for i, c := range entity.Commits {
-		var body string = ""
+		var body string
 		if c.CommitType == git.LocalCommit {
-				body = cyan.Sprint(c.Hash[:hashLength])+" "+c.Message
-			} else {
-				body = yellow.Sprint(c.Hash[:hashLength])+" "+c.Message
-			}
+			body = cyan.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		} else {
+			body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		}
 		if c.Hash == entity.Commit.Hash {
 			currentindex = i
 			fmt.Fprintln(out, selectionIndicator+body)
