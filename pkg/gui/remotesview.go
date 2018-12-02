@@ -53,5 +53,5 @@ func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
 	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}
-	return nil
+	return err
 }

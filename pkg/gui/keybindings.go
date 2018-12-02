@@ -6,7 +6,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// keybinding structs is helpful for not re-writinh the same function over and
+// KeyBinding structs is helpful for not re-writinh the same function over and
 // over again. it hold useful values to generate a controls view
 type KeyBinding struct {
 	View        string

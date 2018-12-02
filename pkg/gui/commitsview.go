@@ -35,7 +35,7 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalcommits); err != nil {
 		return err
 	}
-	return nil
+	return err
 }
 
 // iteration handler for the commitsview
@@ -51,5 +51,5 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 	if err = gui.updateCommits(g, entity); err != nil {
 		return err
 	}
-	return nil
+	return err
 }

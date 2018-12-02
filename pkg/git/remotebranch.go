@@ -16,7 +16,7 @@ type RemoteBranch struct {
 	Reference *plumbing.Reference
 }
 
-// iterates to the next remote branch
+// NextRemoteBranch iterates to the next remote branch
 func (remote *Remote) NextRemoteBranch() error {
 	currentRemoteIndex := 0
 	for i, rb := range remote.Branches {

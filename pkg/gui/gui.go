@@ -40,11 +40,15 @@ type mode struct {
 	CommandString string
 }
 
+// ModeID is the mode indicator for the gui
 type ModeID int8
 
 const (
+	// FetchMode puts the gui in fetch state
 	FetchMode ModeID = 0
-	PullMode  ModeID = 1
+	// PullMode puts the gui in pull state
+	PullMode ModeID = 1
+	// MergeMode puts the gui in merge state
 	MergeMode ModeID = 2
 )
 
@@ -66,7 +70,7 @@ var (
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 )
 
-// create a Gui opject and fill it's state related entites
+// NewGui creates a Gui opject and fill it's state related entites
 func NewGui(directoies []string) (*Gui, error) {
 	initialState := guiState{
 		Directories: directoies,
@@ -79,7 +83,7 @@ func NewGui(directoies []string) (*Gui, error) {
 	return gui, nil
 }
 
-// run the main loop with initial values
+// Run function runs the main loop with initial values
 func (gui *Gui) Run() error {
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {

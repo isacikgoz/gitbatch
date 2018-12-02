@@ -55,7 +55,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 	return err
 }
 
-// checkouts the next branch
+// NextBranch checkouts the next branch
 func (entity *RepoEntity) NextBranch() *Branch {
 	currentBranch := entity.Branch
 	currentBranchIndex := 0
@@ -70,7 +70,7 @@ func (entity *RepoEntity) NextBranch() *Branch {
 	return entity.Branches[currentBranchIndex+1]
 }
 
-// checkout to given branch. If any errors occur, the method returns it instead
+// Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (entity *RepoEntity) Checkout(branch *Branch) error {
 	if branch.Name == entity.Branch.Name {
@@ -116,7 +116,7 @@ func (entity *RepoEntity) isClean() bool {
 	return false
 }
 
-// refreshes the active branchs pushable and pullable count
+// RefreshPushPull refreshes the active branchs pushable and pullable count
 func (entity *RepoEntity) RefreshPushPull() {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 }

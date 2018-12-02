@@ -1,6 +1,6 @@
 package git
 
-// this struct is simply a collection of remote branches and wraps it with the
+// Remote struct is simply a collection of remote branches and wraps it with the
 // name of the remote and fetch/push urls. It also holds the *selected* remote
 // branch
 type Remote struct {
@@ -10,7 +10,7 @@ type Remote struct {
 	Branches []*RemoteBranch
 }
 
-// iterate over next branch of a remote
+// NextRemote iterates over next branch of a remote
 func (entity *RepoEntity) NextRemote() error {
 	currentRemoteIndex := 0
 	for i, remote := range entity.Remotes {

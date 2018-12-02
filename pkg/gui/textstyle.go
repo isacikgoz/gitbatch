@@ -105,9 +105,8 @@ func adjustTextLength(text string, maxLength int) (adjusted string) {
 	if len(text) > maxLength {
 		adjusted := text[:maxLength-2] + ".."
 		return adjusted
-	} else {
-		return text
 	}
+	return text
 }
 
 // the remote link can be too verbose sometimes, so it is good to trim it

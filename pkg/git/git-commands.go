@@ -23,7 +23,7 @@ func UpstreamDifferenceCount(repoPath string) (string, string) {
 	return strings.TrimSpace(pushableCount), strings.TrimSpace(pullableCount)
 }
 
-// Instead of returning the count, this method returns the hash list
+// UpstreamPushDiffs returns the hash list
 func UpstreamPushDiffs(repoPath string) string {
 	args := []string{"rev-list", "@{u}..HEAD"}
 	pushableCount, err := helpers.RunCommandWithOutput(repoPath, "git", args)
@@ -33,7 +33,7 @@ func UpstreamPushDiffs(repoPath string) string {
 	return pushableCount
 }
 
-// Instead of returning the count, this method returns the hash list
+// UpstreamPullDiffs returns the hash list
 func UpstreamPullDiffs(repoPath string) string {
 	args := []string{"rev-list", "HEAD..@{u}"}
 	pullableCount, err := helpers.RunCommandWithOutput(repoPath, "git", args)
@@ -43,7 +43,7 @@ func UpstreamPullDiffs(repoPath string) string {
 	return pullableCount
 }
 
-// Conventional git show command without any argument
+// GitShow is conventional git show command without any argument
 func GitShow(repoPath, hash string) string {
 	args := []string{"show", hash}
 	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
@@ -53,7 +53,7 @@ func GitShow(repoPath, hash string) string {
 	return diff
 }
 
-// get author's e-mail with git show command
+// GitShowEmail gets author's e-mail with git show command
 func GitShowEmail(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%ae", hash}
 	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
@@ -63,7 +63,7 @@ func GitShowEmail(repoPath, hash string) string {
 	return diff
 }
 
-// get body of the commit with git show
+// GitShowBody gets body of the commit with git show
 func GitShowBody(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%B", hash}
 	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
@@ -73,7 +73,7 @@ func GitShowBody(repoPath, hash string) string {
 	return diff
 }
 
-// get commit's date with git show as string
+// GitShowDate gets commit's date with git show as string
 func GitShowDate(repoPath, hash string) string {
 	args := []string{"show", "--quiet", "--pretty=format:%ai", hash}
 	diff, err := helpers.RunCommandWithOutput(repoPath, "git", args)
@@ -83,7 +83,7 @@ func GitShowDate(repoPath, hash string) string {
 	return diff
 }
 
-// wrapper of the git fetch <remote> command
+// FetchWithGit is wrapper of the git fetch <remote> command
 func (entity *RepoEntity) FetchWithGit(remote string) error {
 	args := []string{"fetch", remote}
 	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -93,7 +93,7 @@ func (entity *RepoEntity) FetchWithGit(remote string) error {
 	return nil
 }
 
-// wrapper of the git pull <remote>/<branch> command
+// PullWithGit is wrapper of the git pull <remote>/<branch> command
 func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 	args := []string{"pull", remote, branch}
 	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -103,7 +103,7 @@ func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 	return nil
 }
 
-// wrapper of the git merge <branch> command
+// MergeWithGit is wrapper of the git merge <branch> command
 func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 	args := []string{"merge", mergeFrom}
 	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -113,7 +113,7 @@ func (entity *RepoEntity) MergeWithGit(mergeFrom string) error {
 	return nil
 }
 
-// wrapper of the git checkout <branch> command
+// CheckoutWithGit is wrapper of the git checkout <branch> command
 func (entity *RepoEntity) CheckoutWithGit(branch string) error {
 	args := []string{"checkout", branch}
 	_, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
@@ -123,7 +123,7 @@ func (entity *RepoEntity) CheckoutWithGit(branch string) error {
 	return nil
 }
 
-// GitStatus returns the plaintext short status of the repo
+// StatusWithGit returns the plaintext short status of the repo
 func (entity *RepoEntity) StatusWithGit() string {
 	args := []string{"status"}
 	status, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)

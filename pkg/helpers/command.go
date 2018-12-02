@@ -6,9 +6,9 @@ import (
 	"syscall"
 )
 
-// run the OS command and return its output. If the output returns error it also
-// encapsulates it as a golang.error which is a return code of the command except
-// zero
+// RunCommandWithOutput runs the OS command and return its output. If the output
+// returns error it also encapsulates it as a golang.error which is a return code
+// of the command except zero
 func RunCommandWithOutput(dir string, command string, args []string) (string, error) {
 	cmd := exec.Command(command, args...)
 	if dir != "" {
@@ -18,9 +18,9 @@ func RunCommandWithOutput(dir string, command string, args []string) (string, er
 	return string(output), err
 }
 
-// if we supposed to get return value as an int of a command this method can be
-// used. It is practical when you use a command and process a failover acoording
-// to a soecific return code
+// GetCommandStatus returns if we supposed to get return value as an int of a command
+// this method can be used. It is practical when you use a command and process a 
+// failover acoording to a soecific return code
 func GetCommandStatus(dir string, command string, args []string) (int, error) {
 	cmd := exec.Command(command, args...)
 	if dir != "" {

@@ -8,20 +8,20 @@ import (
 
 // refreshes the side views of the application for given git.RepoEntity struct
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
-
-	if err := gui.updateRemotes(g, entity); err != nil {
+	var err error
+	if err = gui.updateRemotes(g, entity); err != nil {
 		return err
 	}
-	if err := gui.updateBranch(g, entity); err != nil {
+	if err = gui.updateBranch(g, entity); err != nil {
 		return err
 	}
-	if err := gui.updateRemoteBranches(g, entity); err != nil {
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}
-	if err := gui.updateCommits(g, entity); err != nil {
+	if err = gui.updateCommits(g, entity); err != nil {
 		return err
 	}
-	return nil
+	return err
 }
 
 // siwtch the app mode

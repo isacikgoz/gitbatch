@@ -11,8 +11,8 @@ type App struct {
 	Gui *gui.Gui
 }
 
-// If any pre-required operation is needed, setup will handle that task. It is
-// designed to be a wrapper for main method right now.
+// Setup will handle pre-required operations. It is designed to be a wrapper for
+// main method right now.
 func Setup(directory, repoPattern, logLevel string) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
@@ -32,7 +32,7 @@ func Setup(directory, repoPattern, logLevel string) (*App, error) {
 	return app, nil
 }
 
-// If any cleanup is required Close method with handle it. e.g. closing streams
+// Close function will handle if any cleanup is required. e.g. closing streams
 // or cleaning temproray files so on and so forth
 func (app *App) Close() error {
 	return nil

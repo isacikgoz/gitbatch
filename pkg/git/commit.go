@@ -19,15 +19,17 @@ type Commit struct {
 	CommitType CommitType
 }
 
-// type of the commit; it can be local or remote (upstream diff)
+// CommitType is the Type of the commit; it can be local or remote (upstream diff)
 type CommitType string
 
 const (
+	// LocalCommit is the commit that recorded locally
 	LocalCommit  CommitType = "local"
+	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
 )
 
-// iterate over next commit of a branch
+// NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
 func (entity *RepoEntity) NextCommit() error {
 	currentCommitIndex := 0
@@ -90,8 +92,8 @@ func (entity *RepoEntity) loadCommits() error {
 	return nil
 }
 
-// returns the diff to previous commit detail of the given hash of a specific
-// commit
+// Diff function returns the diff to previous commit detail of the given has
+// of a specific commit
 func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 
 	currentCommitIndex := 0
