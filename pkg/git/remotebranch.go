@@ -9,14 +9,14 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
 )
 
-// RemoteBranch is the wrapper of go-git's Reference struct. In addition to 
+// RemoteBranch is the wrapper of go-git's Reference struct. In addition to
 // that, it also holds name of the remote branch
 type RemoteBranch struct {
 	Name      string
 	Reference *plumbing.Reference
 }
 
-// iterates to the next remote branch
+// NextRemoteBranch iterates to the next remote branch
 func (remote *Remote) NextRemoteBranch() error {
 	currentRemoteIndex := 0
 	for i, rb := range remote.Branches {

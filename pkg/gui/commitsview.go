@@ -19,12 +19,12 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	currentindex := 0
 	totalcommits := len(entity.Commits)
 	for i, c := range entity.Commits {
-		var body string = ""
+		var body string
 		if c.CommitType == git.LocalCommit {
-				body = cyan.Sprint(c.Hash[:hashLength])+" "+c.Message
-			} else {
-				body = yellow.Sprint(c.Hash[:hashLength])+" "+c.Message
-			}
+			body = cyan.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		} else {
+			body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		}
 		if c.Hash == entity.Commit.Hash {
 			currentindex = i
 			fmt.Fprintln(out, selectionIndicator+body)
@@ -35,7 +35,7 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalcommits); err != nil {
 		return err
 	}
-	return nil
+	return err
 }
 
 // iteration handler for the commitsview
@@ -51,5 +51,5 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 	if err = gui.updateCommits(g, entity); err != nil {
 		return err
 	}
-	return nil
+	return err
 }

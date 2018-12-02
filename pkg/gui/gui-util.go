@@ -2,29 +2,29 @@ package gui
 
 import (
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/utils"
+	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"github.com/jroimartin/gocui"
 )
 
 // refreshes the side views of the application for given git.RepoEntity struct
 func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
-
-	if err := gui.updateRemotes(g, entity); err != nil {
+	var err error
+	if err = gui.updateRemotes(g, entity); err != nil {
 		return err
 	}
-	if err := gui.updateBranch(g, entity); err != nil {
+	if err = gui.updateBranch(g, entity); err != nil {
 		return err
 	}
-	if err := gui.updateRemoteBranches(g, entity); err != nil {
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}
-	if err := gui.updateCommits(g, entity); err != nil {
+	if err = gui.updateCommits(g, entity); err != nil {
 		return err
 	}
-	return nil
+	return err
 }
 
-// siwtch the app mode 
+// siwtch the app mode
 // TODO: switching can be made with conventional iteration
 func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	switch mode := gui.State.Mode.ModeID; mode {
@@ -59,7 +59,7 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
 	if oy+cy <= ly {
 		return nil
 	}
-	newCy := utils.Min(ly, maxY)
+	newCy := helpers.Min(ly, maxY)
 	if err := v.SetCursor(cx, newCy); err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package job
+package queue
 
 import (
 	"errors"
@@ -14,20 +14,24 @@ type Job struct {
 	Entity  *git.RepoEntity
 }
 
-// only holds the slice of Jobs
+// JobQueue holds the slice of Jobs
 type JobQueue struct {
 	series []*Job
 }
 
+// JobType is the a git operation supported
 type JobType string
 
 const (
+	// Fetch is wrapper of git fetch command
 	Fetch JobType = "fetch"
-	Pull  JobType = "pull"
+	// Pull is wrapper of git pull command
+	Pull JobType = "pull"
+	// Merge is wrapper of git merge command
 	Merge JobType = "merge"
 )
 
-// creates a job struct and return its pointer
+// CreateJob es its name implies creates a job struct and return its pointer
 func CreateJob() (j *Job, err error) {
 	fmt.Println("Job created.")
 	return j, nil
@@ -68,7 +72,8 @@ func (job *Job) start() error {
 	return nil
 }
 
-// creates a jobqueue struct and initialize its slice then return its pointer
+// CreateJobQueue creates a jobqueue struct and initialize its slice then return
+// its pointer
 func CreateJobQueue() (jobQueue *JobQueue) {
 	s := make([]*Job, 0)
 	return &JobQueue{
@@ -76,7 +81,7 @@ func CreateJobQueue() (jobQueue *JobQueue) {
 	}
 }
 
-// add job to the queue
+// AddJob adds a job to the queue
 func (jobQueue *JobQueue) AddJob(j *Job) error {
 	for _, job := range jobQueue.series {
 		if job.Entity.RepoID == j.Entity.RepoID && job.JobType == j.JobType {
@@ -87,14 +92,14 @@ func (jobQueue *JobQueue) AddJob(j *Job) error {
 	return nil
 }
 
-// start the next job of the queue
+// StartNext starts the next job in the queue
 func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 	finished = false
 	if len(jobQueue.series) < 1 {
 		finished = true
 		return nil, finished, nil
 	}
-	i := len(jobQueue.series)-1
+	i := len(jobQueue.series) - 1
 	lastJob := jobQueue.series[i]
 	jobQueue.series = jobQueue.series[:i]
 	if err = lastJob.start(); err != nil {
@@ -103,7 +108,7 @@ func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 	return lastJob, finished, nil
 }
 
-// delete it from the queue
+// RemoveFromQueue deletes the given entity and its job from the queue
 // TODO: it is not safe if the job has been started
 func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 	removed := false
@@ -119,8 +124,9 @@ func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 	return nil
 }
 
-// since the job and entity is not tied with its own struct, this function
-// returns true if that entity is in the queue along with the jobs type
+// IsInTheQueue function; since the job and entity is not tied with its own
+// struct, this function returns true if that entity is in the queue along with
+// the jobs type
 func (jobQueue *JobQueue) IsInTheQueue(entity *git.RepoEntity) (inTheQueue bool, jt JobType) {
 	inTheQueue = false
 	for _, job := range jobQueue.series {

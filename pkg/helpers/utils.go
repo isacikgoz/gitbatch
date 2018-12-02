@@ -1,4 +1,4 @@
-package utils
+package helpers
 
 import (
 	"math/rand"
@@ -9,8 +9,8 @@ import (
 var characterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 var src = rand.NewSource(time.Now().UnixNano())
 
-// remove the trailing new line form a string. this method is used mostly on
-// outputs of a command
+// TrimTrailingNewline removes the trailing new line form a string. this method
+// is used mostly on outputs of a command
 func TrimTrailingNewline(str string) string {
 	if strings.HasSuffix(str, "\n") {
 		return str[:len(str)-1]
@@ -18,7 +18,7 @@ func TrimTrailingNewline(str string) string {
 	return str
 }
 
-// find the minumum value of two int
+// Min finds the minimum value of two int
 func Min(x, y int) int {
 	if x < y {
 		return x

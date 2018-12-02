@@ -1,11 +1,11 @@
 package git
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/utils"
+	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -20,7 +20,7 @@ type Branch struct {
 	Clean     bool
 }
 
-// returns the active branch of the repository entity by simply getting the 
+// returns the active branch of the repository entity by simply getting the
 // head reference and searching it from the entities branch slice
 func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
 	headRef, _ := entity.Repository.Head()
@@ -32,7 +32,7 @@ func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
 	return nil
 }
 
-// search for branches in go-git way. It is useful to do so that checkout and 
+// search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
 // git cammand and its output
 func (entity *RepoEntity) loadLocalBranches() error {
@@ -55,7 +55,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 	return err
 }
 
-// checkouts the next branch
+// NextBranch checkouts the next branch
 func (entity *RepoEntity) NextBranch() *Branch {
 	currentBranch := entity.Branch
 	currentBranchIndex := 0
@@ -70,7 +70,7 @@ func (entity *RepoEntity) NextBranch() *Branch {
 	return entity.Branches[currentBranchIndex+1]
 }
 
-// checkout to given branch. If any errors occur, the method returns it instead
+// Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (entity *RepoEntity) Checkout(branch *Branch) error {
 	if branch.Name == entity.Branch.Name {
@@ -93,19 +93,19 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 	// TODO: same code on 3 different occasion, maybe something wrong?
 	// make this conditional on global scale
-	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err !=nil {
+	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
 		// probably couldn't find, but its ok.
 		return nil
 	}
 	return nil
 }
 
-// checking the branch if it has any changes from its head revision. Initially 
+// checking the branch if it has any changes from its head revision. Initially
 // I implemented this with go-git but it was incredibly slow and there is also
 // an issue about it: https://github.com/src-d/go-git/issues/844
 func (entity *RepoEntity) isClean() bool {
 	status := entity.StatusWithGit()
-	status = utils.TrimTrailingNewline(status)
+	status = helpers.TrimTrailingNewline(status)
 	if status != "?" {
 		verbose := strings.Split(status, "\n")
 		lastLine := verbose[len(verbose)-1]
@@ -116,7 +116,7 @@ func (entity *RepoEntity) isClean() bool {
 	return false
 }
 
-// refreshes the active branchs pushable and pullable count
+// RefreshPushPull refreshes the active branchs pushable and pullable count
 func (entity *RepoEntity) RefreshPushPull() {
 	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
 }
@@ -132,13 +132,13 @@ func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 		for _, s := range sliced {
 			if len(s) == 40 {
 				commit := &Commit{
-				Hash: s,
-				Author: GitShowEmail(entity.AbsPath, s),
-				Message: re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
-				Time: GitShowDate(entity.AbsPath, s),
-				CommitType: RemoteCommit,
-			}
-			remoteCommits = append(remoteCommits, commit)
+					Hash:       s,
+					Author:     GitShowEmail(entity.AbsPath, s),
+					Message:    re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
+					Time:       GitShowDate(entity.AbsPath, s),
+					CommitType: RemoteCommit,
+				}
+				remoteCommits = append(remoteCommits, commit)
 			}
 		}
 	}

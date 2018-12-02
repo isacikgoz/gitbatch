@@ -6,7 +6,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// open an error view to inform user with a message and a useful note 
+// open an error view to inform user with a message and a useful note
 func (gui *Gui) openErrorView(g *gocui.Gui, message string, note string) error {
 	maxX, maxY := g.Size()
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/job"
+	"github.com/isacikgoz/gitbatch/pkg/queue"
 )
 
 var (
@@ -20,35 +20,35 @@ var (
 
 	bold = color.New(color.Bold)
 
-	maxBranchLength = 15
+	maxBranchLength     = 15
 	maxRepositoryLength = 20
-	hashLength = 7
+	hashLength          = 7
 
-	ws = " "
-	pushable = string(blue.Sprint("↖"))
-	pullable = string(blue.Sprint("↘"))
-	confidentArrow = string(magenta.Sprint("→"))
+	ws               = " "
+	pushable         = string(blue.Sprint("↖"))
+	pullable         = string(blue.Sprint("↘"))
+	confidentArrow   = string(magenta.Sprint("→"))
 	unconfidentArrow = string(yellow.Sprint("→"))
-	dirty = string(yellow.Sprint("✗"))
-	unkown = magenta.Sprint("?")
+	dirty            = string(yellow.Sprint("✗"))
+	unknown          = magenta.Sprint("?")
 
-	queuedSymbol = "•"
+	queuedSymbol  = "•"
 	workingSymbol = "•"
 	successSymbol = "✔"
-	failSymbol = "✗"
+	failSymbol    = "✗"
 
 	fetchSymbol = "↓"
-	pullSymbol = "↓↳"
+	pullSymbol  = "↓↳"
 	mergeSymbol = "↳"
 
-	modeSeperator = ""
+	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
 	selectionIndicator = string(green.Sprint("→")) + ws
-	tab = ws + ws
+	tab                = ws + ws
 )
 
-// this fucntion handles the render and representation of the repository
+// this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	suffix := ""
@@ -68,20 +68,20 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	prefix = prefix + string(cyan.Sprint(branch))
 
 	if !entity.Branch.Clean {
-		prefix = prefix + ws + dirty + ws 
+		prefix = prefix + ws + dirty + ws
 	} else {
-		prefix = prefix + ws 
+		prefix = prefix + ws
 	}
 
 	// rendering the satus according to repository's state
 	if entity.State == git.Queued {
 		if inQueue, ty := gui.State.Queue.IsInTheQueue(entity); inQueue {
-		switch mode := ty; mode {
-			case job.Fetch:
+			switch mode := ty; mode {
+			case queue.Fetch:
 				suffix = blue.Sprint(queuedSymbol)
-			case job.Pull:
+			case queue.Pull:
 				suffix = magenta.Sprint(queuedSymbol)
-			case job.Merge:
+			case queue.Merge:
 				suffix = cyan.Sprint(queuedSymbol)
 			default:
 				suffix = green.Sprint(queuedSymbol)
@@ -105,9 +105,8 @@ func adjustTextLength(text string, maxLength int) (adjusted string) {
 	if len(text) > maxLength {
 		adjusted := text[:maxLength-2] + ".."
 		return adjusted
-	} else {
-		return text
 	}
+	return text
 }
 
 // the remote link can be too verbose sometimes, so it is good to trim it
@@ -123,7 +122,7 @@ func trimRemoteURL(url string) (urltype string, shorturl string) {
 	rehttp := regexp.MustCompile(`http://`)
 	rehttps := regexp.MustCompile(`https://`)
 
-	// seperate the protocol and remote link
+	// separate the protocol and remote link
 	if ressh.MatchString(url) {
 		shorturl = ressh.Split(url, 5)[1]
 		urltype = "ssh"

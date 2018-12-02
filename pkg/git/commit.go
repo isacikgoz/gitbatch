@@ -8,26 +8,28 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-// Commit is the lightweight version of go-git's Reference struct. it holds 
-// hash of the commit, author's e-mail address, Message (subject and body 
+// Commit is the lightweight version of go-git's Reference struct. it holds
+// hash of the commit, author's e-mail address, Message (subject and body
 // combined) commit date and commit type wheter it is local commit or a remote
 type Commit struct {
-	Hash    string
-	Author  string
-	Message string
-	Time    string
-	CommitType    CommitType
+	Hash       string
+	Author     string
+	Message    string
+	Time       string
+	CommitType CommitType
 }
 
-// type of the commit; it can be local or remote (upstream diff)
+// CommitType is the Type of the commit; it can be local or remote (upstream diff)
 type CommitType string
 
 const (
-	LocalCommit CommitType = "local"
+	// LocalCommit is the commit that recorded locally
+	LocalCommit  CommitType = "local"
+	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
 )
 
-// iterate over next commit of a branch
+// NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
 func (entity *RepoEntity) NextCommit() error {
 	currentCommitIndex := 0
@@ -63,6 +65,9 @@ func (entity *RepoEntity) loadCommits() error {
 	}
 	defer cIter.Close()
 	rmcs, err := entity.pullDiffsToUpstream()
+	if err != nil {
+		return err
+	}
 	for _, rmc := range rmcs {
 		entity.Commits = append(entity.Commits, rmc)
 	}
@@ -70,10 +75,10 @@ func (entity *RepoEntity) loadCommits() error {
 	err = cIter.ForEach(func(c *object.Commit) error {
 		re := regexp.MustCompile(`\r?\n`)
 		commit := &Commit{
-			Hash: re.ReplaceAllString(c.Hash.String(), " "),
-			Author: c.Author.Email,
-			Message: re.ReplaceAllString(c.Message, " "),
-			Time: c.Author.When.String(),
+			Hash:       re.ReplaceAllString(c.Hash.String(), " "),
+			Author:     c.Author.Email,
+			Message:    re.ReplaceAllString(c.Message, " "),
+			Time:       c.Author.When.String(),
 			CommitType: LocalCommit,
 		}
 		entity.Commits = append(entity.Commits, commit)
@@ -87,9 +92,8 @@ func (entity *RepoEntity) loadCommits() error {
 	return nil
 }
 
-
-// returns the diff to previous commit detail of the given hash of a specific
-// commit 
+// Diff function returns the diff to previous commit detail of the given has
+// of a specific commit
 func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
 
 	currentCommitIndex := 0

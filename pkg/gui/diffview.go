@@ -28,7 +28,7 @@ func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) error {
 		}
 		commit := entity.Commit
 		commitDetail := "Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
-		 "\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n"
+			"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n"
 		fmt.Fprintln(v, commitDetail)
 		diff, err := entity.Diff(entity.Commit.Hash)
 		if err != nil {
