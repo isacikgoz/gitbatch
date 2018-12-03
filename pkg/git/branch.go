@@ -109,7 +109,10 @@ func (entity *RepoEntity) isClean() bool {
 	if status != "?" {
 		verbose := strings.Split(status, "\n")
 		lastLine := verbose[len(verbose)-1]
-		if strings.Contains(lastLine, "working tree clean") {
+		// earlier versions of git returns "working directory clean" instead of 
+		//"working tree clean" message
+		if strings.Contains(lastLine, "working tree clean") ||
+		 strings.Contains(lastLine, "working directory clean") {
 			return true
 		}
 	}
