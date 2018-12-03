@@ -20,12 +20,7 @@ func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) error {
 		v.Overwrite = true
 		v.Wrap = true
 
-		main, _ := g.View(mainViewFeature.Name)
-
-		entity, err := gui.getSelectedRepository(g, main)
-		if err != nil {
-			return err
-		}
+		entity := gui.getSelectedRepository()
 		commit := entity.Commit
 		commitDetail := "Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
 			"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n"

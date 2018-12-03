@@ -22,7 +22,7 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 			if finished {
 				return
 			}
-			selectedEntity, _ := gui_go.getSelectedRepository(g, v)
+			selectedEntity := gui_go.getSelectedRepository()
 			if job.Entity == selectedEntity {
 				gui_go.refreshViews(g, job.Entity)
 			}

@@ -26,11 +26,8 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 		if _, err = gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
 			return err
 		}
-		if entity, err := gui.getSelectedRepository(g, v); err != nil {
-			return err
-		} else {
-			gui.refreshViews(g, entity)
-		}
+		entity := gui.getSelectedRepository()
+		gui.refreshViews(g, entity)
 		return nil
 	})
 	return nil
@@ -54,11 +51,8 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		if entity, err := gui.getSelectedRepository(g, v); err != nil {
-			return err
-		} else {
-			gui.refreshViews(g, entity)
-		}
+		entity := gui.getSelectedRepository()
+		gui.refreshViews(g, entity)
 	}
 	return nil
 }
@@ -73,11 +67,8 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		if entity, err := gui.getSelectedRepository(g, v); err != nil {
-			return err
-		} else {
-			gui.refreshViews(g, entity)
-		}
+		entity := gui.getSelectedRepository()
+		gui.refreshViews(g, entity)
 	}
 	return nil
 }
@@ -86,56 +77,50 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 // slice of repositories. Since it is not a %100 percent safe methodology it may
 // rrequire a better implementation or the slice's order must be synchronized
 // with the views lines
-func (gui *Gui) getSelectedRepository(g *gocui.Gui, v *gocui.View) (*git.RepoEntity, error) {
-	var r *git.RepoEntity
-
+func (gui *Gui) getSelectedRepository() *git.RepoEntity {
+	v, _ := gui.g.View(mainViewFeature.Name)
+	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	if _, err := v.Line(cy); err != nil {
-		return r, err
-	}
-	return gui.State.Repositories[cy], nil
+	// if _, err := v.Line(cy); err != nil {
+	// 	return r, err
+	// }
+	return gui.State.Repositories[cy+oy]
 }
 
 // marking repostiry is simply adding the repostirory into the queue. the
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
-	if r, err := gui.getSelectedRepository(g, v); err != nil {
-		return err
-	} else {
+	r := gui.getSelectedRepository()
+	if r.State == git.Available || r.State == git.Success {
+		var jt queue.JobType
+		switch mode := gui.State.Mode.ModeID; mode {
+		case FetchMode:
+			jt = queue.Fetch
+		case PullMode:
+			jt = queue.Pull
+		case MergeMode:
+			jt = queue.Merge
+		default:
+			return nil
+		}
+		err := gui.State.Queue.AddJob(&queue.Job{
+			JobType: jt,
+			Entity:  r,
+		})
 		if err != nil {
 			return err
 		}
-		if r.State == git.Available || r.State == git.Success {
-			var jt queue.JobType
-			switch mode := gui.State.Mode.ModeID; mode {
-			case FetchMode:
-				jt = queue.Fetch
-			case PullMode:
-				jt = queue.Pull
-			case MergeMode:
-				jt = queue.Merge
-			default:
-				return nil
-			}
-			err := gui.State.Queue.AddJob(&queue.Job{
-				JobType: jt,
-				Entity:  r,
-			})
-			if err != nil {
-				return err
-			}
-			r.State = git.Queued
-		} else if r.State == git.Queued {
-			err := gui.State.Queue.RemoveFromQueue(r)
-			if err != nil {
-				return err
-			}
-			r.State = git.Available
-		} else {
-			return nil
+		r.State = git.Queued
+	} else if r.State == git.Queued {
+		err := gui.State.Queue.RemoveFromQueue(r)
+		if err != nil {
+			return err
 		}
-		gui.refreshMain(g)
+		r.State = git.Available
+	} else {
+		return nil
 	}
+	gui.refreshMain(g)
 	return nil
 }
 

@@ -41,10 +41,7 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 // iteration handler for the commitsview
 func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 	var err error
-	entity, err := gui.getSelectedRepository(g, v)
-	if err != nil {
-		return err
-	}
+	entity := gui.getSelectedRepository()
 	if err = entity.NextCommit(); err != nil {
 		return err
 	}
