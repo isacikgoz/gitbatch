@@ -27,8 +27,8 @@ var (
 	ws               = " "
 	pushable         = string(blue.Sprint("↖"))
 	pullable         = string(blue.Sprint("↘"))
-	confidentArrow   = string(magenta.Sprint("→"))
-	unconfidentArrow = string(yellow.Sprint("→"))
+	confidentArrow   = string(magenta.Sprint(""))
+	unconfidentArrow = string(yellow.Sprint(""))
 	dirty            = string(yellow.Sprint("✗"))
 	unknown          = magenta.Sprint("?")
 
@@ -44,8 +44,8 @@ var (
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = string(green.Sprint("→")) + ws
-	tab                = ws + ws
+	selectionIndicator = ws + string(green.Sprint("→")) + ws
+	tab                = ws 
 )
 
 // this function handles the render and representation of the repository
@@ -54,19 +54,21 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	suffix := ""
 	prefix := ""
 	repoName := ""
+
 	if entity.Branch.Pushables != "?" {
-		prefix = prefix + pushable + ws + entity.Branch.Pushables + ws +
-			pullable + ws + entity.Branch.Pullables
+		prefix = prefix + pushable + ws + entity.Branch.Pushables  +
+			 ws + pullable + ws + entity.Branch.Pullables 
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) + ws +
-			pullable + ws + yellow.Sprint(entity.Branch.Pullables)
+		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) + 
+			 ws + pullable + ws + yellow.Sprint(entity.Branch.Pullables)
 	}
+
 	selectedEntity := gui.getSelectedRepository()
 	if selectedEntity == entity {
-		prefix = prefix + ws + selectionIndicator
+		prefix = prefix + selectionIndicator
 		repoName = green.Sprint(entity.Name)
 	} else {
-		prefix = prefix + ws + ws + ws
+		prefix = prefix + ws
 		repoName = entity.Name
 	}
 	// some branch names can be really long, in that times I hope the first

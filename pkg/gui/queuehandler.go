@@ -8,8 +8,8 @@ import (
 // operation
 func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 	go func(gui_go *Gui, g_go *gocui.Gui) {
-		indicateQueueStarted(g_go)
 		for {
+			indicateQueueStarted(g_go)
 			job, finished, err := gui_go.State.Queue.StartNext()
 			g_go.Update(func(gu *gocui.Gui) error {
 				gui_go.refreshMain(gu)

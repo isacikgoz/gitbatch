@@ -143,9 +143,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = mainViewFeature.Title
-		// v.Highlight = true
-		// v.SelBgColor = gocui.ColorWhite
-		// v.SelFgColor = gocui.ColorGreen
 		v.Overwrite = true
 	}
 	if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.10*float32(maxY))); err != nil {

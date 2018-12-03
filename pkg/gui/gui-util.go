@@ -21,9 +21,6 @@ func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
 	if err = gui.updateCommits(g, entity); err != nil {
 		return err
 	}
-	if err = gui.refreshMain(g); err != nil {
-		return err
-	}
 	return err
 }
 

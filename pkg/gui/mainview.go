@@ -52,6 +52,9 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 		entity := gui.getSelectedRepository()
+		if err := gui.refreshMain(g); err != nil {
+			return err
+		}
 		gui.refreshViews(g, entity)
 	}
 	return nil
@@ -68,6 +71,9 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 		entity := gui.getSelectedRepository()
+		if err := gui.refreshMain(g); err != nil {
+			return err
+		}
 		gui.refreshViews(g, entity)
 	}
 	return nil
