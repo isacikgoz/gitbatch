@@ -78,7 +78,7 @@ run the `gitbatch` command from the parent of your git repositories. For start-u
 - add testing
 - select all feature
 - arrange repositories to an order e.g. alphabetic, last modified, etc.
-- shift keys, i.e. **s** for iterate **shift + s** for reverse iteration
+- shift keys, i.e. **s** for iterate **alt + s** for reverse iteration (partially implemented)
 - recursive repository search from the filesystem
 - full src-d/go-git integration (*having some performance issues*)
 - implement config file to pre-define repo locations or some settings

@@ -47,6 +47,22 @@ func (entity *RepoEntity) NextCommit() error {
 	return nil
 }
 
+// PreviousCommit iterates to opposite direction
+func (entity *RepoEntity) PreviousCommit() error {
+	currentCommitIndex := 0
+	for i, cs := range entity.Commits {
+		if cs.Hash == entity.Commit.Hash {
+			currentCommitIndex = i
+		}
+	}
+	if currentCommitIndex == 0 {
+		entity.Commit = entity.Commits[len(entity.Commits)-1]
+		return nil
+	}
+	entity.Commit = entity.Commits[currentCommitIndex-1]
+	return nil
+}
+
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
 func (entity *RepoEntity) loadCommits() error {
