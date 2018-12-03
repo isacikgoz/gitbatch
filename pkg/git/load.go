@@ -1,6 +1,7 @@
 package git
 
 import (
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
@@ -23,6 +24,9 @@ func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err e
 			defer wg.Done()
 			entity, err := InitializeRepository(d)
 			if err != nil {
+				log.WithFields(log.Fields{
+					"directory": d,
+				}).Trace("Cannot load git repository.")
 				return
 			}
 			// lock so we don't get a race if multiple go routines try to add

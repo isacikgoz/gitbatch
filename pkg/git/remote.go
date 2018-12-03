@@ -1,5 +1,9 @@
 package git
 
+import (
+	log "github.com/sirupsen/logrus"
+)
+
 // Remote struct is simply a collection of remote branches and wraps it with the
 // name of the remote and fetch/push urls. It also holds the *selected* remote
 // branch
@@ -52,6 +56,7 @@ func (entity *RepoEntity) loadRemotes() error {
 
 	}
 	if err != nil {
+		log.Warn("Cannot find remotes " + err.Error())
 		return err
 	}
 	return err

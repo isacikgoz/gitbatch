@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
@@ -39,6 +40,7 @@ func (remote *Remote) loadRemoteBranches(r *git.Repository) error {
 	remote.Branches = make([]*RemoteBranch, 0)
 	bs, err := remoteBranchesIter(r.Storer)
 	if err != nil {
+		log.Warn("Cannot initiate iterator " + err.Error())
 		return err
 	}
 	defer bs.Close()
@@ -62,6 +64,7 @@ func (remote *Remote) loadRemoteBranches(r *git.Repository) error {
 func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) {
 	refs, err := s.IterReferences()
 	if err != nil {
+		log.Warn("Cannot find references " + err.Error())
 		return nil, err
 	}
 
