@@ -5,10 +5,11 @@ import (
 	"os"
 
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 )
 
-// RepoEntity is the main entity of the application. The repository name is 
+// RepoEntity is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
 // repository entity along with critic entites such as remote/branches and commits
 type RepoEntity struct {
@@ -32,19 +33,22 @@ const (
 	// Available implies repo is ready for the operation
 	Available RepoState = 0
 	// Queued means repo is queued for a operation
-	Queued    RepoState = 1
+	Queued RepoState = 1
 	// Working means an operation is jsut started for this repository
-	Working   RepoState = 2
+	Working RepoState = 2
 	// Success is the expected outcome of the operation
-	Success   RepoState = 3
+	Success RepoState = 3
 	// Fail is the unexpected outcome of the operation
-	Fail      RepoState = 4
+	Fail RepoState = 4
 )
 
 // InitializeRepository initializes a RepoEntity struct with its belongings.
 func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	file, err := os.Open(directory)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"directory": directory,
+		}).Trace("Cannot open as direcotry")
 		return nil, err
 	}
 	fileInfo, err := file.Stat()
@@ -53,6 +57,9 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	}
 	r, err := git.PlainOpen(directory)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"directory": directory,
+		}).Trace("Cannot open direcotry as a git repository")
 		return nil, err
 	}
 	entity = &RepoEntity{RepoID: helpers.RandomString(8),
@@ -97,10 +104,16 @@ func (entity *RepoEntity) Pull() error {
 	// 2018-11-25: tried but it fails, will investigate.
 	rm := entity.Remote.Name
 	if err := entity.FetchWithGit(rm); err != nil {
+		log.WithFields(log.Fields{
+			"remote": rm,
+		}).Trace("Error while fetching remote")
 		return err
 	}
 	entity.Checkout(entity.Branch)
 	if err := entity.MergeWithGit(entity.Remote.Branch.Name); err != nil {
+		log.WithFields(log.Fields{
+			"branch": entity.Remote.Branch.Name,
+		}).Trace("Error while merge to branch")
 		entity.Refresh()
 		return err
 	}
@@ -114,6 +127,9 @@ func (entity *RepoEntity) Pull() error {
 func (entity *RepoEntity) Fetch() error {
 	rm := entity.Remote.Name
 	if err := entity.FetchWithGit(rm); err != nil {
+		log.WithFields(log.Fields{
+			"remote": rm,
+		}).Trace("Error while fetching remote")
 		return err
 	}
 	entity.Refresh()
@@ -121,11 +137,14 @@ func (entity *RepoEntity) Fetch() error {
 	return nil
 }
 
-// Merge incorporates changes from the named commits or branches into the 
+// Merge incorporates changes from the named commits or branches into the
 // current branch
 func (entity *RepoEntity) Merge() error {
 	entity.Checkout(entity.Branch)
 	if err := entity.MergeWithGit(entity.Remote.Branch.Name); err != nil {
+		log.WithFields(log.Fields{
+			"branch": entity.Remote.Branch.Name,
+		}).Trace("Error while merge to branch")
 		entity.Refresh()
 		return err
 	}

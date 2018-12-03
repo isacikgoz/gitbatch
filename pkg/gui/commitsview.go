@@ -50,3 +50,16 @@ func (gui *Gui) nextCommit(g *gocui.Gui, v *gocui.View) error {
 	}
 	return err
 }
+
+// reverse iteration handler for the commitsview
+func (gui *Gui) prevCommit(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = entity.PreviousCommit(); err != nil {
+		return err
+	}
+	if err = gui.updateCommits(g, entity); err != nil {
+		return err
+	}
+	return err
+}

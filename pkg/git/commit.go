@@ -3,6 +3,7 @@ package git
 import (
 	"regexp"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
@@ -24,7 +25,7 @@ type CommitType string
 
 const (
 	// LocalCommit is the commit that recorded locally
-	LocalCommit  CommitType = "local"
+	LocalCommit CommitType = "local"
 	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
 )
@@ -46,6 +47,22 @@ func (entity *RepoEntity) NextCommit() error {
 	return nil
 }
 
+// PreviousCommit iterates to opposite direction
+func (entity *RepoEntity) PreviousCommit() error {
+	currentCommitIndex := 0
+	for i, cs := range entity.Commits {
+		if cs.Hash == entity.Commit.Hash {
+			currentCommitIndex = i
+		}
+	}
+	if currentCommitIndex == 0 {
+		entity.Commit = entity.Commits[len(entity.Commits)-1]
+		return nil
+	}
+	entity.Commit = entity.Commits[currentCommitIndex-1]
+	return nil
+}
+
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
 func (entity *RepoEntity) loadCommits() error {
@@ -53,6 +70,7 @@ func (entity *RepoEntity) loadCommits() error {
 	entity.Commits = make([]*Commit, 0)
 	ref, err := r.Head()
 	if err != nil {
+		log.Trace("Cannot get HEAD " + err.Error())
 		return err
 	}
 
@@ -61,11 +79,13 @@ func (entity *RepoEntity) loadCommits() error {
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
+		log.Trace("git log failed " + err.Error())
 		return err
 	}
 	defer cIter.Close()
 	rmcs, err := entity.pullDiffsToUpstream()
 	if err != nil {
+		log.Trace("git rev-list failed " + err.Error())
 		return err
 	}
 	for _, rmc := range rmcs {

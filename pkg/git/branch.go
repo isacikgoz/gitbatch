@@ -2,6 +2,7 @@ package git
 
 import (
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"regexp"
@@ -39,6 +40,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 	lbs := make([]*Branch, 0)
 	branches, err := entity.Repository.Branches()
 	if err != nil {
+		log.Warn("Cannot load branches " + err.Error())
 		return err
 	}
 	defer branches.Close()
@@ -78,11 +80,13 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	}
 	w, err := entity.Repository.Worktree()
 	if err != nil {
+		log.Warn("Cannot get work tree " + err.Error())
 		return err
 	}
 	if err = w.Checkout(&git.CheckoutOptions{
 		Branch: branch.Reference.Name(),
 	}); err != nil {
+		log.Warn("Cannot checkout " + err.Error())
 		return err
 	}
 
@@ -95,6 +99,7 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	// make this conditional on global scale
 	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
 		// probably couldn't find, but its ok.
+		log.Trace("Cannot find proper remote branch " + err.Error())
 		return nil
 	}
 	return nil
@@ -109,10 +114,10 @@ func (entity *RepoEntity) isClean() bool {
 	if status != "?" {
 		verbose := strings.Split(status, "\n")
 		lastLine := verbose[len(verbose)-1]
-		// earlier versions of git returns "working directory clean" instead of 
+		// earlier versions of git returns "working directory clean" instead of
 		//"working tree clean" message
 		if strings.Contains(lastLine, "working tree clean") ||
-		 strings.Contains(lastLine, "working directory clean") {
+			strings.Contains(lastLine, "working directory clean") {
 			return true
 		}
 	}

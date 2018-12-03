@@ -109,6 +109,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "s",
 			Description: "Iterate over commits",
 			Vital:       false,
+		},{
+			View:        mainViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModAlt,
+			Handler:     gui.prevCommit,
+			Display:     "alt + s",
+			Description: "Iterate over commits",
+			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         'd',
