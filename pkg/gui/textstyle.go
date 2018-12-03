@@ -27,8 +27,8 @@ var (
 	ws               = " "
 	pushable         = string(blue.Sprint("↖"))
 	pullable         = string(blue.Sprint("↘"))
-	confidentArrow   = string(magenta.Sprint("→"))
-	unconfidentArrow = string(yellow.Sprint("→"))
+	confidentArrow   = string(magenta.Sprint(""))
+	unconfidentArrow = string(yellow.Sprint(""))
 	dirty            = string(yellow.Sprint("✗"))
 	unknown          = magenta.Sprint("?")
 
@@ -44,8 +44,8 @@ var (
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = string(green.Sprint("→")) + ws
-	tab                = ws + ws
+	selectionIndicator = ws + string(green.Sprint("→")) + ws
+	tab                = ws 
 )
 
 // this function handles the render and representation of the repository
@@ -53,15 +53,24 @@ var (
 func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	suffix := ""
 	prefix := ""
+	repoName := ""
 
 	if entity.Branch.Pushables != "?" {
-		prefix = prefix + pushable + ws + entity.Branch.Pushables + ws +
-			pullable + ws + entity.Branch.Pullables + ws + confidentArrow + ws
+		prefix = prefix + pushable + ws + entity.Branch.Pushables  +
+			 ws + pullable + ws + entity.Branch.Pullables 
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) + ws +
-			pullable + ws + yellow.Sprint(entity.Branch.Pullables) + ws + unconfidentArrow + ws
+		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) + 
+			 ws + pullable + ws + yellow.Sprint(entity.Branch.Pullables)
 	}
 
+	selectedEntity := gui.getSelectedRepository()
+	if selectedEntity == entity {
+		prefix = prefix + selectionIndicator
+		repoName = green.Sprint(entity.Name)
+	} else {
+		prefix = prefix + ws
+		repoName = entity.Name
+	}
 	// some branch names can be really long, in that times I hope the first
 	// characters are important and meaningful
 	branch := adjustTextLength(entity.Branch.Name, maxBranchLength)
@@ -87,16 +96,16 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 				suffix = green.Sprint(queuedSymbol)
 			}
 		}
-		return prefix + entity.Name + ws + suffix
+		return prefix + repoName + ws + suffix
 	} else if entity.State == git.Working {
 		// TODO: maybe the type of the job can be written while its working?
-		return prefix + entity.Name + ws + green.Sprint(workingSymbol)
+		return prefix + repoName + ws + green.Sprint(workingSymbol)
 	} else if entity.State == git.Success {
-		return prefix + entity.Name + ws + green.Sprint(successSymbol)
+		return prefix + repoName + ws + green.Sprint(successSymbol)
 	} else if entity.State == git.Fail {
-		return prefix + entity.Name + ws + red.Sprint(failSymbol)
+		return prefix + repoName + ws + red.Sprint(failSymbol)
 	} else {
-		return prefix + entity.Name
+		return prefix + repoName
 	}
 }
 

@@ -35,10 +35,7 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 // iteration handler for the branchview
 func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
-	entity, err := gui.getSelectedRepository(g, v)
-	if err != nil {
-		return err
-	}
+	entity := gui.getSelectedRepository()
 	if err = entity.Checkout(entity.NextBranch()); err != nil {
 		if err = gui.openErrorView(g, err.Error(),
 			"You should manually resolve this issue"); err != nil {

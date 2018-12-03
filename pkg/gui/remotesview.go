@@ -40,10 +40,7 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 // iteration handler for the remotesview
 func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
 	var err error
-	entity, err := gui.getSelectedRepository(g, v)
-	if err != nil {
-		return err
-	}
+	entity := gui.getSelectedRepository()
 	if err = entity.NextRemote(); err != nil {
 		return err
 	}
