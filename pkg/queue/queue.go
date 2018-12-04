@@ -88,7 +88,9 @@ func (jobQueue *JobQueue) AddJob(j *Job) error {
 			return errors.New("Same job already is in the queue")
 		}
 	}
-	jobQueue.series = append(jobQueue.series, j)
+	jobQueue.series = append(jobQueue.series, nil)
+	copy(jobQueue.series[1:], jobQueue.series[0:])
+	jobQueue.series[0] = j
 	return nil
 }
 
