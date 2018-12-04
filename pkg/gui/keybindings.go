@@ -151,6 +151,22 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
+			Key:         gocui.KeyCtrlSpace,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.markAllRepositories,
+			Display:     "ctrl + space",
+			Description: "Add all to queue",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         gocui.KeyBackspace2,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.unmarkAllRepositories,
+			Display:     "backspace",
+			Description: "Remove all from queue",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         'n',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.sortByName,

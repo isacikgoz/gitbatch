@@ -93,38 +93,86 @@ func (gui *Gui) getSelectedRepository() *git.RepoEntity {
 	return gui.State.Repositories[cy+oy]
 }
 
+// adds given entity to job queue
+func (gui *Gui) addToQueue(entity *git.RepoEntity) error {
+	var jt queue.JobType
+	switch mode := gui.State.Mode.ModeID; mode {
+	case FetchMode:
+		jt = queue.Fetch
+	case PullMode:
+		jt = queue.Pull
+	case MergeMode:
+		jt = queue.Merge
+	default:
+		return nil
+	}
+	err := gui.State.Queue.AddJob(&queue.Job{
+		JobType: jt,
+		Entity:  entity,
+	})
+	if err != nil {
+		return err
+	}
+	entity.State = git.Queued
+	return nil
+}
+
+// removes given entity from job queue
+func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
+	err := gui.State.Queue.RemoveFromQueue(entity)
+	if err != nil {
+		return err
+	}
+	entity.State = git.Available
+	return nil
+}
+
 // marking repository is simply adding the repostirory into the queue. the
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	if r.State == git.Available || r.State == git.Success {
-		var jt queue.JobType
-		switch mode := gui.State.Mode.ModeID; mode {
-		case FetchMode:
-			jt = queue.Fetch
-		case PullMode:
-			jt = queue.Pull
-		case MergeMode:
-			jt = queue.Merge
-		default:
-			return nil
-		}
-		err := gui.State.Queue.AddJob(&queue.Job{
-			JobType: jt,
-			Entity:  r,
-		})
-		if err != nil {
+		if err := gui.addToQueue(r); err !=nil {
 			return err
 		}
-		r.State = git.Queued
 	} else if r.State == git.Queued {
-		err := gui.State.Queue.RemoveFromQueue(r)
-		if err != nil {
-			return err
+		if err := gui.removeFromQueue(r); err !=nil {
+				return err
 		}
-		r.State = git.Available
 	} else {
 		return nil
+	}
+	gui.refreshMain(g)
+	return nil
+}
+
+// add all remaining repositories into the queue. the function does take its
+// current state into account before adding it
+func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
+	for _, r := range gui.State.Repositories {
+		if r.State == git.Available || r.State == git.Success {
+			if err := gui.addToQueue(r); err !=nil {
+				return err
+			}
+		} else {
+			continue
+		}
+	}
+	gui.refreshMain(g)
+	return nil
+}
+
+// remove all repositories from the queue. the function does take its
+// current state into account before removing it
+func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
+	for _, r := range gui.State.Repositories {
+		if r.State == git.Queued {
+			if err := gui.removeFromQueue(r); err !=nil {
+				return err
+			}
+		} else {
+			continue
+		}
 	}
 	gui.refreshMain(g)
 	return nil
