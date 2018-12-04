@@ -17,10 +17,9 @@ func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 		v.Title = cheatSheetViewFeature.Title
-		fmt.Fprintln(v, " ")
 		for _, k := range gui.KeyBindings {
 			if k.View == mainViewFeature.Name || k.View == "" {
-				binding := " " + k.Display + ": " + k.Description
+				binding := " " + cyan.Sprint(k.Display) + ": " + k.Description
 				fmt.Fprintln(v, binding)
 			}
 		}

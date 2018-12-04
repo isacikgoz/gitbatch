@@ -54,39 +54,6 @@ func (gui *Gui) closeCommitDiffView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// cursor down acts like half-page down for faster scrolling
-func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
-	if v != nil {
-		ox, oy := v.Origin()
-		_, vy := v.Size()
-
-		// TODO: do something when it hits bottom
-		if err := v.SetOrigin(ox, oy+vy/2); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// cursor up acts like half-page up for faster scrolling
-func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
-	if v != nil {
-		ox, oy := v.Origin()
-		_, vy := v.Size()
-
-		if oy-vy/2 > 0 {
-			if err := v.SetOrigin(ox, oy-vy/2); err != nil {
-				return err
-			}
-		} else if oy-vy/2 <= 0 {
-			if err := v.SetOrigin(0, 0); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 // colorize the plain diff text collected from system output
 // the style is near to original diff command
 func colorizeDiff(original string) (colorized []string) {
