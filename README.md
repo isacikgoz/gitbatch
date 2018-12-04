@@ -4,7 +4,7 @@
 Aim of this tool to make your local repositories synchronized with remotes easily. I inspired from lazygit and decided to build this project for my needs; Since my daily work is tied to many repositories I often end up walking on many directories and manually pulling updates etc. To make this routine faster, I created a simple tool to handle this job. I really enjoy working on this project and I hope it will be a useful tool.
 
 **Disclaimer**
-- Authentication required repositories are **not supported** using ssh is recommended if you need to authenticate to fetch/pull
+- Authentication required repositories are **not supported** so using ssh is recommended if you need to authenticate to fetch/pull
   - [Connecting to GitHub with SSH](https://help.github.com/articles/connecting-to-github-with-ssh/)
   - [GitLab and SSH keys](https://docs.gitlab.com/ee/ssh/)
   - [BitBucket Set up an SSH key](https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)
@@ -19,7 +19,7 @@ Here is the screencast of the app:
 ## installation
 for now, installation requires golang compiler and minimum golang 1.10 is recommended.
 - if you don't have golang installed refer to [golang.org](https://golang.org/dl/)
-- you should have $GOPATH env variable set and your $PATH includes $GOPATH/bin
+- you should have $GOPATH env variable set and your $PATH should include $GOPATH/bin to run app from anywhere
 
 to install run the command;
 ```bash
@@ -34,17 +34,10 @@ export PATH=$PATH:$GOPATH/bin
 ## Use
 run the `gitbatch` command from the parent of your git repositories. For start-up options simply `gitbatch --help`
 
-### Controls
-
-Please see [Controls page](https://github.com/isacikgoz/gitbatch/wiki/Controls)
-
-### Modes
-
-Please see [Modes page](https://github.com/isacikgoz/gitbatch/wiki/Modes)
-
-### Display
-
-Please see [Display page](https://github.com/isacikgoz/gitbatch/wiki/Display)
+For more information;
+- [Controls page](https://github.com/isacikgoz/gitbatch/wiki/Controls)
+- [Modes page](https://github.com/isacikgoz/gitbatch/wiki/Modes)
+- [Display page](https://github.com/isacikgoz/gitbatch/wiki/Display)
 
 ## Further goals
 - add testing
