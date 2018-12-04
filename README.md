@@ -76,7 +76,7 @@ run the `gitbatch` command from the parent of your git repositories. For start-u
 
 ## Further goals
 - add testing
-- select all feature
+- select all feature ✔
 - arrange repositories to an order e.g. alphabetic, last modified, etc. ✔
 - shift keys, i.e. **s** for iterate **alt + s** for reverse iteration ✔
 - recursive repository search from the filesystem
