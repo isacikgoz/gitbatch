@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"sort"
+
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"github.com/jroimartin/gocui"
@@ -105,5 +107,28 @@ func writeRightHandSide(v *gocui.View, text string, cx, cy int) error {
 		v.EditWrite(runes[i])
 	}
 	v.SetCursor(cx, cy)
+	return nil
+}
+
+// sortByName sorts the repositories by A to Z order
+func (gui *Gui) sortByName(g *gocui.Gui, v *gocui.View) error {
+	sort.Sort(git.Alphabetical(gui.State.Repositories))
+	gui.refreshAfterSort(g)
+	return nil
+}
+
+// sortByMod sorts the repositories according to last modifed date
+// the top element will be the last modified
+func (gui *Gui) sortByMod(g *gocui.Gui, v *gocui.View) error {
+	sort.Sort(git.LastModified(gui.State.Repositories))
+	gui.refreshAfterSort(g)
+	return nil
+}
+
+// utility function that refreshes main and side views after that
+func (gui *Gui) refreshAfterSort(g *gocui.Gui) error {
+	gui.refreshMain(g)
+	entity := gui.getSelectedRepository()
+	gui.refreshViews(g, entity)
 	return nil
 }

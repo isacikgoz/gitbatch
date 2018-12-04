@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.com/isacikgoz/gitbatch.svg?branch=master)](https://travis-ci.com/isacikgoz/gitbatch) [![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/isacikgoz/gitbatch)](https://goreportcard.com/report/github.com/isacikgoz/gitbatch)
 
 ## gitbatch
-Aim of this tool to make your local repositories synchronized with remotes easily. Since my daily work is tied to many repositories I often end up walking on many directories and manually pulling updates etc. To make this routine more elegant, I created a simple tool to handle this job. I really enjoy working on this project and I hope it will be a useful tool.
+Aim of this tool to make your local repositories synchronized with remotes easily. Inspired from lazygit and I build this according to my needs; Since my daily work is tied to many repositories I often end up walking on many directories and manually pulling updates etc. To make this routine faster, I created a simple tool to handle this job. I really enjoy working on this project and I hope it will be a useful tool.
 
 **Disclaimer**
 - Authentication required repositories are **not supported** using ssh is recommended if you need to authenticate to fetch/pull
@@ -77,8 +77,8 @@ run the `gitbatch` command from the parent of your git repositories. For start-u
 ## Further goals
 - add testing
 - select all feature
-- arrange repositories to an order e.g. alphabetic, last modified, etc.
-- shift keys, i.e. **s** for iterate **alt + s** for reverse iteration (partially implemented)
+- arrange repositories to an order e.g. alphabetic, last modified, etc. ✔
+- shift keys, i.e. **s** for iterate **alt + s** for reverse iteration ✔
 - recursive repository search from the filesystem
 - full src-d/go-git integration (*having some performance issues*)
 - implement config file to pre-define repo locations or some settings

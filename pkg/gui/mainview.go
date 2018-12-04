@@ -93,7 +93,7 @@ func (gui *Gui) getSelectedRepository() *git.RepoEntity {
 	return gui.State.Repositories[cy+oy]
 }
 
-// marking repostiry is simply adding the repostirory into the queue. the
+// marking repository is simply adding the repostirory into the queue. the
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()

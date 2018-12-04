@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"time"
 	"os"
 
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
@@ -16,6 +17,7 @@ type RepoEntity struct {
 	RepoID     string
 	Name       string
 	AbsPath    string
+	ModTime    time.Time
 	Repository git.Repository
 	Branch     *Branch
 	Branches   []*Branch
@@ -65,6 +67,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	entity = &RepoEntity{RepoID: helpers.RandomString(8),
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
+		ModTime:    fileInfo.ModTime(),
 		Repository: *r,
 		State:      Available,
 	}
@@ -156,11 +159,18 @@ func (entity *RepoEntity) Merge() error {
 // fetch/pull/merge operations
 func (entity *RepoEntity) Refresh() error {
 	var err error
+	// error can be ignored since the file already exists when app is loading
+	file, _ := os.Open(entity.AbsPath)
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return err
+	}
 	r, err := git.PlainOpen(entity.AbsPath)
 	if err != nil {
 		return err
 	}
 	entity.Repository = *r
+	entity.ModTime = fileInfo.ModTime()
 	if err := entity.loadLocalBranches(); err != nil {
 		return err
 	}

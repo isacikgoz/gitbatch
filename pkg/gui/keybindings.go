@@ -150,6 +150,22 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Add to queue",
 			Vital:       true,
 		}, {
+			View:        mainViewFeature.Name,
+			Key:         'n',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.sortByName,
+			Display:     "n",
+			Description: "Sort repositories by Name",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'm',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.sortByMod,
+			Display:     "m",
+			Description: "Sort repositories by Modification date",
+			Vital:       false,
+		}, {
 			View:        commitDiffViewFeature.Name,
 			Key:         'c',
 			Modifier:    gocui.ModNone,
