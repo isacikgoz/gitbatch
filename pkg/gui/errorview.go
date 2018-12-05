@@ -6,10 +6,12 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// open an error view to inform user with a message and a useful note
-func (gui *Gui) openErrorView(g *gocui.Gui, message string, note string) error {
-	maxX, maxY := g.Size()
+var errorReturnView string
 
+// open an error view to inform user with a message and a useful note
+func (gui *Gui) openErrorView(g *gocui.Gui, message, note, returnViewName string) error {
+	maxX, maxY := g.Size()
+	errorReturnView = returnViewName
 	v, err := g.SetView(errorViewFeature.Name, maxX/2-30, maxY/2-3, maxX/2+30, maxY/2+3)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
@@ -34,9 +36,9 @@ func (gui *Gui) closeErrorView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
 	}
-	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
+	if _, err := g.SetCurrentView(errorReturnView); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	gui.updateKeyBindingsView(g, errorReturnView)
 	return nil
 }

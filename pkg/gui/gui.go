@@ -68,6 +68,8 @@ var (
 	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
+
+	mainViews = []viewFeature{mainViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
 )
 
 // NewGui creates a Gui opject and fill it's state related entites
@@ -117,6 +119,8 @@ func (gui *Gui) Run() error {
 
 	defer g.Close()
 	gui.g = g
+	g.Highlight = true
+	g.SelFgColor = gocui.ColorGreen
 	g.SetManagerFunc(gui.layout)
 
 	if err := gui.generateKeybindings(); err != nil {

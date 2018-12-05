@@ -44,11 +44,32 @@ func (gui *Gui) nextRemote(g *gocui.Gui, v *gocui.View) error {
 	if err = entity.NextRemote(); err != nil {
 		return err
 	}
+	if err = gui.remoteChangeFollowUp(g, entity); err != nil {
+		return err
+	}
+	return err
+}
+
+// iteration handler for the remotesview
+func (gui *Gui) previousRemote(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = entity.PreviousRemote(); err != nil {
+		return err
+	}
+	if err = gui.remoteChangeFollowUp(g, entity); err != nil {
+		return err
+	}
+	return err
+}
+
+// after checkout a remote some refreshments needed
+func (gui *Gui) remoteChangeFollowUp(g *gocui.Gui, entity *git.RepoEntity) (err error) {
 	if err = gui.updateRemotes(g, entity); err != nil {
 		return err
 	}
 	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}
-	return err
+	return nil
 }

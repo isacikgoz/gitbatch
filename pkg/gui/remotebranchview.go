@@ -49,3 +49,16 @@ func (gui *Gui) nextRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	}
 	return nil
 }
+
+// iteration handler for the remotebranchview
+func (gui *Gui) previousRemoteBranch(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = entity.Remote.PreviousRemoteBranch(); err != nil {
+		return err
+	}
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
+		return err
+	}
+	return nil
+}

@@ -47,10 +47,10 @@ func (gui *Gui) closeCommitDiffView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
 	}
-	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
+	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	gui.updateKeyBindingsView(g, commitViewFeature.Name)
 	return nil
 }
 

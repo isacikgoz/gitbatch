@@ -33,12 +33,7 @@ const (
 // NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
 func (entity *RepoEntity) NextCommit() error {
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == entity.Commit.Hash {
-			currentCommitIndex = i
-		}
-	}
+	currentCommitIndex := entity.findCurrentCommitIndex()
 	if currentCommitIndex == len(entity.Commits)-1 {
 		entity.Commit = entity.Commits[0]
 		return nil
@@ -49,18 +44,24 @@ func (entity *RepoEntity) NextCommit() error {
 
 // PreviousCommit iterates to opposite direction
 func (entity *RepoEntity) PreviousCommit() error {
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == entity.Commit.Hash {
-			currentCommitIndex = i
-		}
-	}
+	currentCommitIndex := entity.findCurrentCommitIndex()
 	if currentCommitIndex == 0 {
 		entity.Commit = entity.Commits[len(entity.Commits)-1]
 		return nil
 	}
 	entity.Commit = entity.Commits[currentCommitIndex-1]
 	return nil
+}
+
+// returns the active commit index
+func (entity *RepoEntity) findCurrentCommitIndex() int {
+	currentCommitIndex := 0
+	for i, cs := range entity.Commits {
+		if cs.Hash == entity.Commit.Hash {
+			currentCommitIndex = i
+		}
+	}
+	return currentCommitIndex
 }
 
 // loads the local commits by simply using git log way. ALso, gets the upstream

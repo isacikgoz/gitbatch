@@ -5,23 +5,18 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-var cyclableViews = []string{mainViewFeature.Name,
-	remoteViewFeature.Name,
-	remoteBranchViewFeature.Name,
-	branchViewFeature.Name,
-	commitViewFeature.Name}
-
+// focus to next view
 func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 	var focusedViewName string
-	if v == nil || v.Name() == cyclableViews[len(cyclableViews)-1] {
-		focusedViewName = cyclableViews[0]
+	if v == nil || v.Name() == mainViews[len(mainViews)-1].Name {
+		focusedViewName = mainViews[0].Name
 	} else {
-		for i := range cyclableViews {
-			if v.Name() == cyclableViews[i] {
-				focusedViewName = cyclableViews[i+1]
+		for i := range mainViews {
+			if v.Name() == mainViews[i].Name {
+				focusedViewName = mainViews[i+1].Name
 				break
 			}
-			if i == len(cyclableViews)-1 {
+			if i == len(mainViews)-1 {
 				return nil
 			}
 		}
@@ -30,20 +25,22 @@ func (gui *Gui) nextView(g *gocui.Gui, v *gocui.View) error {
 			log.Warn("Loading view cannot be focused.")
 			return nil
 	}
+	gui.updateKeyBindingsView(g, focusedViewName)
 	return nil
 }
 
+// focus to previous view
 func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 	var focusedViewName string
-	if v == nil || v.Name() == cyclableViews[0] {
-		focusedViewName = cyclableViews[len(cyclableViews)-1]
+	if v == nil || v.Name() == mainViews[0].Name {
+		focusedViewName = mainViews[len(mainViews)-1].Name
 	} else {
-		for i := range cyclableViews {
-			if v.Name() == cyclableViews[i] {
-				focusedViewName = cyclableViews[i-1] // TODO: make this work properly
+		for i := range mainViews {
+			if v.Name() == mainViews[i].Name {
+				focusedViewName = mainViews[i-1].Name
 				break
 			}
-			if i == len(cyclableViews)-1 {
+			if i == len(mainViews)-1 {
 				return nil
 			}
 		}
@@ -52,5 +49,6 @@ func (gui *Gui) previousView(g *gocui.Gui, v *gocui.View) error {
 			log.Warn("Loading view cannot be focused.")
 			return nil
 	}
+	gui.updateKeyBindingsView(g, focusedViewName)
 	return nil
 }

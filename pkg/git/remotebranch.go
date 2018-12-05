@@ -21,19 +21,35 @@ type RemoteBranch struct {
 
 // NextRemoteBranch iterates to the next remote branch
 func (remote *Remote) NextRemoteBranch() error {
-	currentRemoteIndex := 0
-	for i, rb := range remote.Branches {
-		if rb.Reference.Hash() == remote.Branch.Reference.Hash() {
-			currentRemoteIndex = i
-		}
-	}
-	// WARNING: DIDN'T CHECK THE LIFE CYCLE
+	currentRemoteIndex := remote.findCurrentRemoteBranchIndex()
 	if currentRemoteIndex == len(remote.Branches)-1 {
 		remote.Branch = remote.Branches[0]
 	} else {
 		remote.Branch = remote.Branches[currentRemoteIndex+1]
 	}
 	return nil
+}
+
+// PreviousRemoteBranch iterates to the previous remote branch
+func (remote *Remote) PreviousRemoteBranch() error {
+	currentRemoteIndex := remote.findCurrentRemoteBranchIndex()
+	if currentRemoteIndex == 0 {
+		remote.Branch = remote.Branches[len(remote.Branches)-1]
+	} else {
+		remote.Branch = remote.Branches[currentRemoteIndex-1]
+	}
+	return nil
+}
+
+// returns the active remote branch index
+func (remote *Remote) findCurrentRemoteBranchIndex() int {
+	currentRemoteIndex := 0
+	for i, rb := range remote.Branches {
+		if rb.Reference.Hash() == remote.Branch.Reference.Hash() {
+			currentRemoteIndex = i
+		}
+	}
+	return currentRemoteIndex
 }
 
 // search for the remote branches of the remote. It takes the go-git's repo
