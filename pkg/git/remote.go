@@ -48,7 +48,7 @@ func (entity *RepoEntity) loadRemotes() error {
 			Name: rm.Config().Name,
 			URL:  rm.Config().URLs,
 		}
-		remote.loadRemoteBranches(&r)
+		remote.loadRemoteBranches(entity)
 		if len(remote.Branches) > 0 {
 			remote.Branch = remote.Branches[0]
 		}
