@@ -167,3 +167,12 @@ func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 	}
 	return remoteCommits, nil
 }
+
+func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
+	sliced := make([]string, 0)
+	hashes := UpstreamPushDiffs(entity.AbsPath)
+	if hashes != "?" {
+		sliced = strings.Split(hashes, "\n")
+	}
+	return sliced, nil
+}

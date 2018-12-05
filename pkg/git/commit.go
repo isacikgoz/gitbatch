@@ -27,6 +27,8 @@ const (
 	// LocalCommit is the commit that recorded locally
 	LocalCommit CommitType = "local"
 	// RemoteCommit is the commit that not merged to local branch
+	EvenCommit CommitType = "even"
+	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
 )
 
@@ -92,15 +94,26 @@ func (entity *RepoEntity) loadCommits() error {
 	for _, rmc := range rmcs {
 		entity.Commits = append(entity.Commits, rmc)
 	}
+	lcs, err := entity.pushDiffsToUpstream()
+	if err != nil {
+		log.Trace("git rev-list failed " + err.Error())
+		return err
+	}
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
 		re := regexp.MustCompile(`\r?\n`)
+		cmType := EvenCommit
+		for _, lc := range lcs {
+			if lc == re.ReplaceAllString(c.Hash.String(), " ") {
+				cmType = LocalCommit
+			}
+		}
 		commit := &Commit{
 			Hash:       re.ReplaceAllString(c.Hash.String(), " "),
 			Author:     c.Author.Email,
 			Message:    re.ReplaceAllString(c.Message, " "),
 			Time:       c.Author.When.String(),
-			CommitType: LocalCommit,
+			CommitType: cmType,
 		}
 		entity.Commits = append(entity.Commits, commit)
 
