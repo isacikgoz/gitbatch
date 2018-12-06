@@ -2,6 +2,8 @@ package git
 
 import (
 	log "github.com/sirupsen/logrus"
+
+	"errors"
 	"sync"
 )
 
@@ -39,5 +41,8 @@ func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err e
 	// wait until the wait counter is zero, this happens if all goroutines have
 	// finished
 	wg.Wait()
+	if len(entities) == 0 {
+		return entities, errors.New("There are no git repositories at given path(s)")
+	}
 	return entities, nil
 }

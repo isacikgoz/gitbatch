@@ -110,7 +110,8 @@ func (gui *Gui) Run() error {
 		}
 		rs, err := git.LoadRepositoryEntities(g_ui.State.Directories)
 		if err != nil {
-			log.Error("Error while loading repositories.")
+			g.Close()
+			log.Fatal(err)
 			return
 		}
 		g_ui.State.Repositories = rs
