@@ -99,62 +99,6 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	return entity, nil
 }
 
-// Pull incorporates changes from a remote repository into the current branch.
-// In its default mode, git pull is shorthand for git fetch followed by git
-// merge <branch>
-func (entity *RepoEntity) Pull() error {
-	// TODO: Migrate this code to src-d/go-git
-	// 2018-11-25: tried but it fails, will investigate.
-	rm := entity.Remote.Name
-	if err := entity.FetchWithGit(rm); err != nil {
-		log.WithFields(log.Fields{
-			"remote": rm,
-		}).Trace("Error while fetching remote")
-		return err
-	}
-	entity.Checkout(entity.Branch)
-	if err := entity.MergeWithGit(entity.Remote.Branch.Name); err != nil {
-		log.WithFields(log.Fields{
-			"branch": entity.Remote.Branch.Name,
-		}).Trace("Error while merge to branch")
-		entity.Refresh()
-		return err
-	}
-	entity.Refresh()
-	entity.Checkout(entity.Branch)
-	return nil
-}
-
-// Fetch branches refs from one or more other repositories, along with the
-// objects necessary to complete their histories
-func (entity *RepoEntity) Fetch() error {
-	rm := entity.Remote.Name
-	if err := entity.FetchWithGit(rm); err != nil {
-		log.WithFields(log.Fields{
-			"remote": rm,
-		}).Trace("Error while fetching remote")
-		return err
-	}
-	entity.Refresh()
-	entity.Checkout(entity.Branch)
-	return nil
-}
-
-// Merge incorporates changes from the named commits or branches into the
-// current branch
-func (entity *RepoEntity) Merge() error {
-	entity.Checkout(entity.Branch)
-	if err := entity.MergeWithGit(entity.Remote.Branch.Name); err != nil {
-		log.WithFields(log.Fields{
-			"branch": entity.Remote.Branch.Name,
-		}).Trace("Error while merge to branch")
-		entity.Refresh()
-		return err
-	}
-	entity.Refresh()
-	return nil
-}
-
 // Refresh the belongings of a repositoriy, this function is called right after
 // fetch/pull/merge operations
 func (entity *RepoEntity) Refresh() error {
@@ -174,6 +118,7 @@ func (entity *RepoEntity) Refresh() error {
 	if err := entity.loadLocalBranches(); err != nil {
 		return err
 	}
+	entity.RefreshPushPull()
 	if err := entity.loadCommits(); err != nil {
 		return err
 	}

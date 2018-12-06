@@ -2,10 +2,8 @@ package git
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 
-	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/storer"
@@ -105,21 +103,4 @@ func (remote *Remote) switchRemoteBranch(remoteBranchName string) error {
 		}
 	}
 	return errors.New("Remote branch not found.")
-}
-
-func deletedRemoteBranches(entity *RepoEntity, remote string) ([]string, error) {
-	deletedRemoteBranches := make([]string, 0)
-	output := entity.DryFetchAndPruneWithGit(remote)
-	output = helpers.TrimTrailingNewline(output)
-	re := regexp.MustCompile(` - \[deleted\].+-> `)
-	if output != "?" {
-		sliced := strings.Split(output, "\n")
-		for _, s := range sliced {
-			if re.MatchString(s) {
-				ss := re.ReplaceAllString(s, "")
-				deletedRemoteBranches = append(deletedRemoteBranches, ss)
-			}
-		}
-	}
-	return deletedRemoteBranches, nil
 }

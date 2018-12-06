@@ -7,6 +7,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"regexp"
 	"strings"
+	"strconv"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -46,7 +47,25 @@ func (entity *RepoEntity) loadLocalBranches() error {
 	defer branches.Close()
 	branches.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() == plumbing.HashReference {
-			push, pull := UpstreamDifferenceCount(entity.AbsPath)
+			var push, pull string
+			pushables, err := RevList(entity, RevListOptions{
+				Ref1: "@{u}",
+				Ref2: "HEAD",
+				})
+			if err != nil {
+				push = pushables[0]
+			} else {
+				push = strconv.Itoa(len(pushables))
+			}
+			pullables, err := RevList(entity, RevListOptions{
+				Ref1: "HEAD",
+				Ref2: "@{u}",
+				})
+			if err != nil {
+				pull = pullables[0]
+			} else {
+				pull = strconv.Itoa(len(pullables))
+			}
 			clean := entity.isClean()
 			branch := &Branch{Name: b.Name().Short(), Reference: b, Pushables: push, Pullables: pull, Clean: clean}
 			lbs = append(lbs, branch)
@@ -109,7 +128,7 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.loadCommits()
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
-	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+	entity.RefreshPushPull()
 	// TODO: same code on 3 different occasion, maybe something wrong?
 	// make this conditional on global scale
 	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
@@ -141,38 +160,59 @@ func (entity *RepoEntity) isClean() bool {
 
 // RefreshPushPull refreshes the active branchs pushable and pullable count
 func (entity *RepoEntity) RefreshPushPull() {
-	entity.Branch.Pushables, entity.Branch.Pullables = UpstreamDifferenceCount(entity.AbsPath)
+	pushables, err := RevList(entity, RevListOptions{
+		Ref1: "@{u}",
+		Ref2: "HEAD",
+		})
+	if err != nil {
+		entity.Branch.Pushables = pushables[0]
+	} else {
+		entity.Branch.Pushables = strconv.Itoa(len(pushables))
+	}
+	pullables, err := RevList(entity, RevListOptions{
+		Ref1: "HEAD",
+		Ref2: "@{u}",
+		})
+	if err != nil {
+		entity.Branch.Pullables = pullables[0]
+	} else {
+		entity.Branch.Pullables = strconv.Itoa(len(pullables))
+	}
 }
 
 // this function creates the commit entities according to active branchs diffs
 // to *its* configured upstream
 func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 	remoteCommits := make([]*Commit, 0)
-	hashes := UpstreamPullDiffs(entity.AbsPath)
-	re := regexp.MustCompile(`\r?\n`)
-	if hashes != "?" {
-		sliced := strings.Split(hashes, "\n")
-		for _, s := range sliced {
-			if len(s) == 40 {
-				commit := &Commit{
-					Hash:       s,
-					Author:     GitShowEmail(entity.AbsPath, s),
-					Message:    re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
-					Time:       GitShowDate(entity.AbsPath, s),
-					CommitType: RemoteCommit,
-				}
-				remoteCommits = append(remoteCommits, commit)
+	pullables, err := RevList(entity, RevListOptions{
+		Ref1: "HEAD",
+		Ref2: "@{u}",
+		})
+	if err != nil {
+		// possibly found nothing or no upstream set
+	} else {
+		re := regexp.MustCompile(`\r?\n`)
+		for _, s := range pullables {
+			commit := &Commit{
+				Hash:       s,
+				Author:     GitShowEmail(entity.AbsPath, s),
+				Message:    re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
+				Time:       GitShowDate(entity.AbsPath, s),
+				CommitType: RemoteCommit,
 			}
+			remoteCommits = append(remoteCommits, commit)
 		}
 	}
 	return remoteCommits, nil
 }
 
 func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
-	sliced := make([]string, 0)
-	hashes := UpstreamPushDiffs(entity.AbsPath)
-	if hashes != "?" {
-		sliced = strings.Split(hashes, "\n")
+	pushables, err := RevList(entity, RevListOptions{
+		Ref1: "@{u}",
+		Ref2: "HEAD",
+		})
+	if err != nil {
+		return make([]string, 0), nil
 	}
-	return sliced, nil
+	return pushables, nil
 }
