@@ -24,9 +24,9 @@ type Commit struct {
 type CommitType string
 
 const (
-	// LocalCommit is the commit that recorded locally
+	// LocalCommit is the commit that not pushed to remote branch
 	LocalCommit CommitType = "local"
-	// RemoteCommit is the commit that not merged to local branch
+	// EvenCommit is the commit that recorded locally
 	EvenCommit CommitType = "even"
 	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
