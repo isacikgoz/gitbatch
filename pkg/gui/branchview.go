@@ -10,7 +10,7 @@ import (
 // updates the branchview for given entity
 func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 	var err error
-	out, err := g.View("branch")
+	out, err := g.View(branchViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -38,11 +38,38 @@ func (gui *Gui) nextBranch(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
 	if err = entity.Checkout(entity.NextBranch()); err != nil {
 		if err = gui.openErrorView(g, err.Error(),
-			"You should manually resolve this issue"); err != nil {
+			"You should manually resolve this issue",
+			branchViewFeature.Name); err != nil {
 			return err
 		}
 		return nil
 	}
+	if err = gui.checkoutFollowUp(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+// iteration handler for the branchview
+func (gui *Gui) previousBranch(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = entity.Checkout(entity.PreviousBranch()); err != nil {
+		if err = gui.openErrorView(g, err.Error(),
+			"You should manually resolve this issue",
+			branchViewFeature.Name); err != nil {
+			return err
+		}
+		return nil
+	}
+	if err = gui.checkoutFollowUp(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+// after checkout a branch some refreshments needed
+func (gui *Gui) checkoutFollowUp(g *gocui.Gui, entity *git.RepoEntity) (err error) {
 	if err = gui.updateBranch(g, entity); err != nil {
 		return err
 	}

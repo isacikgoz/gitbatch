@@ -93,6 +93,16 @@ func (entity *RepoEntity) FetchWithGit(remote string) error {
 	return nil
 }
 
+// DryFetchAndPruneWithGit is wrapper of the git fetch <remote> --prune --dry-run command
+func (entity *RepoEntity) DryFetchAndPruneWithGit(remote string) string {
+	args := []string{"fetch", remote, "--prune", "--dry-run"}
+	d, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
+	if err != nil {
+		return "?"
+	}
+	return d
+}
+
 // PullWithGit is wrapper of the git pull <remote>/<branch> command
 func (entity *RepoEntity) PullWithGit(remote, branch string) error {
 	args := []string{"pull", remote, branch}

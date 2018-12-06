@@ -20,8 +20,10 @@ func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
 	totalcommits := len(entity.Commits)
 	for i, c := range entity.Commits {
 		var body string
-		if c.CommitType == git.LocalCommit {
+		if c.CommitType == git.EvenCommit {
 			body = cyan.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		} else if c.CommitType == git.LocalCommit {
+			body = blue.Sprint(c.Hash[:hashLength]) + " " + c.Message
 		} else {
 			body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
 		}

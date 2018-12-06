@@ -59,6 +59,24 @@ func (entity *RepoEntity) loadLocalBranches() error {
 
 // NextBranch checkouts the next branch
 func (entity *RepoEntity) NextBranch() *Branch {
+	currentBranchIndex := entity.findCurrentBranchIndex()
+	if currentBranchIndex == len(entity.Branches)-1 {
+		return entity.Branches[0]
+	}
+	return entity.Branches[currentBranchIndex+1]
+}
+
+// PreviousBranch checkouts the previous branch
+func (entity *RepoEntity) PreviousBranch() *Branch {
+	currentBranchIndex := entity.findCurrentBranchIndex()
+	if currentBranchIndex == 0 {
+		return entity.Branches[len(entity.Branches)-1]
+	}
+	return entity.Branches[currentBranchIndex-1]
+}
+
+// returns the active branch index
+func (entity *RepoEntity) findCurrentBranchIndex() int {
 	currentBranch := entity.Branch
 	currentBranchIndex := 0
 	for i, lbs := range entity.Branches {
@@ -66,10 +84,7 @@ func (entity *RepoEntity) NextBranch() *Branch {
 			currentBranchIndex = i
 		}
 	}
-	if currentBranchIndex == len(entity.Branches)-1 {
-		return entity.Branches[0]
-	}
-	return entity.Branches[currentBranchIndex+1]
+	return currentBranchIndex
 }
 
 // Checkout to given branch. If any errors occur, the method returns it instead
@@ -151,4 +166,13 @@ func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 		}
 	}
 	return remoteCommits, nil
+}
+
+func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
+	sliced := make([]string, 0)
+	hashes := UpstreamPushDiffs(entity.AbsPath)
+	if hashes != "?" {
+		sliced = strings.Split(hashes, "\n")
+	}
+	return sliced, nil
 }

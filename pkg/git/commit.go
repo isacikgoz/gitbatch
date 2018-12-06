@@ -27,18 +27,15 @@ const (
 	// LocalCommit is the commit that recorded locally
 	LocalCommit CommitType = "local"
 	// RemoteCommit is the commit that not merged to local branch
+	EvenCommit CommitType = "even"
+	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
 )
 
 // NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
 func (entity *RepoEntity) NextCommit() error {
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == entity.Commit.Hash {
-			currentCommitIndex = i
-		}
-	}
+	currentCommitIndex := entity.findCurrentCommitIndex()
 	if currentCommitIndex == len(entity.Commits)-1 {
 		entity.Commit = entity.Commits[0]
 		return nil
@@ -49,18 +46,24 @@ func (entity *RepoEntity) NextCommit() error {
 
 // PreviousCommit iterates to opposite direction
 func (entity *RepoEntity) PreviousCommit() error {
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == entity.Commit.Hash {
-			currentCommitIndex = i
-		}
-	}
+	currentCommitIndex := entity.findCurrentCommitIndex()
 	if currentCommitIndex == 0 {
 		entity.Commit = entity.Commits[len(entity.Commits)-1]
 		return nil
 	}
 	entity.Commit = entity.Commits[currentCommitIndex-1]
 	return nil
+}
+
+// returns the active commit index
+func (entity *RepoEntity) findCurrentCommitIndex() int {
+	currentCommitIndex := 0
+	for i, cs := range entity.Commits {
+		if cs.Hash == entity.Commit.Hash {
+			currentCommitIndex = i
+		}
+	}
+	return currentCommitIndex
 }
 
 // loads the local commits by simply using git log way. ALso, gets the upstream
@@ -91,15 +94,26 @@ func (entity *RepoEntity) loadCommits() error {
 	for _, rmc := range rmcs {
 		entity.Commits = append(entity.Commits, rmc)
 	}
+	lcs, err := entity.pushDiffsToUpstream()
+	if err != nil {
+		log.Trace("git rev-list failed " + err.Error())
+		return err
+	}
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
 		re := regexp.MustCompile(`\r?\n`)
+		cmType := EvenCommit
+		for _, lc := range lcs {
+			if lc == re.ReplaceAllString(c.Hash.String(), " ") {
+				cmType = LocalCommit
+			}
+		}
 		commit := &Commit{
 			Hash:       re.ReplaceAllString(c.Hash.String(), " "),
 			Author:     c.Author.Email,
 			Message:    re.ReplaceAllString(c.Message, " "),
 			Time:       c.Author.When.String(),
-			CommitType: LocalCommit,
+			CommitType: cmType,
 		}
 		entity.Commits = append(entity.Commits, commit)
 

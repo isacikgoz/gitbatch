@@ -19,12 +19,16 @@ func (gui *Gui) updateRemoteBranches(g *gocui.Gui, entity *git.RepoEntity) error
 	trb := len(entity.Remote.Branches)
 	if trb > 0 {
 		for i, r := range entity.Remote.Branches {
+			rName := r.Name
+			if r.Deleted {
+				rName = rName + ws + dirty
+			}
 			if r.Name == entity.Remote.Branch.Name {
 				currentindex = i
-				fmt.Fprintln(out, selectionIndicator+r.Name)
+				fmt.Fprintln(out, selectionIndicator+rName)
 				continue
 			}
-			fmt.Fprintln(out, tab+r.Name)
+			fmt.Fprintln(out, tab+rName)
 		}
 		if err = gui.smartAnchorRelativeToLine(out, currentindex, trb); err != nil {
 			return err
@@ -38,6 +42,19 @@ func (gui *Gui) nextRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	entity := gui.getSelectedRepository()
 	if err = entity.Remote.NextRemoteBranch(); err != nil {
+		return err
+	}
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+// iteration handler for the remotebranchview
+func (gui *Gui) previousRemoteBranch(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = entity.Remote.PreviousRemoteBranch(); err != nil {
 		return err
 	}
 	if err = gui.updateRemoteBranches(g, entity); err != nil {
