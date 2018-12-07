@@ -26,6 +26,9 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 		if _, err = gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
 			return err
 		}
+		if err = gui.sortByName(g, v); err != nil {
+			return err
+		}
 		entity := gui.getSelectedRepository()
 		gui.refreshViews(g, entity)
 		return nil
