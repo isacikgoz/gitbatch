@@ -19,10 +19,7 @@ func (gui *Gui) openStashView(g *gocui.Gui, returnViewName string) error {
 		v.Title = " Stashed Items "
 		v.Wrap = true
 		entity := gui.getSelectedRepository()
-		stashedItems, err := entity.LoadStashedItems()
-		if err != nil {
-			return err
-		}
+		stashedItems := entity.Stasheds
 		for _, stashedItem := range stashedItems {
 			fmt.Fprintln(v, stashedItem)
 		}

@@ -51,8 +51,8 @@ func stashGet(entity *RepoEntity, option string) string {
 	return out
 }
 
-func (entity *RepoEntity) LoadStashedItems() ([]*StashedItem, error) {
-	stashedItems := make([]*StashedItem, 0)
+func (entity *RepoEntity) loadStashedItems() error {
+	entity.Stasheds = make([]*StashedItem, 0)
 	output := stashGet(entity, "list")
 	stashIDRegex := regexp.MustCompile(`stash@{[\d]+}:`)
 	stashIDRegexInt := regexp.MustCompile(`[\d]+`)
@@ -83,14 +83,14 @@ func (entity *RepoEntity) LoadStashedItems() ([]*StashedItem, error) {
 		// trim hash
 		trimmed = stashHashRegex.Split(trimmed, 2)[1][1:]
 
-		stashedItems = append(stashedItems, &StashedItem{
+		entity.Stasheds = append(entity.Stasheds, &StashedItem{
 			StashID: i,
 			BranchName: branchName,
 			Hash: hash,
 			Description: trimmed,
 			})
 	}
-	return stashedItems, nil
+	return nil
 }
 
 func (entity *RepoEntity) Stash() (error) {

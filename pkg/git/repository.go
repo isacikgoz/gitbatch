@@ -25,6 +25,7 @@ type RepoEntity struct {
 	Remotes    []*Remote
 	Commit     *Commit
 	Commits    []*Commit
+	Stasheds   []*StashedItem
 	State      RepoState
 }
 
@@ -85,6 +86,9 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	entity.loadRemotes()
 	// set the active branch to repositories HEAD
 	entity.Branch = entity.getActiveBranch()
+	if err = entity.loadStashedItems(); err != nil {
+		// TODO: fix here.
+	}
 	if len(entity.Remotes) > 0 {
 		// TODO: tend to take origin/master as default
 		entity.Remote = entity.Remotes[0]
