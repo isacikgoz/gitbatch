@@ -8,10 +8,12 @@ import (
 
 var (
 	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
-	statusViewFeature       = viewFeature{Name: "status", Title: " Status "}
+	// statusViewFeature       = viewFeature{Name: "status", Title: " Status "}
 	stageViewFeature        = viewFeature{Name: "staged", Title: " Staged "}
 	unstageViewFeature      = viewFeature{Name: "unstaged", Title: " Unstaged "}
 	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
+
+	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
 )
 
 // open the status layout
@@ -23,10 +25,20 @@ func (gui *Gui) openStatusView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// iteration handler for the status layout
+// focus to next view
 func (gui *Gui) nextStatusView(g *gocui.Gui, v *gocui.View) error {
-	var err error
-	return err
+	if err := gui.nextViewOfGroup(g, v, statusViews); err != nil {
+		return err
+	}
+	return nil
+}
+
+// focus to previous view
+func (gui *Gui) previousStatusView(g *gocui.Gui, v *gocui.View) error {
+	if err := gui.previousViewOfGroup(g, v, statusViews); err != nil {
+		return err
+	}
+	return nil
 }
 
 // header og the status layout
@@ -42,10 +54,6 @@ func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 		// v.Frame = false
 		v.Wrap = true
 	}
-	gui.updateKeyBindingsView(g, statusHeaderViewFeature.Name)
-	if _, err := g.SetCurrentView(statusHeaderViewFeature.Name); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -60,6 +68,10 @@ func (gui *Gui) openStageView(g *gocui.Gui) error {
 		}
 		v.Title = stageViewFeature.Title
 		v.Wrap = true
+	}
+	gui.updateKeyBindingsView(g, stageViewFeature.Name)
+	if _, err := g.SetCurrentView(stageViewFeature.Name); err != nil {
+		return err
 	}
 	return nil
 }
@@ -78,7 +90,6 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 	}
 	return nil
 }
-
 
 // stash view
 func (gui *Gui) openStashView(g *gocui.Gui) error {
@@ -120,23 +131,3 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }
-
- 		// 	{
-		// 	View:        statusHeaderViewFeature.Name,
-		// 	Key:         'c',
-		// 	Modifier:    gocui.ModNone,
-		// 	Handler:     gui.closeStatusView,
-		// 	Display:     "c",
-		// 	Description: "close/cancel",
-		// 	Vital:       true,
-		// },
-
-		//  {
-		// 	View:        mainViewFeature.Name,
-		// 	Key:         't',
-		// 	Modifier:    gocui.ModNone,
-		// 	Handler:     gui.openStatusView,
-		// 	Display:     "t",
-		// 	Description: "Open Status",
-		// 	Vital:       true,
-		// },

@@ -81,13 +81,13 @@ func (entity *RepoEntity) loadStashedItems() error {
 		hash := stashHashRegex.FindString(trimmed)
 		
 		// trim hash
-		trimmed = stashHashRegex.Split(trimmed, 2)[1][1:]
+		desc := stashHashRegex.Split(trimmed, 2)[1][1:]
 
 		entity.Stasheds = append(entity.Stasheds, &StashedItem{
 			StashID: i,
 			BranchName: branchName,
 			Hash: hash,
-			Description: trimmed,
+			Description: desc,
 			})
 	}
 	return nil

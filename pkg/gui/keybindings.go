@@ -43,7 +43,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowLeft,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousView,
+				Handler:     gui.previousMainView,
 				Display:     "←",
 				Description: "Previous Panel",
 				Vital:       false,
@@ -51,7 +51,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowRight,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextView,
+				Handler:     gui.nextMainView,
 				Display:     "→",
 				Description: "Next Panel",
 				Vital:       false,
@@ -59,7 +59,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'l',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextView,
+				Handler:     gui.nextMainView,
 				Display:     "l",
 				Description: "Previous Panel",
 				Vital:       false,
@@ -67,13 +67,61 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'h',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousView,
+				Handler:     gui.previousMainView,
 				Display:     "h",
 				Description: "Next Panel",
 				Vital:       false,
 			},
 		}
 		for _, binding := range mainKeybindings {
+			gui.KeyBindings = append(gui.KeyBindings, binding)
+		}
+	}
+	for _, view := range statusViews {
+		statusKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         'c',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.closeStatusView,
+				Display:     "c",
+				Description: "Close/Cancel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowLeft,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.previousStatusView,
+				Display:     "←",
+				Description: "Previous Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowRight,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextStatusView,
+				Display:     "→",
+				Description: "Next Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'l',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextStatusView,
+				Display:     "l",
+				Description: "Previous Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'h',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.previousStatusView,
+				Display:     "h",
+				Description: "Next Panel",
+				Vital:       false,
+			},
+		}
+		for _, binding := range statusKeybindings {
 			gui.KeyBindings = append(gui.KeyBindings, binding)
 		}
 	}
