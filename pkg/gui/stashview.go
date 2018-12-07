@@ -8,7 +8,7 @@ import (
 
 var stashReturnView string
 
-func (gui *Gui) openStashView(g *gocui.Gui, returnViewName string) error {
+func (gui *Gui) openStashesView(g *gocui.Gui, returnViewName string) error {
 	maxX, maxY := g.Size()
 	stashReturnView = returnViewName
 	v, err := g.SetView("stash", maxX/2-30, maxY/2-3, maxX/2+30, maxY/2+3)
@@ -32,7 +32,7 @@ func (gui *Gui) openStashView(g *gocui.Gui, returnViewName string) error {
 	return nil
 }
 
-func (gui *Gui) closeStashView(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) closeStashesView(g *gocui.Gui, v *gocui.View) error {
 
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
@@ -44,7 +44,7 @@ func (gui *Gui) closeStashView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) showStashView(g *gocui.Gui, v *gocui.View) (err error) {
-	gui.openStashView(g, mainViewFeature.Name)
+func (gui *Gui) showStashesView(g *gocui.Gui, v *gocui.View) (err error) {
+	// gui.openStashView(g, mainViewFeature.Name)
 	return nil
 }

@@ -167,14 +167,6 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
 		}, {
-			View:        mainViewFeature.Name,
-			Key:         's',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.showStashView,
-			Display:     "s",
-			Description: "show stash",
-			Vital:       true,
-		}, {
 			View:        "",
 			Key:         gocui.KeyCtrlC,
 			Modifier:    gocui.ModNone,
@@ -420,17 +412,23 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "c",
 			Description: "close/cancel",
 			Vital:       true,
-		}, 
-	// Stash View
-		{
-			View:        "stash",
+		}, {
+			View:        statusHeaderViewFeature.Name,
 			Key:         'c',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.closeStashView,
+			Handler:     gui.closeStatusView,
 			Display:     "c",
 			Description: "close/cancel",
 			Vital:       true,
-		}, 		
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openStatusView,
+			Display:     "s",
+			Description: "Open Status",
+			Vital:       true,
+		},	
 	}
 	for _, binding := range individualKeybindings {
 		gui.KeyBindings = append(gui.KeyBindings, binding)
