@@ -167,6 +167,14 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
 		}, {
+			View:        mainViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.showStashView,
+			Display:     "s",
+			Description: "show stash",
+			Vital:       true,
+		}, {
 			View:        "",
 			Key:         gocui.KeyCtrlC,
 			Modifier:    gocui.ModNone,
@@ -409,6 +417,16 @@ func (gui *Gui) generateKeybindings() error {
 			Key:         'c',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeErrorView,
+			Display:     "c",
+			Description: "close/cancel",
+			Vital:       true,
+		}, 
+	// Stash View
+		{
+			View:        "stash",
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeStashView,
 			Display:     "c",
 			Description: "close/cancel",
 			Vital:       true,
