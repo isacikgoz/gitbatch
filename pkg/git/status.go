@@ -26,6 +26,7 @@ var (
 	StatusDeleted FileStatus = 'D'
 	StatusRenamed FileStatus = 'R'
 	StatusCopied FileStatus = 'C'
+	StatusUpdated FileStatus = 'U'
 	StatusUntracked FileStatus = '?'
 	StatusIgnored FileStatus = '!'
 )

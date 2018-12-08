@@ -119,6 +119,13 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
 		return err
 	}
+	entity := gui.getSelectedRepository()
+	if err := gui.refreshMain(g); err != nil {
+		return err
+	}
+	if err := gui.refreshViews(g, entity); err != nil {
+		return err
+	}
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }
@@ -129,7 +136,7 @@ func generateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, er
 		return nil, nil, err
 	}
 	for _, file := range files {
-		if file.X != git.StatusNotupdated && file.X != git.StatusUntracked && file.X != git.StatusIgnored {
+		if file.X != git.StatusNotupdated && file.X != git.StatusUntracked && file.X != git.StatusIgnored && file.X != git.StatusUpdated {
 			staged = append(staged, file)
 		}
 		if file.Y != git.StatusNotupdated {
@@ -151,6 +158,15 @@ func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity) er
 		}
 	case stashViewFeature.Name:
 		if err := refreshStashView(g, entity); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func refreshAllStatusView(g *gocui.Gui, entity *git.RepoEntity) error {
+	for _, v := range statusViews {
+		if err := refreshStatusView(v.Name, g, entity); err != nil {
 			return err
 		}
 	}

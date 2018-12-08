@@ -30,6 +30,41 @@ func (gui *Gui) openStageView(g *gocui.Gui) error {
 	return nil
 }
 
+func  (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	files, _, err := generateFileLists(entity)
+	if err != nil {
+		return err
+	}
+	if len(files) <= 0 {
+		return nil
+	}
+	_, cy := v.Cursor()
+	_, oy := v.Origin()
+	if err := files[cy+oy].Reset(git.ResetOptions{
+
+	}); err != nil {
+		return err
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+func  (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	if err := entity.ResetAll(git.ResetOptions{
+		
+	}); err != nil {
+		return err
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
 // refresh the main view and re-render the repository representations
 func refreshStagedView(g *gocui.Gui, entity *git.RepoEntity) error {
 	stageView, err := g.View(stageViewFeature.Name)

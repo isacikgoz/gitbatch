@@ -22,6 +22,15 @@ func GenericGitCommandWithOutput(repoPath string, args []string) (string, error)
 	return helpers.TrimTrailingNewline(out), nil
 }
 
+// GenericGitCommand runs any git command with returning output
+func GenericGitCommandWithErrorOutput(repoPath string, args []string) (string, error) {
+	out, err := helpers.RunCommandWithOutput(repoPath, "git", args)
+	if err != nil {
+		return helpers.TrimTrailingNewline(out), err
+	}
+	return helpers.TrimTrailingNewline(out), nil
+}
+
 // GitShow is conventional git show command without any argument
 func GitShow(repoPath, hash string) string {
 	args := []string{"show", hash}

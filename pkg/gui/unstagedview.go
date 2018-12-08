@@ -26,6 +26,41 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 	return nil
 }
 
+func  (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	_, files, err := generateFileLists(entity)
+	if err != nil {
+		return err
+	}
+	if len(files) <= 0 {
+		return nil
+	}
+	_, cy := v.Cursor()
+	_, oy := v.Origin()
+	if err := files[cy+oy].Add(git.AddOptions{
+
+	}); err != nil {
+		return err
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+func  (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	if err := entity.AddAll(git.AddOptions{
+		
+	}); err != nil {
+		return err
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
 // refresh the main view and re-render the repository representations
 func refreshUnstagedView(g *gocui.Gui, entity *git.RepoEntity) error {
 	stageView, err := g.View(unstageViewFeature.Name)
@@ -44,7 +79,7 @@ func refreshUnstagedView(g *gocui.Gui, entity *git.RepoEntity) error {
 		if i == cy+oy {
 			prefix = prefix + selectionIndicator
 		}
-		fmt.Fprintf(stageView, "%s%s%s %s\n", prefix, green.Sprint(string(file.X)), red.Sprint(string(file.Y)), file.Name)
+		fmt.Fprintf(stageView, "%s%s%s %s\n", prefix, red.Sprint(string(file.X)), red.Sprint(string(file.Y)), file.Name)
 	}
 	return nil
 }

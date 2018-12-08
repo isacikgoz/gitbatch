@@ -15,29 +15,8 @@ type StashedItem struct {
 	BranchName string
 	Hash string
 	Description string
+	EntityPath string
 }
-
-// // StashOption is the option argument for git stash command
-// type StashOption string
-
-// var (
-// 	StashPop StashOption = "pop"
-// 	StashPush StashOption = "push"
-// 	StashDrop StashOption = "drop"
-// )
-
-// // Stash used when you want to record the current state of the working
-// // directory and the index, but want to go back to a clean working directory.
-// func Stash(entity *RepoEntity, option StashOption) error {
-// 	args := make([]string, 0)
-// 	args = append(args, stashCommand)
-
-// 	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
-// 		log.Warn("Error while stashing")
-// 		return err
-// 	}
-// 	return nil
-// }
 
 func stashGet(entity *RepoEntity, option string) string {
 	args := make([]string, 0)
@@ -88,17 +67,26 @@ func (entity *RepoEntity) loadStashedItems() error {
 			BranchName: branchName,
 			Hash: hash,
 			Description: desc,
+			EntityPath: entity.AbsPath,
 			})
 	}
 	return nil
 }
 
-func (entity *RepoEntity) Stash() (error) {
+func (entity *RepoEntity) Stash() (output string, err error) {
 	args := make([]string, 0)
 	args = append(args, stashCommand)
-	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
-		log.Warn("Error while stashing")
-		return err
-	}
-	return nil
+
+	output, err = GenericGitCommandWithErrorOutput(entity.AbsPath, args)
+	entity.Refresh()
+	return output, err
+}
+
+func (stashedItem *StashedItem) Pop() (output string, err error) {
+	args := make([]string, 0)
+	args = append(args, stashCommand)
+	args = append(args, "pop")
+	args = append(args, "stash@{"+strconv.Itoa(stashedItem.StashID)+"}")
+	output, err = GenericGitCommandWithErrorOutput(stashedItem.EntityPath, args)
+	return output, err
 }

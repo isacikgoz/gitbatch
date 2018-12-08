@@ -152,6 +152,14 @@ func (gui *Gui) generateKeybindings() error {
 				Display:     "j",
 				Description: "Down",
 				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         't',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.stashChanges,
+				Display:     "t",
+				Description: "Save to Stash",
+				Vital:       true,
 			},
 		}
 		for _, binding := range statusKeybindings {
@@ -159,6 +167,52 @@ func (gui *Gui) generateKeybindings() error {
 		}
 	}
 	individualKeybindings := []*KeyBinding{
+	// stash view
+		{
+			View:        stashViewFeature.Name,
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.popStash,
+			Display:     "p",
+			Description: "Pop Item",
+			Vital:       true,
+		},
+	// staged view
+		{
+			View:        stageViewFeature.Name,
+			Key:         'r',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.resetChanges,
+			Display:     "r",
+			Description: "Reset Item",
+			Vital:       true,
+		}, {
+			View:        stageViewFeature.Name,
+			Key:         gocui.KeyCtrlR,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.resetAllChanges,
+			Display:     "ctrl+r",
+			Description: "Reset All Items",
+			Vital:       true,
+		},
+	// unstaged view
+		{
+			View:        unstageViewFeature.Name,
+			Key:         'a',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.addChanges,
+			Display:     "a",
+			Description: "Add Item",
+			Vital:       true,
+		}, {
+			View:        unstageViewFeature.Name,
+			Key:         gocui.KeyCtrlA,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.addAllChanges,
+			Display:     "ctrl+a",
+			Description: "Add All Items",
+			Vital:       true,
+		},
 	// Main view controls
 		{
 			View:        mainViewFeature.Name,
@@ -502,7 +556,39 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "c",
 			Description: "close/cancel",
 			Vital:       true,
-		},	
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         gocui.KeyArrowUp,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorUp,
+			Display:     "↑",
+			Description: "Up",
+			Vital:       true,
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         gocui.KeyArrowDown,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorDown,
+			Display:     "↓",
+			Description: "Down",
+			Vital:       true,
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         'k',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorUp,
+			Display:     "k",
+			Description: "Up",
+			Vital:       false,
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         'j',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorDown,
+			Display:     "j",
+			Description: "Down",
+			Vital:       false,
+		}, 
 	}
 	for _, binding := range individualKeybindings {
 		gui.KeyBindings = append(gui.KeyBindings, binding)

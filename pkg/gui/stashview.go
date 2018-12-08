@@ -26,6 +26,49 @@ func (gui *Gui) openStashView(g *gocui.Gui) error {
 	return nil
 }
 
+// 
+func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	output, err := entity.Stash()
+	if err != nil {
+		if err = gui.openErrorView(g, output,
+			"You should manually resolve this issue",
+			stashViewFeature.Name); err != nil {
+			return err
+		}
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+// 
+func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	_, oy := v.Origin()
+	_, cy := v.Cursor()
+	if len(entity.Stasheds) <= 0 {
+		return nil
+	}
+	stashedItem := entity.Stasheds[oy+cy]
+	output, err := stashedItem.Pop()
+	if err != nil {
+		if err = gui.openErrorView(g, output,
+			"You should manually resolve this issue",
+			stashViewFeature.Name); err != nil {
+			return err
+		}
+	}
+	if err := entity.Refresh(); err != nil {
+		return err
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
 // refresh the main view and re-render the repository representations
 func refreshStashView(g *gocui.Gui, entity *git.RepoEntity) error {
 	stashView, err := g.View(stashViewFeature.Name)
@@ -41,7 +84,7 @@ func refreshStashView(g *gocui.Gui, entity *git.RepoEntity) error {
 		if i == cy+oy {
 			prefix = prefix + selectionIndicator
 		}
-		fmt.Fprintf(stashView, "%s%d %s: %s (%s)\n", prefix, stashedItem.StashID, cyan.Sprint(stashedItem.BranchName), stashedItem.Description, stashedItem.Hash)
+		fmt.Fprintf(stashView, "%s%d %s: %s (%s)\n", prefix, stashedItem.StashID, cyan.Sprint(stashedItem.BranchName), stashedItem.Description, cyan.Sprint(stashedItem.Hash))
 	}
 	return nil
 }

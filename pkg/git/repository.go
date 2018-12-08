@@ -122,11 +122,15 @@ func (entity *RepoEntity) Refresh() error {
 	if err := entity.loadLocalBranches(); err != nil {
 		return err
 	}
+	entity.Branch.Clean = entity.isClean()
 	entity.RefreshPushPull()
 	if err := entity.loadCommits(); err != nil {
 		return err
 	}
 	if err := entity.loadRemotes(); err != nil {
+		return err
+	}
+	if err := entity.loadStashedItems(); err != nil {
 		return err
 	}
 	return nil

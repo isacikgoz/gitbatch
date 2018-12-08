@@ -166,7 +166,9 @@ func (gui *Gui) fastCursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
 		_, vy := v.Size()
-
+		if len(v.BufferLines())+len(v.ViewBufferLines()) <= vy+oy || len(v.ViewBufferLines()) < vy {
+			return nil
+		}
 		// TODO: do something when it hits bottom
 		if err := v.SetOrigin(ox, oy+vy/2); err != nil {
 			return err
