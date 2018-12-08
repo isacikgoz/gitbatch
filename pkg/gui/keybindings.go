@@ -420,6 +420,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "k",
 			Description: "Up",
 			Vital:       false,
+		}, {
+			View:        remoteBranchViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.syncRemoteBranch,
+			Display:     "s",
+			Description: "Synch with Remote",
+			Vital:       true,
 		},
 	// Commit View Controls
 		{

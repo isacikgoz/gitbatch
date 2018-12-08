@@ -129,12 +129,9 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
 	entity.RefreshPushPull()
-	// TODO: same code on 3 different occasion, maybe something wrong?
 	// make this conditional on global scale
-	if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
-		// probably couldn't find, but its ok.
-		log.Trace("Cannot find proper remote branch " + err.Error())
-		return nil
+	if err := entity.Remote.SyncBranches(branch.Name); err != nil {
+		return err
 	}
 	return nil
 }

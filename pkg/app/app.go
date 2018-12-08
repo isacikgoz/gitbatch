@@ -9,6 +9,7 @@ import (
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
 	Gui *gui.Gui
+	Config *Config
 }
 
 // Setup will handle pre-required operations. It is designed to be a wrapper for
@@ -16,12 +17,13 @@ type App struct {
 func Setup(directory, repoPattern, logLevel string) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
+	app.Config, _ = LoadConfiguration()
 	setLogLevel(logLevel)
 	var err error
 	directories := generateDirectories(directory, repoPattern)
 
 	// create a gui.Gui struct and set it as App's gui
-	app.Gui, err = gui.NewGui(directories)
+	app.Gui, err = gui.NewGui(app.Config.Mode, directories)
 	if err != nil {
 		// the error types and handling is not considered yer
 		log.Error(err)

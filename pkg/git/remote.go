@@ -22,9 +22,8 @@ func (entity *RepoEntity) NextRemote() error {
 	} else {
 		entity.Remote = entity.Remotes[currentRemoteIndex+1]
 	}
-	// TODO: same code on 3 different occasion, maybe something wrong?
-	if err := entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
-		// probably couldn't find, but its ok.
+	if err := entity.Remote.SyncBranches(entity.Branch.Name); err != nil {
+		return err
 	}
 	return nil
 }
@@ -37,9 +36,8 @@ func (entity *RepoEntity) PreviousRemote() error {
 	} else {
 		entity.Remote = entity.Remotes[currentRemoteIndex-1]
 	}
-	// TODO: same code on 3 different occasion, maybe something wrong?
-	if err := entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
-		// probably couldn't find, but its ok.
+	if err := entity.Remote.SyncBranches(entity.Branch.Name); err != nil {
+		return err
 	}
 	return nil
 }
@@ -80,4 +78,11 @@ func (entity *RepoEntity) loadRemotes() error {
 		return err
 	}
 	return err
+}
+
+func (remote *Remote) SyncBranches(branchName string) error {
+	if err := remote.switchRemoteBranch(remote.Name + "/" + branchName); err != nil {
+		// probably couldn't find, but its ok.
+	}
+	return nil
 }

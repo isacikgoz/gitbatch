@@ -80,15 +80,15 @@ func (gui *Gui) previousViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFea
 // siwtch the app mode
 // TODO: switching can be made with conventional iteration
 func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
-	switch mode := gui.State.Mode.ModeID; mode {
-	case FetchMode:
-		gui.State.Mode = pullMode
-	case PullMode:
-		gui.State.Mode = mergeMode
-	case MergeMode:
-		gui.State.Mode = fetchMode
-	default:
-		gui.State.Mode = fetchMode
+	for i, mode := range modes {
+		if mode == gui.State.Mode {
+			if i == len(modes)-1 {
+				gui.State.Mode = modes[0]
+				break
+			}
+			gui.State.Mode = modes[i+1]
+			break
+		}
 	}
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil

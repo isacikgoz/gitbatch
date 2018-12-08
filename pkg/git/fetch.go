@@ -40,5 +40,6 @@ func Fetch(entity *RepoEntity, options FetchOptions) error {
 		log.Warn("Error while fetching")
 		return err
 	}
+	entity.Refresh()
 	return nil
 }

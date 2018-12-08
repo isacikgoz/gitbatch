@@ -63,6 +63,5 @@ func (job *Job) start() error {
 		return nil
 	}
 	job.Entity.State = git.Success
-	job.Entity.Refresh()
 	return nil
 }
