@@ -77,6 +77,7 @@ func (gui *Gui) generateKeybindings() error {
 			gui.KeyBindings = append(gui.KeyBindings, binding)
 		}
 	}
+	// Statusviews common keybindings
 	for _, view := range statusViews {
 		statusKeybindings := []*KeyBinding{
 			{
@@ -119,6 +120,38 @@ func (gui *Gui) generateKeybindings() error {
 				Display:     "h",
 				Description: "Next Panel",
 				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowUp,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorUp,
+				Display:     "↑",
+				Description: "Up",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowDown,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorDown,
+				Display:     "↓",
+				Description: "Down",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'k',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorUp,
+				Display:     "k",
+				Description: "Up",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'j',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorDown,
+				Display:     "j",
+				Description: "Down",
+				Vital:       false,
 			},
 		}
 		for _, binding := range statusKeybindings {
@@ -126,6 +159,7 @@ func (gui *Gui) generateKeybindings() error {
 		}
 	}
 	individualKeybindings := []*KeyBinding{
+	// Main view controls
 		{
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
@@ -214,6 +248,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "m",
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openStatusView,
+			Display:     "s",
+			Description: "Open Status",
+			Vital:       true,
 		}, {
 			View:        "",
 			Key:         gocui.KeyCtrlC,
@@ -459,22 +501,6 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.closeErrorView,
 			Display:     "c",
 			Description: "close/cancel",
-			Vital:       true,
-		}, {
-			View:        statusHeaderViewFeature.Name,
-			Key:         'c',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.closeStatusView,
-			Display:     "c",
-			Description: "close/cancel",
-			Vital:       true,
-		}, {
-			View:        mainViewFeature.Name,
-			Key:         's',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.openStatusView,
-			Display:     "s",
-			Description: "Open Status",
 			Vital:       true,
 		},	
 	}

@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 
+	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
 )
 
@@ -41,6 +42,50 @@ func (gui *Gui) previousStatusView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// moves the cursor downwards for the main view and if it goes to bottom it
+// prevents from going further
+func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		cx, cy := v.Cursor()
+		ox, oy := v.Origin()
+		ly := len(v.BufferLines()) - 2 // why magic number? have no idea
+
+		// if we are at the end we just return
+		if cy+oy == ly {
+			return nil
+		}
+		if err := v.SetCursor(cx, cy+1); err != nil {
+
+			if err := v.SetOrigin(ox, oy+1); err != nil {
+				return err
+			}
+		}
+		entity := gui.getSelectedRepository()
+		if err := refreshStatusView(v.Name(), g, entity); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// moves the cursor upwards for the main view
+func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+			if err := v.SetOrigin(ox, oy-1); err != nil {
+				return err
+			}
+		}
+		entity := gui.getSelectedRepository()
+		if err := refreshStatusView(v.Name(), g, entity); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // header og the status layout
 func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 	maxX, _ := g.Size()
@@ -53,60 +98,6 @@ func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 		fmt.Fprintln(v, entity.AbsPath)
 		// v.Frame = false
 		v.Wrap = true
-	}
-	return nil
-}
-
-// staged view
-func (gui *Gui) openStageView(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-
-	v, err := g.SetView(stageViewFeature.Name, 6, 5, maxX/2-1, int(0.75*float32(maxY))-1)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = stageViewFeature.Title
-		v.Wrap = true
-	}
-	gui.updateKeyBindingsView(g, stageViewFeature.Name)
-	if _, err := g.SetCurrentView(stageViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
-}
-
-// not staged view
-func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-
-	v, err := g.SetView(unstageViewFeature.Name, maxX/2+1, 5, maxX-6, int(0.75*float32(maxY))-1)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = unstageViewFeature.Title
-		v.Wrap = true
-	}
-	return nil
-}
-
-// stash view
-func (gui *Gui) openStashView(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-
-	v, err := g.SetView(stashViewFeature.Name, 6, int(0.75*float32(maxY)), maxX-6, maxY-3)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = stashViewFeature.Title
-		v.Wrap = true
-		entity := gui.getSelectedRepository()
-		stashedItems := entity.Stasheds
-		for _, stashedItem := range stashedItems {
-			fmt.Fprintln(v, stashedItem)
-		}
 	}
 	return nil
 }
@@ -129,5 +120,39 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	return nil
+}
+
+func generateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, err error) {
+	files, err := entity.LoadFiles()
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, file := range files {
+		if file.X != git.StatusNotupdated && file.X != git.StatusUntracked && file.X != git.StatusIgnored {
+			staged = append(staged, file)
+		}
+		if file.Y != git.StatusNotupdated {
+			unstaged = append(unstaged, file)
+		}
+	}
+	return staged, unstaged, err
+}
+
+func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity) error {
+	switch viewName {
+	case stageViewFeature.Name:
+		if err := refreshStagedView(g, entity); err != nil {
+			return err
+		}
+	case unstageViewFeature.Name:
+		if err := refreshUnstagedView(g, entity); err != nil {
+			return err
+		}
+	case stashViewFeature.Name:
+		if err := refreshStashView(g, entity); err != nil {
+			return err
+		}
+	}
 	return nil
 }
