@@ -25,7 +25,7 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 	return nil
 }
 
-func  (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
 	_, files, err := generateFileLists(entity)
 	if err != nil {
@@ -36,9 +36,7 @@ func  (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	}
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
-	if err := files[cy+oy].Add(git.AddOptions{
-
-	}); err != nil {
+	if err := files[cy+oy].Add(git.AddOptions{}); err != nil {
 		return err
 	}
 	if err := refreshAllStatusView(g, entity); err != nil {
@@ -47,11 +45,9 @@ func  (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func  (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	if err := entity.AddAll(git.AddOptions{
-		
-	}); err != nil {
+	if err := entity.AddAll(git.AddOptions{}); err != nil {
 		return err
 	}
 	if err := refreshAllStatusView(g, entity); err != nil {

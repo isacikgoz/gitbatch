@@ -11,7 +11,7 @@ var addCommand = "add"
 
 type AddOptions struct {
 	Update bool
-	Force bool
+	Force  bool
 	DryRun bool
 }
 

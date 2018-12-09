@@ -5,36 +5,36 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/spf13/viper"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Config type is the configuration entity of the application
 type Config struct {
-	Mode string
+	Mode        string
 	Directories []string
 }
 
 // config file stuff
 var (
 	configFileName = "config"
-	configFileExt = ".yml"
-	configType = "yaml"
-	appName = "gitbatch"
+	configFileExt  = ".yml"
+	configType     = "yaml"
+	appName        = "gitbatch"
 
 	configurationDirectory = filepath.Join(osConfigDirectory(), appName)
-	configFileAbsPath = filepath.Join(configurationDirectory, configFileName)
+	configFileAbsPath      = filepath.Join(configurationDirectory, configFileName)
 )
 
 // configuration items
 var (
-	modeKey = "mode"
-	modeKeyDefault = "fetch"
-	pathsKey = "paths"
+	modeKey         = "mode"
+	modeKeyDefault  = "fetch"
+	pathsKey        = "paths"
 	pathsKeyDefault = []string{"."}
 )
 
-// LoadConfiguration returns a Config struct is filled 
+// LoadConfiguration returns a Config struct is filled
 func LoadConfiguration() (*Config, error) {
 	if err := initializeConfigurationManager(); err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func LoadConfiguration() (*Config, error) {
 		return nil, err
 	}
 	config := &Config{
-		Mode: viper.GetString(modeKey),
+		Mode:        viper.GetString(modeKey),
 		Directories: viper.GetStringSlice(pathsKey),
 	}
 	return config, nil
@@ -60,13 +60,13 @@ func setDefaults() error {
 }
 
 // read configuration from file
-func readConfiguration() error{
+func readConfiguration() error {
 	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil { // Handle errors reading the config file
+	if err != nil {             // Handle errors reading the config file
 		// if file does not exist, simply create one
-		if _, err := os.Stat(configFileAbsPath+configFileExt); os.IsNotExist(err) {
+		if _, err := os.Stat(configFileAbsPath + configFileExt); os.IsNotExist(err) {
 			os.MkdirAll(configurationDirectory, 0755)
-			os.Create(configFileAbsPath+configFileExt)
+			os.Create(configFileAbsPath + configFileExt)
 		} else {
 			return err
 		}
@@ -79,7 +79,7 @@ func readConfiguration() error{
 }
 
 // write configuration to a file
-func writeConfiguration() error{
+func writeConfiguration() error {
 	if err := viper.WriteConfig(); err != nil {
 		return err
 	}

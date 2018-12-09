@@ -70,7 +70,7 @@ var (
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
 	mainViews = []viewFeature{mainViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
-	modes = []mode{fetchMode, pullMode, mergeMode}
+	modes     = []mode{fetchMode, pullMode, mergeMode}
 )
 
 // NewGui creates a Gui opject and fill it's state related entites

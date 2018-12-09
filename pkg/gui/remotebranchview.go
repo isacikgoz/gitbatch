@@ -43,14 +43,14 @@ func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
 	if err = git.Fetch(entity, git.FetchOptions{
 		RemoteName: entity.Remote.Name,
-		Prune: true,
+		Prune:      true,
 	}); err != nil {
 		return err
 	}
 	// have no idea why this works..
 	// some time need to fix, movement aint bad huh?
-	gui.nextRemote(g,v)
-	gui.previousRemote(g,v)
+	gui.nextRemote(g, v)
+	gui.previousRemote(g, v)
 	if err = gui.updateRemoteBranches(g, entity); err != nil {
 		return err
 	}

@@ -6,8 +6,8 @@ import (
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -51,7 +51,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 			pushables, err := RevList(entity, RevListOptions{
 				Ref1: "@{u}",
 				Ref2: "HEAD",
-				})
+			})
 			if err != nil {
 				push = pushables[0]
 			} else {
@@ -60,7 +60,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 			pullables, err := RevList(entity, RevListOptions{
 				Ref1: "HEAD",
 				Ref2: "@{u}",
-				})
+			})
 			if err != nil {
 				pull = pullables[0]
 			} else {
@@ -160,7 +160,7 @@ func (entity *RepoEntity) RefreshPushPull() {
 	pushables, err := RevList(entity, RevListOptions{
 		Ref1: "@{u}",
 		Ref2: "HEAD",
-		})
+	})
 	if err != nil {
 		entity.Branch.Pushables = pushables[0]
 	} else {
@@ -169,7 +169,7 @@ func (entity *RepoEntity) RefreshPushPull() {
 	pullables, err := RevList(entity, RevListOptions{
 		Ref1: "HEAD",
 		Ref2: "@{u}",
-		})
+	})
 	if err != nil {
 		entity.Branch.Pullables = pullables[0]
 	} else {
@@ -184,7 +184,7 @@ func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 	pullables, err := RevList(entity, RevListOptions{
 		Ref1: "HEAD",
 		Ref2: "@{u}",
-		})
+	})
 	if err != nil {
 		// possibly found nothing or no upstream set
 	} else {
@@ -207,7 +207,7 @@ func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
 	pushables, err := RevList(entity, RevListOptions{
 		Ref1: "@{u}",
 		Ref2: "HEAD",
-		})
+	})
 	if err != nil {
 		return make([]string, 0), nil
 	}

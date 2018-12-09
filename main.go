@@ -11,19 +11,24 @@ import (
 var (
 	// take this as default directory if user does not start app with -d flag
 	currentDir, err = os.Getwd()
-	dir             = kingpin.Flag("directory", "Directory to roam for git repositories").Default(currentDir).Short('d').String()
+	dirs            = kingpin.Flag("directory", "Directory to roam for git repositories").Default(currentDir).Short('d').Strings()
 	ignoreConfig    = kingpin.Flag("ignore-config", "Ignore config file").Short('i').Bool()
-	repoPattern     = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
+	recurseDepth    = kingpin.Flag("recursive-depth", "Find directories recursively").Default("1").Short('r').Int()
 	logLevel        = kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.0.1 (alpha)")
+	kingpin.Version("gitbatch version 0.0.2 (alpha)")
 	// parse the command line flag and options
 	kingpin.Parse()
 
 	// set the app
-	app, err := app.Setup(*dir, *repoPattern, *logLevel, *ignoreConfig)
+	app, err := app.Setup(app.SetupConfig{
+		Directories:  *dirs,
+		LogLevel:     *logLevel,
+		IgnoreConfig: *ignoreConfig,
+		Depth:        *recurseDepth,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

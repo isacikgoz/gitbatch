@@ -10,25 +10,36 @@ import (
 
 var statusCommand = "status"
 
+// File represents the status of a file in an index or work tree
 type File struct {
-	Name string
+	Name    string
 	AbsPath string
-	X FileStatus
-	Y FileStatus
+	X       FileStatus
+	Y       FileStatus
 }
 
+// FileStatus is the short representation of state of a file
 type FileStatus rune
 
 var (
+	// StatusNotupdated says file not updated
 	StatusNotupdated FileStatus = ' '
-	StatusModified FileStatus = 'M'
-	StatusAdded FileStatus = 'A'
-	StatusDeleted FileStatus = 'D'
-	StatusRenamed FileStatus = 'R'
-	StatusCopied FileStatus = 'C'
-	StatusUpdated FileStatus = 'U'
+	// StatusModified says file is modifed
+	StatusModified  FileStatus = 'M'
+	// StatusAdded says file is added to index
+	StatusAdded     FileStatus = 'A'
+	// StatusDeleted says file is deleted
+	StatusDeleted   FileStatus = 'D'
+	// StatusRenamed says file is renamed
+	StatusRenamed   FileStatus = 'R'
+	// StatusCopied says file is copied
+	StatusCopied    FileStatus = 'C'
+	// StatusUpdated says file is updated
+	StatusUpdated   FileStatus = 'U'
+	// StatusUntracked says file is untraced
 	StatusUntracked FileStatus = '?'
-	StatusIgnored FileStatus = '!'
+	// StatusIgnored says file is ignored
+	StatusIgnored   FileStatus = '!'
 )
 
 func shortStatus(entity *RepoEntity, option string) string {
@@ -44,6 +55,8 @@ func shortStatus(entity *RepoEntity, option string) string {
 	return out
 }
 
+// LoadFiles function simply commands a git status and collects output in a
+// structured way
 func (entity *RepoEntity) LoadFiles() ([]*File, error) {
 	files := make([]*File, 0)
 	output := shortStatus(entity, "--untracked-files=all")
@@ -58,11 +71,11 @@ func (entity *RepoEntity) LoadFiles() ([]*File, error) {
 		path := relativePathRegex.FindString(file[2:])
 
 		files = append(files, &File{
-			Name: path,
+			Name:    path,
 			AbsPath: entity.AbsPath + string(os.PathSeparator) + path,
-			X: FileStatus(x),
-			Y: FileStatus(y),
-			})
+			X:       FileStatus(x),
+			Y:       FileStatus(y),
+		})
 	}
 	return files, nil
 }

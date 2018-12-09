@@ -2,8 +2,8 @@ package git
 
 import (
 	"errors"
-	"time"
 	"os"
+	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
@@ -92,8 +92,10 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if len(entity.Remotes) > 0 {
 		// TODO: tend to take origin/master as default
 		entity.Remote = entity.Remotes[0]
-		// TODO: same code on 3 different occasion, maybe something wrong?
-		if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
+		if entity.Branch == nil {
+			return nil, errors.New("Unable to find a valid branch")
+		}
+		if err = entity.Remote.SyncBranches(entity.Branch.Name); err != nil {
 			// probably couldn't find, but its ok.
 		}
 	} else {

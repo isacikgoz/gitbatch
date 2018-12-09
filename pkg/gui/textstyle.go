@@ -45,7 +45,7 @@ var (
 	keyBindingSeperator = "░"
 
 	selectionIndicator = ws + string(green.Sprint("→")) + ws
-	tab                = ws 
+	tab                = ws
 )
 
 // this function handles the render and representation of the repository
@@ -56,11 +56,11 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	repoName := ""
 
 	if entity.Branch.Pushables != "?" {
-		prefix = prefix + pushable + ws + entity.Branch.Pushables  +
-			 ws + pullable + ws + entity.Branch.Pullables 
+		prefix = prefix + pushable + ws + entity.Branch.Pushables +
+			ws + pullable + ws + entity.Branch.Pullables
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) + 
-			 ws + pullable + ws + yellow.Sprint(entity.Branch.Pullables)
+		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) +
+			ws + pullable + ws + yellow.Sprint(entity.Branch.Pullables)
 	}
 
 	selectedEntity := gui.getSelectedRepository()

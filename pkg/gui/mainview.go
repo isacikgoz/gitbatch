@@ -149,12 +149,12 @@ func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	if r.State == git.Available || r.State == git.Success {
-		if err := gui.addToQueue(r); err !=nil {
+		if err := gui.addToQueue(r); err != nil {
 			return err
 		}
 	} else if r.State == git.Queued {
-		if err := gui.removeFromQueue(r); err !=nil {
-				return err
+		if err := gui.removeFromQueue(r); err != nil {
+			return err
 		}
 	} else {
 		return nil
@@ -168,7 +168,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
 		if r.State == git.Available || r.State == git.Success {
-			if err := gui.addToQueue(r); err !=nil {
+			if err := gui.addToQueue(r); err != nil {
 				return err
 			}
 		} else {
@@ -184,7 +184,7 @@ func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
 		if r.State == git.Queued {
-			if err := gui.removeFromQueue(r); err !=nil {
+			if err := gui.removeFromQueue(r); err != nil {
 				return err
 			}
 		} else {

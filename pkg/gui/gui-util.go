@@ -42,10 +42,10 @@ func (gui *Gui) nextViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFeature
 		}
 	}
 	if _, err := g.SetCurrentView(focusedViewName); err != nil {
-			log.WithFields(log.Fields{
-				"view": focusedViewName,
-				}).Warn("View cannot be focused.")
-			return nil
+		log.WithFields(log.Fields{
+			"view": focusedViewName,
+		}).Warn("View cannot be focused.")
+		return nil
 	}
 	gui.updateKeyBindingsView(g, focusedViewName)
 	return nil
@@ -68,10 +68,10 @@ func (gui *Gui) previousViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFea
 		}
 	}
 	if _, err := g.SetCurrentView(focusedViewName); err != nil {
-			log.WithFields(log.Fields{
-				"view": focusedViewName,
-				}).Warn("View cannot be focused.")
-			return nil
+		log.WithFields(log.Fields{
+			"view": focusedViewName,
+		}).Warn("View cannot be focused.")
+		return nil
 	}
 	gui.updateKeyBindingsView(g, focusedViewName)
 	return nil

@@ -25,7 +25,7 @@ func (gui *Gui) openStashView(g *gocui.Gui) error {
 	return nil
 }
 
-// 
+//
 func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
 	output, err := entity.Stash()
@@ -42,7 +42,7 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// 
+//
 func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
 	_, oy := v.Origin()

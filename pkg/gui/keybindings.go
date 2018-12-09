@@ -167,7 +167,7 @@ func (gui *Gui) generateKeybindings() error {
 		}
 	}
 	individualKeybindings := []*KeyBinding{
-	// stash view
+		// stash view
 		{
 			View:        stashViewFeature.Name,
 			Key:         'p',
@@ -177,7 +177,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Pop Item",
 			Vital:       true,
 		},
-	// staged view
+		// staged view
 		{
 			View:        stageViewFeature.Name,
 			Key:         'r',
@@ -195,7 +195,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Reset All Items",
 			Vital:       true,
 		},
-	// unstaged view
+		// unstaged view
 		{
 			View:        unstageViewFeature.Name,
 			Key:         'a',
@@ -213,7 +213,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Add All Items",
 			Vital:       true,
 		},
-	// Main view controls
+		// Main view controls
 		{
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
@@ -318,8 +318,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "ctrl + c",
 			Description: "Force application to quit",
 			Vital:       false,
-		}, 
-	// Branch View Controls
+		},
+		// Branch View Controls
 		{
 			View:        branchViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -353,7 +353,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Up",
 			Vital:       false,
 		},
-	// Remote View Controls
+		// Remote View Controls
 		{
 			View:        remoteViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -387,7 +387,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Up",
 			Vital:       false,
 		},
-	// Remote Branch View Controls
+		// Remote Branch View Controls
 		{
 			View:        remoteBranchViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -429,7 +429,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Synch with Remote",
 			Vital:       true,
 		},
-	// Commit View Controls
+		// Commit View Controls
 		{
 			View:        commitViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -438,7 +438,7 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "↓",
 			Description: "Iterate over commits",
 			Vital:       false,
-		},{
+		}, {
 			View:        commitViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
 			Modifier:    gocui.ModNone,
@@ -462,7 +462,7 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "k",
 			Description: "Up",
 			Vital:       false,
-		},{
+		}, {
 			View:        commitViewFeature.Name,
 			Key:         'd',
 			Modifier:    gocui.ModNone,
@@ -470,8 +470,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       true,
-		}, 
-	// Diff View Controls
+		},
+		// Diff View Controls
 		{
 			View:        commitDiffViewFeature.Name,
 			Key:         'c',
@@ -512,8 +512,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "j",
 			Description: "Page down",
 			Vital:       false,
-		}, 
-	// Application Controls
+		},
+		// Application Controls
 		{
 			View:        cheatSheetViewFeature.Name,
 			Key:         'c',
@@ -554,8 +554,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "j",
 			Description: "Down",
 			Vital:       false,
-		}, 
-	// Error View
+		},
+		// Error View
 		{
 			View:        errorViewFeature.Name,
 			Key:         'c',
@@ -596,7 +596,7 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "j",
 			Description: "Down",
 			Vital:       false,
-		}, 
+		},
 	}
 	for _, binding := range individualKeybindings {
 		gui.KeyBindings = append(gui.KeyBindings, binding)

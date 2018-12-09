@@ -43,7 +43,7 @@ For more information;
 - select all feature ✔
 - arrange repositories to an order e.g. alphabetic, last modified, etc. ✔
 - shift keys, i.e. **s** for iterate **alt + s** for reverse iteration ✔
-- recursive repository search from the filesystem
+- recursive repository search from the filesystem ✔
 - full src-d/go-git integration (*having some performance issues*)
 - implement config file to pre-define repo locations or some settings ✔
 - resolve authentication issues

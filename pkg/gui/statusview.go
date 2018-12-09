@@ -10,9 +10,9 @@ import (
 var (
 	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
 	// statusViewFeature       = viewFeature{Name: "status", Title: " Status "}
-	stageViewFeature        = viewFeature{Name: "staged", Title: " Staged "}
-	unstageViewFeature      = viewFeature{Name: "unstaged", Title: " Unstaged "}
-	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
+	stageViewFeature   = viewFeature{Name: "staged", Title: " Staged "}
+	unstageViewFeature = viewFeature{Name: "unstaged", Title: " Unstaged "}
+	stashViewFeature   = viewFeature{Name: "stash", Title: " Stash "}
 
 	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
 )
@@ -90,7 +90,7 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 	maxX, _ := g.Size()
 	entity := gui.getSelectedRepository()
-	v, err := g.SetView(statusHeaderViewFeature.Name, 6, 2,  maxX-6, 4)
+	v, err := g.SetView(statusHeaderViewFeature.Name, 6, 2, maxX-6, 4)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"os"
-
 	"github.com/isacikgoz/gitbatch/pkg/gui"
 	log "github.com/sirupsen/logrus"
 )
@@ -10,16 +8,24 @@ import (
 // The App struct is responsible to hold app-wide related entities. Currently
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
-	Gui *gui.Gui
+	Gui    *gui.Gui
 	Config *Config
+}
+
+// SetupConfig is an assembler data to initiate a setup
+type SetupConfig struct {
+	Directories  []string
+	LogLevel     string
+	IgnoreConfig bool
+	Depth        int
 }
 
 // Setup will handle pre-required operations. It is designed to be a wrapper for
 // main method right now.
-func Setup(directory, repoPattern, logLevel string, ignoreConfig bool) (*App, error) {
+func Setup(setupConfig SetupConfig) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
-	setLogLevel(logLevel)
+	setLogLevel(setupConfig.LogLevel)
 	var err error
 	app.Config, err = LoadConfiguration()
 	if err != nil {
@@ -27,18 +33,12 @@ func Setup(directory, repoPattern, logLevel string, ignoreConfig bool) (*App, er
 		log.Error(err)
 		return app, err
 	}
-	workingDirectory, _ := os.Getwd()
-	
 	directories := make([]string, 0)
-	if len(app.Config.Directories) <= 0 || ignoreConfig || 
-	(workingDirectory != directory && len(app.Config.Directories) > 0 ){
-		directories = generateDirectories(directory, repoPattern)
+
+	if len(app.Config.Directories) <= 0 || setupConfig.IgnoreConfig {
+		directories = generateDirectories(setupConfig.Directories, setupConfig.Depth)
 	} else {
-		for _, dir := range app.Config.Directories {
-			for _, d := range generateDirectories(dir, repoPattern) {
-				directories = append(directories, d)
-			}
-		}
+		directories = generateDirectories(app.Config.Directories, setupConfig.Depth)
 	}
 
 	// create a gui.Gui struct and set it as App's gui

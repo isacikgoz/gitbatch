@@ -9,12 +9,14 @@ import (
 
 var resetCommand = "reset"
 
+// ResetOptions defines the rules of git reset command
 type ResetOptions struct {
-	Hard bool
+	Hard  bool
 	Merge bool
-	Keep bool
+	Keep  bool
 }
 
+// Reset is the wrapper of "git reset" command
 func (file *File) Reset(option ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, resetCommand)
@@ -37,6 +39,7 @@ func (file *File) Reset(option ResetOptions) error {
 	return nil
 }
 
+// ResetAll resets the changes in a repository, should be used wise
 func (entity *RepoEntity) ResetAll(option ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, resetCommand)
