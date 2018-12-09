@@ -17,7 +17,6 @@ func (gui *Gui) openStashView(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = stashViewFeature.Title
-		v.Wrap = true
 	}
 	entity := gui.getSelectedRepository()
 	if err := refreshStashView(g, entity); err != nil {

@@ -10,7 +10,6 @@ Aim of this tool to make your local repositories synchronized with remotes easil
   - [BitBucket Set up an SSH key](https://confluence.atlassian.com/bitbucket/set-up-ssh-for-git-728138079.html)
 - Feedbacks are welcome. For now, known issues are:
   - At very low probability app fails to load repositories, try again it will load next time (multithreading problem).
-  - Sometimes when you scroll too fast while pulling/fetching/merging, some multithreading problem occurs and app crashes (will fix soon).
   - Colors vary to your terminal theme colors, so if the contrast is not enough on some color decisions; discussions are welcome.
 
 Here is the screencast of the app:
@@ -46,13 +45,14 @@ For more information;
 - shift keys, i.e. **s** for iterate **alt + s** for reverse iteration ✔
 - recursive repository search from the filesystem
 - full src-d/go-git integration (*having some performance issues*)
-- implement config file to pre-define repo locations or some settings
+- implement config file to pre-define repo locations or some settings ✔
 - resolve authentication issues
 
 ## Credits
-- [go-git](https://github.com/src-d/go-git) for git interface
+- [go-git](https://github.com/src-d/go-git) for git interface (partially)
 - [gocui](https://github.com/jroimartin/gocui) for user interface
 - [logrus](https://github.com/sirupsen/logrus) for logging
-- [lazygit](https://github.com/jesseduffield/lazygit) as app template
+- [viper](https://github.com/spf13/viper) for configuration management
 - [color](https://github.com/fatih/color) for colored text
+- [lazygit](https://github.com/jesseduffield/lazygit) as app template and reference
 - [kingpin](https://github.com/alecthomas/kingpin) for command-line flag&options

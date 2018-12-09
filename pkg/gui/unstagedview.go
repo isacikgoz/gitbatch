@@ -17,7 +17,6 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = unstageViewFeature.Title
-		v.Wrap = true
 	}
 	entity := gui.getSelectedRepository()
 	if err := refreshUnstagedView(g, entity); err != nil {

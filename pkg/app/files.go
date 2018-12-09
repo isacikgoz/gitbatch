@@ -52,7 +52,7 @@ func filterDirectories(files []os.FileInfo, repoPattern string) []os.FileInfo {
 	var filteredRepos []os.FileInfo
 	for _, f := range files {
 		// it is just a simple filter
-		if strings.Contains(f.Name(), repoPattern) {
+		if strings.Contains(f.Name(), repoPattern) && f.Name() != ".git" {
 			filteredRepos = append(filteredRepos, f)
 		} else {
 			continue

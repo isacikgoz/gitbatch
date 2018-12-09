@@ -11,7 +11,8 @@ import (
 var (
 	// take this as default directory if user does not start app with -d flag
 	currentDir, err = os.Getwd()
-	dir             = kingpin.Flag("directory", "Directory to roam for git repositories.").Default(currentDir).Short('d').String()
+	dir             = kingpin.Flag("directory", "Directory to roam for git repositories").Default(currentDir).Short('d').String()
+	ignoreConfig    = kingpin.Flag("ignore-config", "Ignore config file").Short('i').Bool()
 	repoPattern     = kingpin.Flag("pattern", "Pattern to filter repositories").Short('p').String()
 	logLevel        = kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
 )
@@ -22,7 +23,7 @@ func main() {
 	kingpin.Parse()
 
 	// set the app
-	app, err := app.Setup(*dir, *repoPattern, *logLevel)
+	app, err := app.Setup(*dir, *repoPattern, *logLevel, *ignoreConfig)
 	if err != nil {
 		log.Fatal(err)
 	}

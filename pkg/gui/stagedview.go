@@ -17,7 +17,6 @@ func (gui *Gui) openStageView(g *gocui.Gui) error {
 			return err
 		}
 		v.Title = stageViewFeature.Title
-		v.Wrap = true
 	}
 	entity := gui.getSelectedRepository()
 	if err := refreshStagedView(g, entity); err != nil {

@@ -1,6 +1,8 @@
 package app
 
 import (
+	"os"
+
 	"github.com/isacikgoz/gitbatch/pkg/gui"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,13 +16,30 @@ type App struct {
 
 // Setup will handle pre-required operations. It is designed to be a wrapper for
 // main method right now.
-func Setup(directory, repoPattern, logLevel string) (*App, error) {
+func Setup(directory, repoPattern, logLevel string, ignoreConfig bool) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
-	app.Config, _ = LoadConfiguration()
 	setLogLevel(logLevel)
 	var err error
-	directories := generateDirectories(directory, repoPattern)
+	app.Config, err = LoadConfiguration()
+	if err != nil {
+		// the error types and handling is not considered yer
+		log.Error(err)
+		return app, err
+	}
+	workingDirectory, _ := os.Getwd()
+	
+	directories := make([]string, 0)
+	if len(app.Config.Directories) <= 0 || ignoreConfig || 
+	(workingDirectory != directory && len(app.Config.Directories) > 0 ){
+		directories = generateDirectories(directory, repoPattern)
+	} else {
+		for _, dir := range app.Config.Directories {
+			for _, d := range generateDirectories(dir, repoPattern) {
+				directories = append(directories, d)
+			}
+		}
+	}
 
 	// create a gui.Gui struct and set it as App's gui
 	app.Gui, err = gui.NewGui(app.Config.Mode, directories)

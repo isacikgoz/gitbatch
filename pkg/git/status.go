@@ -54,7 +54,7 @@ func (entity *RepoEntity) LoadFiles() ([]*File, error) {
 	for _, file := range fileslist {
 		x := rune(file[0])
 		y := rune(file[1])
-		relativePathRegex := regexp.MustCompile(`[(\w|/|.)]+`)
+		relativePathRegex := regexp.MustCompile(`[(\w|/|.|\-)]+`)
 		path := relativePathRegex.FindString(file[2:])
 
 		files = append(files, &File{
