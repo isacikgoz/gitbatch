@@ -6,13 +6,14 @@ import (
 
 var mergeCommand = "merge"
 
+// MergeOptions defines the rules of a merge operation
 type MergeOptions struct {
-    // Name of the branch to merge with.
-    BranchName string
-    // Be verbose.
-    Verbose bool
-    // With true do not show a diffstat at the end of the merge.
-    NoStat bool
+	// Name of the branch to merge with.
+	BranchName string
+	// Be verbose.
+	Verbose bool
+	// With true do not show a diffstat at the end of the merge.
+	NoStat bool
 }
 
 // Merge incorporates changes from the named commits or branches into the
@@ -33,5 +34,6 @@ func Merge(entity *RepoEntity, options MergeOptions) error {
 		log.Warn("Error while merging")
 		return err
 	}
+	entity.Refresh()
 	return nil
 }

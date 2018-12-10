@@ -13,11 +13,20 @@ func GenericGitCommand(repoPath string, args []string) error {
 	return nil
 }
 
-// GenericGitCommand runs any git command with returning output
+// GenericGitCommandWithOutput runs any git command with returning output
 func GenericGitCommandWithOutput(repoPath string, args []string) (string, error) {
 	out, err := helpers.RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
 		return "?", err
+	}
+	return helpers.TrimTrailingNewline(out), nil
+}
+
+// GenericGitCommandWithErrorOutput runs any git command with returning output
+func GenericGitCommandWithErrorOutput(repoPath string, args []string) (string, error) {
+	out, err := helpers.RunCommandWithOutput(repoPath, "git", args)
+	if err != nil {
+		return helpers.TrimTrailingNewline(out), err
 	}
 	return helpers.TrimTrailingNewline(out), nil
 }

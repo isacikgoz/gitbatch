@@ -6,17 +6,18 @@ import (
 
 var fetchCommand = "fetch"
 
+// FetchOptions defines the rules for fetch operation
 type FetchOptions struct {
-    // Name of the remote to fetch from. Defaults to origin.
-    RemoteName string
-    // Before fetching, remove any remote-tracking references that no longer
-    // exist on the remote.
-    Prune bool
-    // Show what would be done, without making any changes.
-    DryRun bool
-    // Force allows the fetch to update a local branch even when the remote
-    // branch does not descend from it.
-    Force bool
+	// Name of the remote to fetch from. Defaults to origin.
+	RemoteName string
+	// Before fetching, remove any remote-tracking references that no longer
+	// exist on the remote.
+	Prune bool
+	// Show what would be done, without making any changes.
+	DryRun bool
+	// Force allows the fetch to update a local branch even when the remote
+	// branch does not descend from it.
+	Force bool
 }
 
 // Fetch branches refs from one or more other repositories, along with the
@@ -40,5 +41,6 @@ func Fetch(entity *RepoEntity, options FetchOptions) error {
 		log.Warn("Error while fetching")
 		return err
 	}
+	entity.Refresh()
 	return nil
 }

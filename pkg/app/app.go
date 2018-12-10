@@ -8,20 +8,41 @@ import (
 // The App struct is responsible to hold app-wide related entities. Currently
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
-	Gui *gui.Gui
+	Gui    *gui.Gui
+	Config *Config
+}
+
+// SetupConfig is an assembler data to initiate a setup
+type SetupConfig struct {
+	Directories  []string
+	LogLevel     string
+	IgnoreConfig bool
+	Depth        int
 }
 
 // Setup will handle pre-required operations. It is designed to be a wrapper for
 // main method right now.
-func Setup(directory, repoPattern, logLevel string) (*App, error) {
+func Setup(setupConfig SetupConfig) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
-	setLogLevel(logLevel)
+	setLogLevel(setupConfig.LogLevel)
 	var err error
-	directories := generateDirectories(directory, repoPattern)
+	app.Config, err = LoadConfiguration()
+	if err != nil {
+		// the error types and handling is not considered yer
+		log.Error(err)
+		return app, err
+	}
+	directories := make([]string, 0)
+
+	if len(app.Config.Directories) <= 0 || setupConfig.IgnoreConfig {
+		directories = generateDirectories(setupConfig.Directories, setupConfig.Depth)
+	} else {
+		directories = generateDirectories(app.Config.Directories, setupConfig.Depth)
+	}
 
 	// create a gui.Gui struct and set it as App's gui
-	app.Gui, err = gui.NewGui(directories)
+	app.Gui, err = gui.NewGui(app.Config.Mode, directories)
 	if err != nil {
 		// the error types and handling is not considered yer
 		log.Error(err)

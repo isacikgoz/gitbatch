@@ -41,15 +41,15 @@ type mode struct {
 }
 
 // ModeID is the mode indicator for the gui
-type ModeID int8
+type ModeID string
 
 const (
 	// FetchMode puts the gui in fetch state
-	FetchMode ModeID = 0
+	FetchMode ModeID = "fetch"
 	// PullMode puts the gui in pull state
-	PullMode ModeID = 1
+	PullMode ModeID = "pull"
 	// MergeMode puts the gui in merge state
-	MergeMode ModeID = 2
+	MergeMode ModeID = "merge"
 )
 
 var (
@@ -70,10 +70,11 @@ var (
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
 	mainViews = []viewFeature{mainViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
+	modes     = []mode{fetchMode, pullMode, mergeMode}
 )
 
 // NewGui creates a Gui opject and fill it's state related entites
-func NewGui(directoies []string) (*Gui, error) {
+func NewGui(mode string, directoies []string) (*Gui, error) {
 	initialState := guiState{
 		Directories: directoies,
 		Mode:        fetchMode,
@@ -81,6 +82,12 @@ func NewGui(directoies []string) (*Gui, error) {
 	}
 	gui := &Gui{
 		State: initialState,
+	}
+	for _, m := range modes {
+		if string(m.ModeID) == mode {
+			gui.State.Mode = m
+			break
+		}
 	}
 	return gui, nil
 }
@@ -190,6 +197,22 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		v.FgColor = gocui.ColorBlack
 		v.Frame = false
 		gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	}
+	return nil
+}
+
+// focus to next view
+func (gui *Gui) nextMainView(g *gocui.Gui, v *gocui.View) error {
+	if err := gui.nextViewOfGroup(g, v, mainViews); err != nil {
+		return err
+	}
+	return nil
+}
+
+// focus to previous view
+func (gui *Gui) previousMainView(g *gocui.Gui, v *gocui.View) error {
+	if err := gui.previousViewOfGroup(g, v, mainViews); err != nil {
+		return err
 	}
 	return nil
 }

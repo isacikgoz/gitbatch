@@ -2,8 +2,8 @@ package git
 
 import (
 	"errors"
-	"time"
 	"os"
+	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +25,7 @@ type RepoEntity struct {
 	Remotes    []*Remote
 	Commit     *Commit
 	Commits    []*Commit
+	Stasheds   []*StashedItem
 	State      RepoState
 }
 
@@ -85,11 +86,16 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	entity.loadRemotes()
 	// set the active branch to repositories HEAD
 	entity.Branch = entity.getActiveBranch()
+	if err = entity.loadStashedItems(); err != nil {
+		// TODO: fix here.
+	}
 	if len(entity.Remotes) > 0 {
 		// TODO: tend to take origin/master as default
 		entity.Remote = entity.Remotes[0]
-		// TODO: same code on 3 different occasion, maybe something wrong?
-		if err = entity.Remote.switchRemoteBranch(entity.Remote.Name + "/" + entity.Branch.Name); err != nil {
+		if entity.Branch == nil {
+			return nil, errors.New("Unable to find a valid branch")
+		}
+		if err = entity.Remote.SyncBranches(entity.Branch.Name); err != nil {
 			// probably couldn't find, but its ok.
 		}
 	} else {
@@ -118,11 +124,15 @@ func (entity *RepoEntity) Refresh() error {
 	if err := entity.loadLocalBranches(); err != nil {
 		return err
 	}
+	entity.Branch.Clean = entity.isClean()
 	entity.RefreshPushPull()
 	if err := entity.loadCommits(); err != nil {
 		return err
 	}
 	if err := entity.loadRemotes(); err != nil {
+		return err
+	}
+	if err := entity.loadStashedItems(); err != nil {
 		return err
 	}
 	return nil

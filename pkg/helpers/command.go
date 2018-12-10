@@ -19,7 +19,7 @@ func RunCommandWithOutput(dir string, command string, args []string) (string, er
 }
 
 // GetCommandStatus returns if we supposed to get return value as an int of a command
-// this method can be used. It is practical when you use a command and process a 
+// this method can be used. It is practical when you use a command and process a
 // failover acoording to a soecific return code
 func GetCommandStatus(dir string, command string, args []string) (int, error) {
 	cmd := exec.Command(command, args...)

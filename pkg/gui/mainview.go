@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/queue"
@@ -33,6 +34,19 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 		gui.refreshViews(g, entity)
 		return nil
 	})
+	return nil
+}
+
+// refresh the main view and re-render the repository representations
+func (gui *Gui) refreshMain(g *gocui.Gui) error {
+	mainView, err := g.View(mainViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	mainView.Clear()
+	for _, r := range gui.State.Repositories {
+		fmt.Fprintln(mainView, gui.displayString(r))
+	}
 	return nil
 }
 
@@ -135,12 +149,12 @@ func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	if r.State == git.Available || r.State == git.Success {
-		if err := gui.addToQueue(r); err !=nil {
+		if err := gui.addToQueue(r); err != nil {
 			return err
 		}
 	} else if r.State == git.Queued {
-		if err := gui.removeFromQueue(r); err !=nil {
-				return err
+		if err := gui.removeFromQueue(r); err != nil {
+			return err
 		}
 	} else {
 		return nil
@@ -154,7 +168,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
 		if r.State == git.Available || r.State == git.Success {
-			if err := gui.addToQueue(r); err !=nil {
+			if err := gui.addToQueue(r); err != nil {
 				return err
 			}
 		} else {
@@ -170,7 +184,7 @@ func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
 		if r.State == git.Queued {
-			if err := gui.removeFromQueue(r); err !=nil {
+			if err := gui.removeFromQueue(r); err != nil {
 				return err
 			}
 		} else {
@@ -181,15 +195,25 @@ func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// refresh the main view and re-render the repository representations
-func (gui *Gui) refreshMain(g *gocui.Gui) error {
-	mainView, err := g.View(mainViewFeature.Name)
-	if err != nil {
-		return err
-	}
-	mainView.Clear()
-	for _, r := range gui.State.Repositories {
-		fmt.Fprintln(mainView, gui.displayString(r))
-	}
+// sortByName sorts the repositories by A to Z order
+func (gui *Gui) sortByName(g *gocui.Gui, v *gocui.View) error {
+	sort.Sort(git.Alphabetical(gui.State.Repositories))
+	gui.refreshAfterSort(g)
+	return nil
+}
+
+// sortByMod sorts the repositories according to last modifed date
+// the top element will be the last modified
+func (gui *Gui) sortByMod(g *gocui.Gui, v *gocui.View) error {
+	sort.Sort(git.LastModified(gui.State.Repositories))
+	gui.refreshAfterSort(g)
+	return nil
+}
+
+// utility function that refreshes main and side views after that
+func (gui *Gui) refreshAfterSort(g *gocui.Gui) error {
+	gui.refreshMain(g)
+	entity := gui.getSelectedRepository()
+	gui.refreshViews(g, entity)
 	return nil
 }

@@ -9,11 +9,12 @@ import (
 var revlistCommand = "rev-list"
 var hashLength = 40
 
+// RevListOptions defines the rules of rev-list func
 type RevListOptions struct {
-    // Ref1 is the first reference hash to link
-    Ref1 string
-    // Ref2 is the second reference hash to link
-    Ref2 string
+	// Ref1 is the first reference hash to link
+	Ref1 string
+	// Ref2 is the second reference hash to link
+	Ref2 string
 }
 
 // RevList returns the commit hashes that are links from the given commit(s).
@@ -22,7 +23,7 @@ func RevList(entity *RepoEntity, options RevListOptions) ([]string, error) {
 	args := make([]string, 0)
 	args = append(args, revlistCommand)
 	if len(options.Ref1) > 0 && len(options.Ref2) > 0 {
-		arg1 :=  options.Ref1+".."+options.Ref2
+		arg1 := options.Ref1 + ".." + options.Ref2
 		args = append(args, arg1)
 	}
 	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)

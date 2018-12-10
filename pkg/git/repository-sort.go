@@ -9,7 +9,7 @@ import (
 type Alphabetical []*RepoEntity
 
 // Len is the interface implementation for Alphabetical sorting function
-func (s Alphabetical) Len() int      { return len(s) }
+func (s Alphabetical) Len() int { return len(s) }
 
 // Swap is the interface implementation for Alphabetical sorting function
 func (s Alphabetical) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
@@ -48,7 +48,7 @@ func (s Alphabetical) Less(i, j int) bool {
 type LastModified []*RepoEntity
 
 // Len is the interface implementation for LastModified sorting function
-func (s LastModified) Len() int      { return len(s) }
+func (s LastModified) Len() int { return len(s) }
 
 // Swap is the interface implementation for LastModified sorting function
 func (s LastModified) Swap(i, j int) { s[i], s[j] = s[j], s[i] }

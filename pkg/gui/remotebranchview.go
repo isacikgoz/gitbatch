@@ -38,6 +38,26 @@ func (gui *Gui) updateRemoteBranches(g *gocui.Gui, entity *git.RepoEntity) error
 }
 
 // iteration handler for the remotebranchview
+func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = git.Fetch(entity, git.FetchOptions{
+		RemoteName: entity.Remote.Name,
+		Prune:      true,
+	}); err != nil {
+		return err
+	}
+	// have no idea why this works..
+	// some time need to fix, movement aint bad huh?
+	gui.nextRemote(g, v)
+	gui.previousRemote(g, v)
+	if err = gui.updateRemoteBranches(g, entity); err != nil {
+		return err
+	}
+	return nil
+}
+
+// iteration handler for the remotebranchview
 func (gui *Gui) nextRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	entity := gui.getSelectedRepository()

@@ -43,7 +43,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowLeft,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousView,
+				Handler:     gui.previousMainView,
 				Display:     "←",
 				Description: "Previous Panel",
 				Vital:       false,
@@ -51,7 +51,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowRight,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextView,
+				Handler:     gui.nextMainView,
 				Display:     "→",
 				Description: "Next Panel",
 				Vital:       false,
@@ -59,7 +59,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'l',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextView,
+				Handler:     gui.nextMainView,
 				Display:     "l",
 				Description: "Previous Panel",
 				Vital:       false,
@@ -67,7 +67,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'h',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousView,
+				Handler:     gui.previousMainView,
 				Display:     "h",
 				Description: "Next Panel",
 				Vital:       false,
@@ -77,7 +77,143 @@ func (gui *Gui) generateKeybindings() error {
 			gui.KeyBindings = append(gui.KeyBindings, binding)
 		}
 	}
+	// Statusviews common keybindings
+	for _, view := range statusViews {
+		statusKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         'c',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.closeStatusView,
+				Display:     "c",
+				Description: "Close/Cancel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowLeft,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.previousStatusView,
+				Display:     "←",
+				Description: "Previous Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowRight,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextStatusView,
+				Display:     "→",
+				Description: "Next Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'l',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextStatusView,
+				Display:     "l",
+				Description: "Previous Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'h',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.previousStatusView,
+				Display:     "h",
+				Description: "Next Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowUp,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorUp,
+				Display:     "↑",
+				Description: "Up",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowDown,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorDown,
+				Display:     "↓",
+				Description: "Down",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'k',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorUp,
+				Display:     "k",
+				Description: "Up",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'j',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorDown,
+				Display:     "j",
+				Description: "Down",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         't',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.stashChanges,
+				Display:     "t",
+				Description: "Save to Stash",
+				Vital:       true,
+			},
+		}
+		for _, binding := range statusKeybindings {
+			gui.KeyBindings = append(gui.KeyBindings, binding)
+		}
+	}
 	individualKeybindings := []*KeyBinding{
+		// stash view
+		{
+			View:        stashViewFeature.Name,
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.popStash,
+			Display:     "p",
+			Description: "Pop Item",
+			Vital:       true,
+		},
+		// staged view
+		{
+			View:        stageViewFeature.Name,
+			Key:         'r',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.resetChanges,
+			Display:     "r",
+			Description: "Reset Item",
+			Vital:       true,
+		}, {
+			View:        stageViewFeature.Name,
+			Key:         gocui.KeyCtrlR,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.resetAllChanges,
+			Display:     "ctrl+r",
+			Description: "Reset All Items",
+			Vital:       true,
+		},
+		// unstaged view
+		{
+			View:        unstageViewFeature.Name,
+			Key:         'a',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.addChanges,
+			Display:     "a",
+			Description: "Add Item",
+			Vital:       true,
+		}, {
+			View:        unstageViewFeature.Name,
+			Key:         gocui.KeyCtrlA,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.addAllChanges,
+			Display:     "ctrl+a",
+			Description: "Add All Items",
+			Vital:       true,
+		},
+		// Main view controls
 		{
 			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
@@ -167,6 +303,14 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
 		}, {
+			View:        mainViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openStatusView,
+			Display:     "s",
+			Description: "Open Status",
+			Vital:       true,
+		}, {
 			View:        "",
 			Key:         gocui.KeyCtrlC,
 			Modifier:    gocui.ModNone,
@@ -174,8 +318,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "ctrl + c",
 			Description: "Force application to quit",
 			Vital:       false,
-		}, 
-	// Branch View Controls
+		},
+		// Branch View Controls
 		{
 			View:        branchViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -209,7 +353,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Up",
 			Vital:       false,
 		},
-	// Remote View Controls
+		// Remote View Controls
 		{
 			View:        remoteViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -243,7 +387,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Up",
 			Vital:       false,
 		},
-	// Remote Branch View Controls
+		// Remote Branch View Controls
 		{
 			View:        remoteBranchViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -276,8 +420,16 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "k",
 			Description: "Up",
 			Vital:       false,
+		}, {
+			View:        remoteBranchViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.syncRemoteBranch,
+			Display:     "s",
+			Description: "Synch with Remote",
+			Vital:       true,
 		},
-	// Commit View Controls
+		// Commit View Controls
 		{
 			View:        commitViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
@@ -286,7 +438,7 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "↓",
 			Description: "Iterate over commits",
 			Vital:       false,
-		},{
+		}, {
 			View:        commitViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
 			Modifier:    gocui.ModNone,
@@ -310,7 +462,7 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "k",
 			Description: "Up",
 			Vital:       false,
-		},{
+		}, {
 			View:        commitViewFeature.Name,
 			Key:         'd',
 			Modifier:    gocui.ModNone,
@@ -318,8 +470,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       true,
-		}, 
-	// Diff View Controls
+		},
+		// Diff View Controls
 		{
 			View:        commitDiffViewFeature.Name,
 			Key:         'c',
@@ -360,8 +512,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "j",
 			Description: "Page down",
 			Vital:       false,
-		}, 
-	// Application Controls
+		},
+		// Application Controls
 		{
 			View:        cheatSheetViewFeature.Name,
 			Key:         'c',
@@ -402,8 +554,8 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "j",
 			Description: "Down",
 			Vital:       false,
-		}, 
-	// Error View
+		},
+		// Error View
 		{
 			View:        errorViewFeature.Name,
 			Key:         'c',
@@ -412,7 +564,39 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "c",
 			Description: "close/cancel",
 			Vital:       true,
-		}, 		
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         gocui.KeyArrowUp,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorUp,
+			Display:     "↑",
+			Description: "Up",
+			Vital:       true,
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         gocui.KeyArrowDown,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorDown,
+			Display:     "↓",
+			Description: "Down",
+			Vital:       true,
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         'k',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorUp,
+			Display:     "k",
+			Description: "Up",
+			Vital:       false,
+		}, {
+			View:        errorViewFeature.Name,
+			Key:         'j',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.fastCursorDown,
+			Display:     "j",
+			Description: "Down",
+			Vital:       false,
+		},
 	}
 	for _, binding := range individualKeybindings {
 		gui.KeyBindings = append(gui.KeyBindings, binding)
