@@ -61,7 +61,7 @@ var (
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}
 	scheduleViewFeature     = viewFeature{Name: "schedule", Title: " Schedule "}
 	keybindingsViewFeature  = viewFeature{Name: "keybindings", Title: " Keybindings "}
-	commitDiffViewFeature   = viewFeature{Name: "commitdiff", Title: " Commit Detail "}
+	diffViewFeature         = viewFeature{Name: "diff", Title: " Diff Detail "}
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
 
@@ -212,6 +212,7 @@ func (gui *Gui) previousMainView(g *gocui.Gui, v *gocui.View) error {
 	err := gui.previousViewOfGroup(g, v, mainViews)
 	return err
 }
+
 // quit from the gui and end its loop
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit

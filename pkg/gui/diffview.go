@@ -2,42 +2,121 @@ package gui
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
 
+	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
 )
 
-// open diff view for the selcted commit
-func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) error {
+var diffReturnView string
+
+// renders the diff view
+func (gui *Gui) prepareDiffView(g *gocui.Gui, v *gocui.View, display []string) (out *gocui.View, err error) {
 	maxX, maxY := g.Size()
-	v, err := g.SetView(commitDiffViewFeature.Name, 5, 3, maxX-5, maxY-3)
+	diffReturnView = v.Name()
+	out, err = g.SetView(diffViewFeature.Name, 5, 3, maxX-5, maxY-3)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return out, err
+		}
+	}
+	out.Title = diffViewFeature.Title
+	out.Overwrite = true
+	out.Wrap = true
+	gui.updateKeyBindingsView(g, diffViewFeature.Name)
+	if _, err = g.SetCurrentView(diffViewFeature.Name); err != nil {
+		return out, err
+	}
+	for _, line := range display {
+		fmt.Fprintln(out, line)
+	}
+	return out, err
+}
+
+// open diff view for the selcted commit
+// called from commitview, so initial view is commitview
+func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) (err error) {
+	entity := gui.getSelectedRepository()
+	commit := entity.Commit
+	commitDetail := []string{("Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
+		"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n")}
+	diff, err := entity.Diff(entity.Commit.Hash)
+	if err != nil {
+		return err
+	}
+	colorized := colorizeDiff(diff)
+	commitDetail = append(commitDetail, colorized...)
+	out, err := gui.prepareDiffView(g, v, commitDetail)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = commitDiffViewFeature.Title
-		v.Overwrite = true
-		v.Wrap = true
+	}
+	out.Title = " Commit Detail "
+	return nil
+}
 
-		entity := gui.getSelectedRepository()
-		commit := entity.Commit
-		commitDetail := "Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
-			"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n"
-		fmt.Fprintln(v, commitDetail)
-		diff, err := entity.Diff(entity.Commit.Hash)
-		if err != nil {
+// called from status, so initial view may be stagedview or unstaged view
+func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
+	entity := gui.getSelectedRepository()
+	_, cy := v.Cursor()
+	_, oy := v.Origin()
+	var files []*git.File
+	switch v.Name() {
+	case unstageViewFeature.Name:
+		_, files, err = generateFileLists(entity)
+	case stageViewFeature.Name:
+		files, _, err = generateFileLists(entity)
+	}
+	if err != nil {
+		return err
+	}
+	if len(files) <= 0 {
+		return nil
+	}
+	output, err := files[cy+oy].Diff()
+	if err != nil || len(output) <= 0 {
+		return nil
+	}
+	if err != nil {
+		if err = gui.openErrorView(g, output,
+			"You should manually resolve this issue",
+			diffReturnView); err != nil {
 			return err
 		}
-		colorized := colorizeDiff(diff)
-		for _, line := range colorized {
-			fmt.Fprintln(v, line)
+	}
+	colorized := colorizeDiff(output)
+	_, err = gui.prepareDiffView(g, v, colorized)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
 		}
 	}
+	return nil
+}
 
-	gui.updateKeyBindingsView(g, commitDiffViewFeature.Name)
-	if _, err := g.SetCurrentView(commitDiffViewFeature.Name); err != nil {
-		return err
+// called from stashview, so initial view is stashview
+func (gui *Gui) showStash(g *gocui.Gui, v *gocui.View) (err error) {
+	entity := gui.getSelectedRepository()
+	_, oy := v.Origin()
+	_, cy := v.Cursor()
+	if len(entity.Stasheds) <= 0 {
+		return nil
+	}
+	stashedItem := entity.Stasheds[oy+cy]
+	output, err := stashedItem.Show()
+	if err != nil {
+		if err = gui.openErrorView(g, output,
+			"You should manually resolve this issue",
+			stashViewFeature.Name); err != nil {
+			return err
+		}
+	}
+	colorized := colorizeDiff(output)
+	_, err = gui.prepareDiffView(g, v, colorized)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
 	}
 	return nil
 }
@@ -47,33 +126,9 @@ func (gui *Gui) closeCommitDiffView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
 	}
-	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
+	if _, err := g.SetCurrentView(diffReturnView); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, commitViewFeature.Name)
+	gui.updateKeyBindingsView(g, diffReturnView)
 	return nil
-}
-
-// colorize the plain diff text collected from system output
-// the style is near to original diff command
-func colorizeDiff(original string) (colorized []string) {
-	colorized = strings.Split(original, "\n")
-	re := regexp.MustCompile(`@@ .+ @@`)
-	for i, line := range colorized {
-		if len(line) > 0 {
-			if line[0] == '-' {
-				colorized[i] = red.Sprint(line)
-			} else if line[0] == '+' {
-				colorized[i] = green.Sprint(line)
-			} else if re.MatchString(line) {
-				s := re.FindString(line)
-				colorized[i] = cyan.Sprint(s) + line[len(s):]
-			} else {
-				continue
-			}
-		} else {
-			continue
-		}
-	}
-	return colorized
 }

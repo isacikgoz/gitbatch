@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.com/isacikgoz/gitbatch.svg?branch=master)](https://travis-ci.com/isacikgoz/gitbatch) [![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/isacikgoz/gitbatch)](https://goreportcard.com/report/github.com/isacikgoz/gitbatch)
 
 ## gitbatch
-Aim of this tool to make your local repositories synchronized with remotes easily. I inspired from lazygit and decided to build this project for my needs; Since my daily work is tied to many repositories I often end up walking on many directories and manually pulling updates etc. To make this routine faster, I created a simple tool to handle this job. I really enjoy working on this project and I hope it will be a useful tool.
+This tool has been built to make your local repositories synchronized with remotes easily. I love lazygit, with that inspiration, decided to build this project to be even more lazy; Since my daily work is tied to many repositories I often end up walking on many directories and manually pulling updates etc. To make this routine faster, I created a simple tool to handle this job. I really enjoy working on this project and I hope it will be a useful tool.
 
 **Disclaimer**
 - Unauthenticated repositories are **not supported** so using ssh is recommended if you need to authenticate to fetch/pull
@@ -13,7 +13,7 @@ Aim of this tool to make your local repositories synchronized with remotes easil
   - Colors vary to your terminal theme colors, so if the contrast is not enough on some color decisions; discussions are welcome.
 
 Here is the screencast of the app:
-[![asciicast](https://asciinema.org/a/B4heYReiNgqwUbWL2RYnTzt5H.svg)](https://asciinema.org/a/B4heYReiNgqwUbWL2RYnTzt5H)
+[![asciicast](https://asciinema.org/a/eXgXpzZfuHxMpZqGMVODUipyc.svg)](https://asciinema.org/a/eXgXpzZfuHxMpZqGMVODUipyc)
 
 ## Installation
 For now, installation requires golang compiler and minimum golang 1.10 is recommended.
@@ -34,20 +34,16 @@ export PATH=$PATH:$GOPATH/bin
 run the `gitbatch` command from the parent of your git repositories. For start-up options simply `gitbatch --help`
 
 For more information;
-- [Controls page](https://github.com/isacikgoz/gitbatch/wiki/Controls)
-- [Configuration page](https://github.com/isacikgoz/gitbatch/wiki/Configuration)
-- [Modes page](https://github.com/isacikgoz/gitbatch/wiki/Modes)
-- [Display page](https://github.com/isacikgoz/gitbatch/wiki/Display)
+- To see keybindings refer to [Controls page](https://github.com/isacikgoz/gitbatch/wiki/Controls)
+- Learn how to config app at [Configuration page](https://github.com/isacikgoz/gitbatch/wiki/Configuration)
+- Wonder what mode does what? see [Modes page](https://github.com/isacikgoz/gitbatch/wiki/Modes)
+- What are those arrows, colors etc mean? Answer is here at [Display page](https://github.com/isacikgoz/gitbatch/wiki/Display)
 
 ## Further goals
 - add testing
-- select all feature ✔
-- arrange repositories to an order e.g. alphabetic, last modified, etc. ✔
-- shift keys, i.e. **s** for iterate **alt + s** for reverse iteration ✔
-- recursive repository search from the filesystem ✔
 - full src-d/go-git integration (*having some performance issues*)
-- implement config file to pre-define repo locations or some settings ✔
 - resolve authentication issues
+- add commit and maybe push?
 
 ## Credits
 - [go-git](https://github.com/src-d/go-git) for git interface (partially)

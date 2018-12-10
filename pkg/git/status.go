@@ -25,21 +25,21 @@ var (
 	// StatusNotupdated says file not updated
 	StatusNotupdated FileStatus = ' '
 	// StatusModified says file is modifed
-	StatusModified  FileStatus = 'M'
+	StatusModified FileStatus = 'M'
 	// StatusAdded says file is added to index
-	StatusAdded     FileStatus = 'A'
+	StatusAdded FileStatus = 'A'
 	// StatusDeleted says file is deleted
-	StatusDeleted   FileStatus = 'D'
+	StatusDeleted FileStatus = 'D'
 	// StatusRenamed says file is renamed
-	StatusRenamed   FileStatus = 'R'
+	StatusRenamed FileStatus = 'R'
 	// StatusCopied says file is copied
-	StatusCopied    FileStatus = 'C'
+	StatusCopied FileStatus = 'C'
 	// StatusUpdated says file is updated
-	StatusUpdated   FileStatus = 'U'
+	StatusUpdated FileStatus = 'U'
 	// StatusUntracked says file is untraced
 	StatusUntracked FileStatus = '?'
 	// StatusIgnored says file is ignored
-	StatusIgnored   FileStatus = '!'
+	StatusIgnored FileStatus = '!'
 )
 
 func shortStatus(entity *RepoEntity, option string) string {
@@ -78,4 +78,14 @@ func (entity *RepoEntity) LoadFiles() ([]*File, error) {
 		})
 	}
 	return files, nil
+}
+
+// Diff is a wrapper of "git diff" command for a file to compare with HEAD rev
+func (file *File) Diff() (output string, err error) {
+	args := make([]string, 0)
+	args = append(args, "diff")
+	args = append(args, "HEAD")
+	args = append(args, file.Name)
+	output, err = GenericGitCommandWithErrorOutput(strings.TrimSuffix(file.AbsPath, file.Name), args)
+	return output, err
 }
