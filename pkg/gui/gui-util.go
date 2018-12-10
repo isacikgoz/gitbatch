@@ -116,10 +116,8 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
 	if err := v.SetCursor(cx, newCy); err != nil {
 		return err
 	}
-	if err := v.SetOrigin(ox, ly-newCy); err != nil {
-		return err
-	}
-	return nil
+	err := v.SetOrigin(ox, ly-newCy)
+	return err
 }
 
 // this function handles the iteration of a side view and set its origin point

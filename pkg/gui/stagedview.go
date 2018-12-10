@@ -43,10 +43,8 @@ func (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {
 	if err := files[cy+oy].Reset(git.ResetOptions{}); err != nil {
 		return err
 	}
-	if err := refreshAllStatusView(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = refreshAllStatusView(g, entity)
+	return err
 }
 
 func (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
@@ -54,10 +52,8 @@ func (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
 	if err := entity.ResetAll(git.ResetOptions{}); err != nil {
 		return err
 	}
-	if err := refreshAllStatusView(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err := refreshAllStatusView(g, entity)
+	return err
 }
 
 // refresh the main view and re-render the repository representations

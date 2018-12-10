@@ -68,8 +68,6 @@ func (gui *Gui) remoteChangeFollowUp(g *gocui.Gui, entity *git.RepoEntity) (err 
 	if err = gui.updateRemotes(g, entity); err != nil {
 		return err
 	}
-	if err = gui.updateRemoteBranches(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = gui.updateRemoteBranches(g, entity)
+	return err
 }

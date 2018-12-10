@@ -28,18 +28,14 @@ func (gui *Gui) openStatusView(g *gocui.Gui, v *gocui.View) error {
 
 // focus to next view
 func (gui *Gui) nextStatusView(g *gocui.Gui, v *gocui.View) error {
-	if err := gui.nextViewOfGroup(g, v, statusViews); err != nil {
-		return err
-	}
-	return nil
+	err := gui.nextViewOfGroup(g, v, statusViews)
+	return err
 }
 
 // focus to previous view
 func (gui *Gui) previousStatusView(g *gocui.Gui, v *gocui.View) error {
-	if err := gui.previousViewOfGroup(g, v, statusViews); err != nil {
-		return err
-	}
-	return nil
+	err := gui.previousViewOfGroup(g, v, statusViews)
+	return err
 }
 
 // moves the cursor downwards for the main view and if it goes to bottom it

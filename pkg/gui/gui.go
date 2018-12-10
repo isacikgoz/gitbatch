@@ -203,20 +203,15 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 // focus to next view
 func (gui *Gui) nextMainView(g *gocui.Gui, v *gocui.View) error {
-	if err := gui.nextViewOfGroup(g, v, mainViews); err != nil {
-		return err
-	}
-	return nil
+	err := gui.nextViewOfGroup(g, v, mainViews)
+	return err
 }
 
 // focus to previous view
 func (gui *Gui) previousMainView(g *gocui.Gui, v *gocui.View) error {
-	if err := gui.previousViewOfGroup(g, v, mainViews); err != nil {
-		return err
-	}
-	return nil
+	err := gui.previousViewOfGroup(g, v, mainViews)
+	return err
 }
-
 // quit from the gui and end its loop
 func (gui *Gui) quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit

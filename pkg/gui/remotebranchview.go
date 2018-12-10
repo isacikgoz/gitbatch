@@ -51,10 +51,8 @@ func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	// some time need to fix, movement aint bad huh?
 	gui.nextRemote(g, v)
 	gui.previousRemote(g, v)
-	if err = gui.updateRemoteBranches(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = gui.updateRemoteBranches(g, entity)
+	return err
 }
 
 // iteration handler for the remotebranchview
@@ -64,10 +62,8 @@ func (gui *Gui) nextRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	if err = entity.Remote.NextRemoteBranch(); err != nil {
 		return err
 	}
-	if err = gui.updateRemoteBranches(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = gui.updateRemoteBranches(g, entity)
+	return err
 }
 
 // iteration handler for the remotebranchview
@@ -77,8 +73,6 @@ func (gui *Gui) previousRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	if err = entity.Remote.PreviousRemoteBranch(); err != nil {
 		return err
 	}
-	if err = gui.updateRemoteBranches(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = gui.updateRemoteBranches(g, entity)
+	return err
 }

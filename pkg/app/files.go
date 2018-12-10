@@ -74,12 +74,15 @@ func seperateDirectories(directory string) (directories, gitDirectories []string
 			return nil, nil, err
 		}
 		// with this approach, we ignore submodule or sub repositoreis in a git repository
-		_, err = os.Open(dir + string(os.PathSeparator) + ".git")
+		ff, err := os.Open(dir + string(os.PathSeparator) + ".git")
 		if err != nil {
 			directories = append(directories, dir)
 		} else {
 			gitDirectories = append(gitDirectories, dir)
 		}
+		ff.Close()
+		file.Close()
+
 	}
 	return directories, gitDirectories, nil
 }

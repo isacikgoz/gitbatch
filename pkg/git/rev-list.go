@@ -35,9 +35,8 @@ func RevList(entity *RepoEntity, options RevListOptions) ([]string, error) {
 	for _, hash := range hashes {
 		if len(hash) != hashLength {
 			return make([]string, 0), nil
-		} else {
-			break
 		}
+		break
 	}
 	return hashes, nil
 }

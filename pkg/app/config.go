@@ -80,10 +80,8 @@ func readConfiguration() error {
 
 // write configuration to a file
 func writeConfiguration() error {
-	if err := viper.WriteConfig(); err != nil {
-		return err
-	}
-	return nil
+	err := viper.WriteConfig()
+	return err
 }
 
 // initialize the configuration manager

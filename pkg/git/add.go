@@ -9,12 +9,14 @@ import (
 
 var addCommand = "add"
 
+// AddOptions defines the rules for "git add" command
 type AddOptions struct {
 	Update bool
 	Force  bool
 	DryRun bool
 }
 
+// Add is a wrapper function for "git add" command
 func (file *File) Add(option AddOptions) error {
 	args := make([]string, 0)
 	args = append(args, addCommand)
@@ -36,6 +38,7 @@ func (file *File) Add(option AddOptions) error {
 	return nil
 }
 
+// AddAll function is the wrapper of "git add ." command
 func (entity *RepoEntity) AddAll(option AddOptions) error {
 	args := make([]string, 0)
 	args = append(args, addCommand)

@@ -19,10 +19,8 @@ func (gui *Gui) openStashView(g *gocui.Gui) error {
 		v.Title = stashViewFeature.Title
 	}
 	entity := gui.getSelectedRepository()
-	if err := refreshStashView(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = refreshStashView(g, entity)
+	return err
 }
 
 //
@@ -36,10 +34,8 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := refreshAllStatusView(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = refreshAllStatusView(g, entity)
+	return err
 }
 
 //
@@ -62,10 +58,8 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 	if err := entity.Refresh(); err != nil {
 		return err
 	}
-	if err := refreshAllStatusView(g, entity); err != nil {
-		return err
-	}
-	return nil
+	err = refreshAllStatusView(g, entity)
+	return err
 }
 
 // refresh the main view and re-render the repository representations

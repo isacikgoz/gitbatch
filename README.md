@@ -35,6 +35,7 @@ run the `gitbatch` command from the parent of your git repositories. For start-u
 
 For more information;
 - [Controls page](https://github.com/isacikgoz/gitbatch/wiki/Controls)
+- [Configuration page](https://github.com/isacikgoz/gitbatch/wiki/Configuration)
 - [Modes page](https://github.com/isacikgoz/gitbatch/wiki/Modes)
 - [Display page](https://github.com/isacikgoz/gitbatch/wiki/Display)
 
