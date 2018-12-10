@@ -2,6 +2,7 @@ package gui
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/pkg/git"
@@ -116,6 +117,30 @@ func adjustTextLength(text string, maxLength int) (adjusted string) {
 		return adjusted
 	}
 	return text
+}
+
+// colorize the plain diff text collected from system output
+// the style is near to original diff command
+func colorizeDiff(original string) (colorized []string) {
+	colorized = strings.Split(original, "\n")
+	re := regexp.MustCompile(`@@ .+ @@`)
+	for i, line := range colorized {
+		if len(line) > 0 {
+			if line[0] == '-' {
+				colorized[i] = red.Sprint(line)
+			} else if line[0] == '+' {
+				colorized[i] = green.Sprint(line)
+			} else if re.MatchString(line) {
+				s := re.FindString(line)
+				colorized[i] = cyan.Sprint(s) + line[len(s):]
+			} else {
+				continue
+			}
+		} else {
+			continue
+		}
+	}
+	return colorized
 }
 
 // the remote link can be too verbose sometimes, so it is good to trim it

@@ -11,7 +11,7 @@ var (
 	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
 	// statusViewFeature       = viewFeature{Name: "status", Title: " Status "}
 	stageViewFeature   = viewFeature{Name: "staged", Title: " Staged "}
-	unstageViewFeature = viewFeature{Name: "unstaged", Title: " Unstaged "}
+	unstageViewFeature = viewFeature{Name: "unstaged", Title: " Not Staged "}
 	stashViewFeature   = viewFeature{Name: "stash", Title: " Stash "}
 
 	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}

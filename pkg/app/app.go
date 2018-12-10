@@ -33,7 +33,7 @@ func Setup(setupConfig SetupConfig) (*App, error) {
 		log.Error(err)
 		return app, err
 	}
-	directories := make([]string, 0)
+	var directories []string
 
 	if len(app.Config.Directories) <= 0 || setupConfig.IgnoreConfig {
 		directories = generateDirectories(setupConfig.Directories, setupConfig.Depth)

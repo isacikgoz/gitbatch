@@ -93,3 +93,14 @@ func (stashedItem *StashedItem) Pop() (output string, err error) {
 	output, err = GenericGitCommandWithErrorOutput(stashedItem.EntityPath, args)
 	return output, err
 }
+
+// Show is the wrapper of "git stash show -p " command
+func (stashedItem *StashedItem) Show() (output string, err error) {
+	args := make([]string, 0)
+	args = append(args, stashCommand)
+	args = append(args, "show")
+	args = append(args, "-p")
+	args = append(args, "stash@{"+strconv.Itoa(stashedItem.StashID)+"}")
+	output, err = GenericGitCommandWithErrorOutput(stashedItem.EntityPath, args)
+	return output, err
+}

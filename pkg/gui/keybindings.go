@@ -176,6 +176,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "p",
 			Description: "Pop Item",
 			Vital:       true,
+		}, {
+			View:        stashViewFeature.Name,
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.showStash,
+			Display:     "d",
+			Description: "Show diff",
+			Vital:       true,
 		},
 		// staged view
 		{
@@ -194,6 +202,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "ctrl+r",
 			Description: "Reset All Items",
 			Vital:       true,
+		}, {
+			View:        stageViewFeature.Name,
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openFileDiffView,
+			Display:     "d",
+			Description: "Show diff",
+			Vital:       true,
 		},
 		// unstaged view
 		{
@@ -211,6 +227,14 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.addAllChanges,
 			Display:     "ctrl+a",
 			Description: "Add All Items",
+			Vital:       true,
+		}, {
+			View:        unstageViewFeature.Name,
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openFileDiffView,
+			Display:     "d",
+			Description: "Show diff",
 			Vital:       true,
 		},
 		// Main view controls
@@ -473,7 +497,7 @@ func (gui *Gui) generateKeybindings() error {
 		},
 		// Diff View Controls
 		{
-			View:        commitDiffViewFeature.Name,
+			View:        diffViewFeature.Name,
 			Key:         'c',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCommitDiffView,
@@ -481,7 +505,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "close/cancel",
 			Vital:       true,
 		}, {
-			View:        commitDiffViewFeature.Name,
+			View:        diffViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorUp,
@@ -489,7 +513,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Page up",
 			Vital:       true,
 		}, {
-			View:        commitDiffViewFeature.Name,
+			View:        diffViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorDown,
@@ -497,7 +521,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Page down",
 			Vital:       true,
 		}, {
-			View:        commitDiffViewFeature.Name,
+			View:        diffViewFeature.Name,
 			Key:         'k',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorUp,
@@ -505,7 +529,7 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Page up",
 			Vital:       false,
 		}, {
-			View:        commitDiffViewFeature.Name,
+			View:        diffViewFeature.Name,
 			Key:         'j',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorDown,
@@ -630,16 +654,13 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
 		v.BgColor = gocui.ColorBlue
-		v.FgColor = gocui.ColorWhite
-		modeLabel = fetchSymbol + ws + bold.Sprint("FETCH")
+		modeLabel = fetchSymbol + ws + "FETCH"
 	case PullMode:
 		v.BgColor = gocui.ColorMagenta
-		v.FgColor = gocui.ColorWhite
-		modeLabel = pullSymbol + ws + bold.Sprint("PULL")
+		modeLabel = pullSymbol + ws + "PULL"
 	case MergeMode:
 		v.BgColor = gocui.ColorCyan
-		v.FgColor = gocui.ColorBlack
-		modeLabel = mergeSymbol + ws + black.Sprint(bold.Sprint("MERGE"))
+		modeLabel = mergeSymbol + ws + "MERGE"
 	default:
 		modeLabel = "No mode selected"
 	}
