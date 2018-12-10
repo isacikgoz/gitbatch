@@ -37,7 +37,7 @@ const (
 	Available RepoState = 0
 	// Queued means repo is queued for a operation
 	Queued RepoState = 1
-	// Working means an operation is jsut started for this repository
+	// Working means an operation is just started for this repository
 	Working RepoState = 2
 	// Success is the expected outcome of the operation
 	Success RepoState = 3
@@ -51,7 +51,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"directory": directory,
-		}).Trace("Cannot open as direcotry")
+		}).Trace("Cannot open as directory")
 		return nil, err
 	}
 	fileInfo, err := file.Stat()
@@ -62,7 +62,7 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"directory": directory,
-		}).Trace("Cannot open direcotry as a git repository")
+		}).Trace("Cannot open directory as a git repository")
 		return nil, err
 	}
 	entity = &RepoEntity{RepoID: helpers.RandomString(8),
@@ -132,8 +132,6 @@ func (entity *RepoEntity) Refresh() error {
 	if err := entity.loadRemotes(); err != nil {
 		return err
 	}
-	if err := entity.loadStashedItems(); err != nil {
-		return err
-	}
-	return nil
+	err = entity.loadStashedItems()
+	return err
 }

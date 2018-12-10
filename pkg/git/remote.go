@@ -22,10 +22,8 @@ func (entity *RepoEntity) NextRemote() error {
 	} else {
 		entity.Remote = entity.Remotes[currentRemoteIndex+1]
 	}
-	if err := entity.Remote.SyncBranches(entity.Branch.Name); err != nil {
-		return err
-	}
-	return nil
+	err := entity.Remote.SyncBranches(entity.Branch.Name)
+	return err
 }
 
 // PreviousRemote iterates over previous branch of a remote
@@ -36,10 +34,8 @@ func (entity *RepoEntity) PreviousRemote() error {
 	} else {
 		entity.Remote = entity.Remotes[currentRemoteIndex-1]
 	}
-	if err := entity.Remote.SyncBranches(entity.Branch.Name); err != nil {
-		return err
-	}
-	return nil
+	err := entity.Remote.SyncBranches(entity.Branch.Name)
+	return err
 }
 
 // returns the active remote index
@@ -80,6 +76,7 @@ func (entity *RepoEntity) loadRemotes() error {
 	return err
 }
 
+// SyncBranches sets the remote branch according to repository's active branch
 func (remote *Remote) SyncBranches(branchName string) error {
 	if err := remote.switchRemoteBranch(remote.Name + "/" + branchName); err != nil {
 		// probably couldn't find, but its ok.
