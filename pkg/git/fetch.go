@@ -1,10 +1,22 @@
 package git
 
 import (
+	"strings"
+
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/config"
 )
 
-var fetchCommand = "fetch"
+var (
+	fetchCmdMode  string
+	fetchTryCount int
+
+	fetchCommand       = "fetch"
+	fetchCmdModeLegacy = "git"
+	fetchCmdModeNative = "go-git"
+	fetchMaxTry        = 1
+)
 
 // FetchOptions defines the rules for fetch operation
 type FetchOptions struct {
@@ -18,13 +30,42 @@ type FetchOptions struct {
 	// Force allows the fetch to update a local branch even when the remote
 	// branch does not descend from it.
 	Force bool
+	// There should be more room for authentication, tags and progress
 }
 
 // Fetch branches refs from one or more other repositories, along with the
 // objects necessary to complete their histories
-func Fetch(entity *RepoEntity, options FetchOptions) error {
+func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
+	// here we configure fetch operation
+	// default mode is go-git (this may be configured)
+	fetchCmdMode = fetchCmdModeNative
+	fetchTryCount = 0
+	// prune and dry run is not supported from go-git yet, rely on old friend
+	if options.Prune || options.DryRun {
+		fetchCmdMode = fetchCmdModeLegacy
+	}
+	switch fetchCmdMode {
+	case fetchCmdModeLegacy:
+		err = fetchWithGit(entity.AbsPath, options)
+		return err
+	case fetchCmdModeNative:
+		// this should be the refspec as default, let's give it a try
+		refspec := "+" + "refs/heads/" + entity.Branch.Name + ":" + "/refs/remotes/" + entity.Remote.Branch.Name
+		err = fetchWithGoGit(entity, options, refspec)
+		return err
+	}
+	// till this step everything should be ok
+	err = entity.Refresh()
+	return err
+}
+
+// fetchWithGit is simply a bare git fetch <remote> command which is flexible
+// for complex operations, but on the other hand, it ties the app to another
+// tool. To avoid that, using native implementation is preferred.
+func fetchWithGit(abspath string, options FetchOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, fetchCommand)
+	// parse options to command line arguments
 	if len(options.RemoteName) > 0 {
 		args = append(args, options.RemoteName)
 	}
@@ -37,10 +78,44 @@ func Fetch(entity *RepoEntity, options FetchOptions) error {
 	if options.DryRun {
 		args = append(args, "--dry-run")
 	}
-	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
-		log.Warn("Error while fetching")
-		return err
+	if err := GenericGitCommand(abspath, args); err != nil {
+		log.Warn("Error at git command (fetch)")
 	}
-	entity.Refresh()
+	return err
+}
+
+// fetchWithGoGit is the primary fetch method and refspec is the main feature.
+// RefSpec is a mapping from local branches to remote references The format of
+// the refspec is an optional +, followed by <src>:<dst>, where <src> is the
+// pattern for references on the remote side and <dst> is where those references
+// will be written locally. The + tells Git to update the reference even if it
+// isn’t a fast-forward.
+func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (err error) {
+	opt := &git.FetchOptions{
+		RemoteName: options.RemoteName,
+		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
+		Force:      options.Force,
+	}
+	err = entity.Repository.Fetch(opt)
+	if err != nil {
+		if err == git.NoErrAlreadyUpToDate {
+			// Already up-to-date
+			log.Warn(err.Error())
+			// TODO: submit a PR for this kind of error, this type of catch is lame
+		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
+			// we dont have remote ref, so lets pull other things.. maybe it'd be useful
+			rp := entity.Remote.RefSpecs[0]
+			if fetchTryCount < fetchMaxTry {
+				fetchTryCount++
+				fetchWithGoGit(entity, options, rp)
+			} else {
+				return err
+			}
+			// TODO: handle authentication exception
+		} else {
+			log.Warn(err.Error())
+			return err
+		}
+	}
 	return nil
 }
