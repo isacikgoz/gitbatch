@@ -129,6 +129,10 @@ func (gui *Gui) Run() error {
 	gui.g = g
 	g.Highlight = true
 	g.SelFgColor = gocui.ColorGreen
+
+	// If InputEsc is true, when ESC sequence is in the buffer and it doesn't
+	// match any known sequence, ESC means KeyEsc.
+	g.InputEsc = true
 	g.SetManagerFunc(gui.layout)
 
 	if err := gui.generateKeybindings(); err != nil {

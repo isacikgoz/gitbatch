@@ -160,6 +160,14 @@ func (gui *Gui) generateKeybindings() error {
 				Display:     "t",
 				Description: "Save to Stash",
 				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         'm',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.openCommitMessageView,
+				Display:     "m",
+				Description: "Commit Changes",
+				Vital:       true,
 			},
 		}
 		for _, binding := range statusKeybindings {
@@ -235,6 +243,24 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.openFileDiffView,
 			Display:     "d",
 			Description: "Show diff",
+			Vital:       true,
+		},
+		// commit message view
+		{
+			View:        commitMessageViewFeature.Name,
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeCommitMessageView,
+			Display:     "esc",
+			Description: "Close / Cancel",
+			Vital:       true,
+		}, {
+			View:        commitMessageViewFeature.Name,
+			Key:         gocui.KeyEnter, //TODO: enter should be replaced with a better option
+			Modifier:    gocui.ModNone,
+			Handler:     gui.submitCommitMessageView,
+			Display:     "ctrl + enter",
+			Description: "Submit",
 			Vital:       true,
 		},
 		// Main view controls

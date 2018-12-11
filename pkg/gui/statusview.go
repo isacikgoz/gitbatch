@@ -2,19 +2,24 @@ package gui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
+	ggt "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 var (
 	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
 	// statusViewFeature       = viewFeature{Name: "status", Title: " Status "}
-	stageViewFeature   = viewFeature{Name: "staged", Title: " Staged "}
-	unstageViewFeature = viewFeature{Name: "unstaged", Title: " Not Staged "}
-	stashViewFeature   = viewFeature{Name: "stash", Title: " Stash "}
+	stageViewFeature         = viewFeature{Name: "staged", Title: " Staged "}
+	unstageViewFeature       = viewFeature{Name: "unstaged", Title: " Not Staged "}
+	stashViewFeature         = viewFeature{Name: "stash", Title: " Stash "}
+	commitMessageViewFeature = viewFeature{Name: "commitmessage", Title: " Commit Mesage "}
 
-	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
+	statusViews            = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
+	commitMesageReturnView string
 )
 
 // open the status layout
@@ -166,5 +171,75 @@ func refreshAllStatusView(g *gocui.Gui, entity *git.RepoEntity) error {
 			return err
 		}
 	}
+	return nil
+}
+
+// open the commit message views
+func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
+	maxX, maxY := g.Size()
+	commitMesageReturnView = v.Name()
+	v, err := g.SetView(commitMessageViewFeature.Name, maxX/2-30, maxY/2-3, maxX/2+30, maxY/2+3)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = commitMessageViewFeature.Title
+		v.Wrap = true
+		v.Editable = true
+		v.Editor = gocui.DefaultEditor
+		v.Highlight = true
+		g.Cursor = true
+	}
+	gui.updateKeyBindingsView(g, commitMessageViewFeature.Name)
+	if _, err := g.SetCurrentView(commitMessageViewFeature.Name); err != nil {
+		return err
+	}
+	return nil
+}
+
+// close the opened commite mesage view
+func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	w, err := entity.Repository.Worktree()
+	if err != nil {
+		return err
+	}
+	// WIP: This better be removed to git pkg
+	// TODO: read config and get name & e-mail
+	_, err = w.Commit(v.ViewBuffer(), &ggt.CommitOptions{
+		Author: &object.Signature{
+			Name:  "İbrahim Serdar Açıkgöz",
+			Email: "serdaracikgoz86@gmail.com",
+			When:  time.Now(),
+		},
+	})
+	if err != nil {
+		return err
+	}
+	entity.Refresh()
+	err = gui.closeCommitMessageView(g, v)
+	return err
+}
+
+// close the opened commite mesage view
+func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
+	entity := gui.getSelectedRepository()
+	g.Cursor = false
+	if err := g.DeleteView(commitMessageViewFeature.Name); err != nil {
+		return err
+	}
+	if _, err := g.SetCurrentView(commitMesageReturnView); err != nil {
+		return err
+	}
+	if err := gui.refreshMain(g); err != nil {
+		return err
+	}
+	if err := gui.refreshViews(g, entity); err != nil {
+		return err
+	}
+	if err := refreshAllStatusView(g, entity); err != nil {
+		return err
+	}
+	gui.updateKeyBindingsView(g, commitMesageReturnView)
 	return nil
 }
