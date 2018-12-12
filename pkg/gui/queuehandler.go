@@ -1,7 +1,9 @@
 package gui
 
 import (
+	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
+	log "github.com/sirupsen/logrus"
 )
 
 // this function starts the queue and updates the gui with the result of an
@@ -16,6 +18,13 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 			})
 			defer gui.updateKeyBindingsView(g, mainViewFeature.Name)
 			if err != nil {
+				if err == git.ErrAuthenticationRequired {
+					err := gui_go.openAuthenticationView(g, gui_go.State.Queue, job, v.Name())
+					if err != nil {
+						log.Warn(err.Error())
+						return
+					}
+				}
 				return
 			}
 			if finished {

@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 var (
@@ -22,6 +24,8 @@ var (
 type FetchOptions struct {
 	// Name of the remote to fetch from. Defaults to origin.
 	RemoteName string
+	// Credentials holds the user and pswd information
+	Credentials Credentials
 	// Before fetching, remove any remote-tracking references that no longer
 	// exist on the remote.
 	Prune bool
@@ -96,6 +100,21 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
 		Force:      options.Force,
 	}
+	if len(options.Credentials.User) > 0 {
+		protocol, err := entity.authProtocol(entity.Remote)
+		if err != nil {
+			return err
+		}
+		if protocol == authProtocolHttp || protocol == authProtocolHttps {
+			opt.Auth = &http.BasicAuth{
+				Username: options.Credentials.User,
+				Password: options.Credentials.Password,
+			}
+		} else {
+			return ErrInvalidAuthMethod
+		}
+	}
+
 	err = entity.Repository.Fetch(opt)
 	if err != nil {
 		if err == git.NoErrAlreadyUpToDate {
@@ -111,7 +130,9 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 			} else {
 				return err
 			}
-			// TODO: handle authentication exception
+		} else if err == transport.ErrAuthenticationRequired {
+			log.Warn(err.Error())
+			return ErrAuthenticationRequired
 		} else {
 			log.Warn(err.Error())
 			return err

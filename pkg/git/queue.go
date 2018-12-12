@@ -1,9 +1,7 @@
-package queue
+package git
 
 import (
 	"errors"
-
-	"github.com/isacikgoz/gitbatch/pkg/git"
 )
 
 // JobQueue holds the slice of Jobs
@@ -51,7 +49,7 @@ func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 
 // RemoveFromQueue deletes the given entity and its job from the queue
 // TODO: it is not safe if the job has been started
-func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
+func (jobQueue *JobQueue) RemoveFromQueue(entity *RepoEntity) error {
 	removed := false
 	for i, job := range jobQueue.series {
 		if job.Entity.RepoID == entity.RepoID {
@@ -68,7 +66,7 @@ func (jobQueue *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 // IsInTheQueue function; since the job and entity is not tied with its own
 // struct, this function returns true if that entity is in the queue along with
 // the jobs type
-func (jobQueue *JobQueue) IsInTheQueue(entity *git.RepoEntity) (inTheQueue bool, jt JobType) {
+func (jobQueue *JobQueue) IsInTheQueue(entity *RepoEntity) (inTheQueue bool, jt JobType) {
 	inTheQueue = false
 	for _, job := range jobQueue.series {
 		if job.Entity.RepoID == entity.RepoID {

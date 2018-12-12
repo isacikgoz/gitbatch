@@ -6,7 +6,6 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/queue"
 )
 
 var (
@@ -87,11 +86,11 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	if entity.State == git.Queued {
 		if inQueue, ty := gui.State.Queue.IsInTheQueue(entity); inQueue {
 			switch mode := ty; mode {
-			case queue.Fetch:
+			case git.FetchJob:
 				suffix = blue.Sprint(queuedSymbol)
-			case queue.Pull:
+			case git.PullJob:
 				suffix = magenta.Sprint(queuedSymbol)
-			case queue.Merge:
+			case git.MergeJob:
 				suffix = cyan.Sprint(queuedSymbol)
 			default:
 				suffix = green.Sprint(queuedSymbol)

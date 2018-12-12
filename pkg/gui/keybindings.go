@@ -174,6 +174,38 @@ func (gui *Gui) generateKeybindings() error {
 			gui.KeyBindings = append(gui.KeyBindings, binding)
 		}
 	}
+	for _, view := range authViews {
+		authKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         gocui.KeyEsc,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.closeAuthenticationView,
+				Display:     "esc",
+				Description: "close/cancel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyTab,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextAuthView,
+				Display:     "tab",
+				Description: "Next Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyEnter,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.submitAuthenticationView,
+				Display:     "enter",
+				Description: "Submit",
+				Vital:       false,
+			},
+		}
+		for _, binding := range authKeybindings {
+			gui.KeyBindings = append(gui.KeyBindings, binding)
+		}
+	}
 	individualKeybindings := []*KeyBinding{
 		// stash view
 		{
