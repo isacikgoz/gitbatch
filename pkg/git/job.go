@@ -1,13 +1,14 @@
 package git
 
-import (
-	"time"
-)
+import ()
 
 // Job relates the type of the operation and the entity
 type Job struct {
+	// JobType is to select operation type that will be applied to repository
 	JobType JobType
-	Entity  *RepoEntity
+	// Entity points to the repository that will be used for operation
+	Entity *RepoEntity
+	// Options is a placeholder for operation options
 	Options interface{}
 }
 
@@ -26,9 +27,8 @@ const (
 // starts the job
 func (job *Job) start() error {
 	job.Entity.State = Working
-	// added for testing, TODO: remove
-	time.Sleep(time.Second)
 	// TODO: Handle errors?
+	// TOOD: Better implementation required
 	switch mode := job.JobType; mode {
 	case FetchJob:
 		var opts FetchOptions
@@ -44,11 +44,17 @@ func (job *Job) start() error {
 			return err
 		}
 	case PullJob:
-		if err := Fetch(job.Entity, FetchOptions{
-			RemoteName: job.Entity.Remote.Name,
-		}); err != nil {
+		var opts FetchOptions
+		if job.Options != nil {
+			opts = job.Options.(FetchOptions)
+		} else {
+			opts = FetchOptions{
+				RemoteName: job.Entity.Remote.Name,
+			}
+		}
+		if err := Fetch(job.Entity, opts); err != nil {
 			job.Entity.State = Fail
-			return nil
+			return err
 		}
 		if err := Merge(job.Entity, MergeOptions{
 			BranchName: job.Entity.Remote.Branch.Name,

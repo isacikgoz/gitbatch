@@ -191,7 +191,7 @@ func (gui *Gui) generateKeybindings() error {
 				Handler:     gui.nextAuthView,
 				Display:     "tab",
 				Description: "Next Panel",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        view.Name,
 				Key:         gocui.KeyEnter,
@@ -199,7 +199,7 @@ func (gui *Gui) generateKeybindings() error {
 				Handler:     gui.submitAuthenticationView,
 				Display:     "enter",
 				Description: "Submit",
-				Vital:       false,
+				Vital:       true,
 			},
 		}
 		for _, binding := range authKeybindings {

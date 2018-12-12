@@ -22,11 +22,7 @@ func (gui *Gui) openStageView(g *gocui.Gui) error {
 	if err := refreshStagedView(g, entity); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, stageViewFeature.Name)
-	if _, err := g.SetCurrentView(stageViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
+	return gui.focusToView(stageViewFeature.Name)
 }
 
 func (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {

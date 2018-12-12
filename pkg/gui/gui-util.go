@@ -193,3 +193,17 @@ func (gui *Gui) fastCursorUp(g *gocui.Gui, v *gocui.View) error {
 	}
 	return nil
 }
+
+// closeViewCleanup both updates the keybidings view and focuses to returning view
+func (gui *Gui) closeViewCleanup(returningViewName string) (err error) {
+	if _, err = gui.g.SetCurrentView(returningViewName); err != nil {
+		return err
+	}
+	err = gui.updateKeyBindingsView(gui.g, returningViewName)
+	return err
+}
+
+// focus to view same as closeViewCleanup but its just a wrapper for easy reading
+func (gui *Gui) focusToView(viewName string) (err error) {
+	return gui.closeViewCleanup(viewName)
+}

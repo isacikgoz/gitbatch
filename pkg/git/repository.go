@@ -39,10 +39,12 @@ const (
 	Queued RepoState = 1
 	// Working means an operation is just started for this repository
 	Working RepoState = 2
+	// Paused is expected when a user interaction is required
+	Paused RepoState = 3
 	// Success is the expected outcome of the operation
-	Success RepoState = 3
+	Success RepoState = 4
 	// Fail is the unexpected outcome of the operation
-	Fail RepoState = 4
+	Fail RepoState = 5
 )
 
 // InitializeRepository initializes a RepoEntity struct with its belongings.

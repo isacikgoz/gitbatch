@@ -50,7 +50,7 @@ func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
 	}
 	switch fetchCmdMode {
 	case fetchCmdModeLegacy:
-		err = fetchWithGit(entity.AbsPath, options)
+		err = fetchWithGit(entity, options)
 		return err
 	case fetchCmdModeNative:
 		// this should be the refspec as default, let's give it a try
@@ -58,15 +58,13 @@ func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
 		err = fetchWithGoGit(entity, options, refspec)
 		return err
 	}
-	// till this step everything should be ok
-	err = entity.Refresh()
-	return err
+	return nil
 }
 
 // fetchWithGit is simply a bare git fetch <remote> command which is flexible
 // for complex operations, but on the other hand, it ties the app to another
 // tool. To avoid that, using native implementation is preferred.
-func fetchWithGit(abspath string, options FetchOptions) (err error) {
+func fetchWithGit(entity *RepoEntity, options FetchOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, fetchCommand)
 	// parse options to command line arguments
@@ -82,9 +80,12 @@ func fetchWithGit(abspath string, options FetchOptions) (err error) {
 	if options.DryRun {
 		args = append(args, "--dry-run")
 	}
-	if err := GenericGitCommand(abspath, args); err != nil {
+	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
 		log.Warn("Error at git command (fetch)")
+		return err
 	}
+	// till this step everything should be ok
+	err = entity.Refresh()
 	return err
 }
 
@@ -100,6 +101,7 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
 		Force:      options.Force,
 	}
+	// if any credential is given, let's add it to the git.FetchOptions
 	if len(options.Credentials.User) > 0 {
 		protocol, err := entity.authProtocol(entity.Remote)
 		if err != nil {
@@ -138,5 +140,7 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 			return err
 		}
 	}
-	return nil
+	// till this step everything should be ok
+	err = entity.Refresh()
+	return err
 }

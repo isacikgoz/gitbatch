@@ -35,11 +35,14 @@ var (
 	queuedSymbol  = "•"
 	workingSymbol = "•"
 	successSymbol = "✔"
+	pauseSymbol   = "॥"
 	failSymbol    = "✗"
 
 	fetchSymbol = "↓"
 	pullSymbol  = "↓↳"
 	mergeSymbol = "↳"
+
+	keySymbol = ws + yellow.Sprint("🔑") + ws
 
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
@@ -102,6 +105,8 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 		return prefix + repoName + ws + green.Sprint(workingSymbol)
 	} else if entity.State == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
+	} else if entity.State == git.Paused {
+		return prefix + repoName + ws + yellow.Sprint(pauseSymbol)
 	} else if entity.State == git.Fail {
 		return prefix + repoName + ws + red.Sprint(failSymbol)
 	} else {

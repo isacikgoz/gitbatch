@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
-	// statusViewFeature       = viewFeature{Name: "status", Title: " Status "}
+	statusHeaderViewFeature  = viewFeature{Name: "status-header", Title: " Status Header "}
 	stageViewFeature         = viewFeature{Name: "staged", Title: " Staged "}
 	unstageViewFeature       = viewFeature{Name: "unstaged", Title: " Not Staged "}
 	stashViewFeature         = viewFeature{Name: "stash", Title: " Stash "}
@@ -105,19 +104,12 @@ func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 
 // close the opened stat views
 func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView(stashViewFeature.Name); err != nil {
-		return err
-	}
-	if err := g.DeleteView(unstageViewFeature.Name); err != nil {
-		return err
-	}
-	if err := g.DeleteView(stageViewFeature.Name); err != nil {
-		return err
+	for _, view := range statusViews {
+		if err := g.DeleteView(view.Name); err != nil {
+			return err
+		}
 	}
 	if err := g.DeleteView(statusHeaderViewFeature.Name); err != nil {
-		return err
-	}
-	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
 		return err
 	}
 	entity := gui.getSelectedRepository()
@@ -127,8 +119,7 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	if err := gui.refreshViews(g, entity); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	return nil
+	return gui.closeViewCleanup(mainViewFeature.Name)
 }
 
 func generateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, err error) {
@@ -228,9 +219,6 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(commitMessageViewFeature.Name); err != nil {
 		return err
 	}
-	if _, err := g.SetCurrentView(commitMesageReturnView); err != nil {
-		return err
-	}
 	if err := gui.refreshMain(g); err != nil {
 		return err
 	}
@@ -240,6 +228,5 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if err := refreshAllStatusView(g, entity); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, commitMesageReturnView)
-	return nil
+	return gui.closeViewCleanup(commitMesageReturnView)
 }

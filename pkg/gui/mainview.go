@@ -147,7 +147,8 @@ func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
-	if r.State == git.Available || r.State == git.Success {
+	// maybe, failed entities may be added to queue again
+	if r.State == git.Available || r.State == git.Success || r.State == git.Paused {
 		if err := gui.addToQueue(r); err != nil {
 			return err
 		}
