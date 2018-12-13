@@ -36,20 +36,25 @@ func (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {
 	}
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
-	if err := files[cy+oy].Reset(git.ResetOptions{}); err != nil {
+	if err := git.Reset(entity, files[cy+oy], git.ResetOptions{}); err != nil {
 		return err
 	}
-	err = refreshAllStatusView(g, entity)
-	return err
+	return refreshAllStatusView(g, entity)
 }
 
 func (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	if err := entity.ResetAll(git.ResetOptions{}); err != nil {
+	ref, err := entity.Repository.Head()
+	if err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, entity)
-	return err
+	if err := git.ResetAll(entity, git.ResetOptions{
+		Hash:  ref.Hash().String(),
+		Rtype: git.ResetMixed,
+	}); err != nil {
+		return err
+	}
+	return refreshAllStatusView(g, entity)
 }
 
 // refresh the main view and re-render the repository representations

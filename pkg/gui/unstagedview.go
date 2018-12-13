@@ -34,7 +34,7 @@ func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	}
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
-	if err := files[cy+oy].Add(git.AddOptions{}); err != nil {
+	if err := git.Add(entity, files[cy+oy], git.AddOptions{}); err != nil {
 		return err
 	}
 	err = refreshAllStatusView(g, entity)
@@ -43,7 +43,7 @@ func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	if err := entity.AddAll(git.AddOptions{}); err != nil {
+	if err := git.AddAll(entity, git.AddOptions{}); err != nil {
 		return err
 	}
 	err := refreshAllStatusView(g, entity)

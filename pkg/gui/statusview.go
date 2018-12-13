@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -123,7 +124,7 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 }
 
 func generateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, err error) {
-	files, err := entity.LoadFiles()
+	files, err := git.Status(entity)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -195,12 +196,19 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
-	// WIP: This better be removed to git pkg
-	// TODO: read config and get name & e-mail
+	config, err := entity.Repository.Config()
+	if err != nil {
+		return err
+	}
+	name := config.Raw.Section("user").Option("name")
+	email := config.Raw.Section("user").Option("email")
+	if len(email) <= 0 {
+		return errors.New("User email needs to be provided")
+	}
 	_, err = w.Commit(v.ViewBuffer(), &ggt.CommitOptions{
 		Author: &object.Signature{
-			Name:  "İbrahim Serdar Açıkgöz",
-			Email: "serdaracikgoz86@gmail.com",
+			Name:  name,
+			Email: email,
 			When:  time.Now(),
 		},
 	})
