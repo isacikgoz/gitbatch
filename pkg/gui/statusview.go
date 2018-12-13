@@ -1,34 +1,40 @@
 package gui
 
 import (
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
-	ggt "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 var (
-	statusHeaderViewFeature  = viewFeature{Name: "status-header", Title: " Status Header "}
-	stageViewFeature         = viewFeature{Name: "staged", Title: " Staged "}
-	unstageViewFeature       = viewFeature{Name: "unstaged", Title: " Not Staged "}
-	stashViewFeature         = viewFeature{Name: "stash", Title: " Stash "}
-	commitMessageViewFeature = viewFeature{Name: "commitmessage", Title: " Commit Mesage "}
+	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
+	stageViewFeature        = viewFeature{Name: "staged", Title: " Staged "}
+	unstageViewFeature      = viewFeature{Name: "unstaged", Title: " Not Staged "}
+	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
 
-	statusViews            = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
+	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
+
 	commitMesageReturnView string
+	stagedFiles            []*git.File
+	unstagedFiles          []*git.File
 )
 
 // open the status layout
 func (gui *Gui) openStatusView(g *gocui.Gui, v *gocui.View) error {
+	if err := reloadFiles(gui.getSelectedRepository()); err != nil {
+		return err
+	}
 	gui.openStatusHeaderView(g)
 	gui.openStageView(g)
 	gui.openUnStagedView(g)
 	gui.openStashView(g)
 	return nil
+}
+
+func reloadFiles(entity *git.RepoEntity) (err error) {
+	stagedFiles, unstagedFiles, err = populateFileLists(entity)
+	return err
 }
 
 // focus to next view
@@ -62,7 +68,7 @@ func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 		entity := gui.getSelectedRepository()
-		if err := refreshStatusView(v.Name(), g, entity); err != nil {
+		if err := refreshStatusView(v.Name(), g, entity, false); err != nil {
 			return err
 		}
 	}
@@ -80,7 +86,7 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 		entity := gui.getSelectedRepository()
-		if err := refreshStatusView(v.Name(), g, entity); err != nil {
+		if err := refreshStatusView(v.Name(), g, entity, false); err != nil {
 			return err
 		}
 	}
@@ -113,6 +119,8 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(statusHeaderViewFeature.Name); err != nil {
 		return err
 	}
+	stagedFiles = make([]*git.File, 0)
+	unstagedFiles = make([]*git.File, 0)
 	entity := gui.getSelectedRepository()
 	if err := gui.refreshMain(g); err != nil {
 		return err
@@ -123,7 +131,7 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	return gui.closeViewCleanup(mainViewFeature.Name)
 }
 
-func generateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, err error) {
+func populateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, err error) {
 	files, err := git.Status(entity)
 	if err != nil {
 		return nil, nil, err
@@ -139,14 +147,17 @@ func generateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, er
 	return staged, unstaged, err
 }
 
-func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity) error {
+func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity, reload bool) error {
+	if reload {
+		reloadFiles(entity)
+	}
 	switch viewName {
 	case stageViewFeature.Name:
 		if err := refreshStagedView(g, entity); err != nil {
 			return err
 		}
 	case unstageViewFeature.Name:
-		if err := refreshUnstagedView(g, entity); err != nil {
+		if err := refreshUnstagedView(g); err != nil {
 			return err
 		}
 	case stashViewFeature.Name:
@@ -157,84 +168,11 @@ func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity) er
 	return nil
 }
 
-func refreshAllStatusView(g *gocui.Gui, entity *git.RepoEntity) error {
+func refreshAllStatusView(g *gocui.Gui, entity *git.RepoEntity, reload bool) error {
 	for _, v := range statusViews {
-		if err := refreshStatusView(v.Name, g, entity); err != nil {
+		if err := refreshStatusView(v.Name, g, entity, reload); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-// open the commit message views
-func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	maxX, maxY := g.Size()
-	commitMesageReturnView = v.Name()
-	v, err := g.SetView(commitMessageViewFeature.Name, maxX/2-30, maxY/2-3, maxX/2+30, maxY/2+3)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = commitMessageViewFeature.Title
-		v.Wrap = true
-		v.Editable = true
-		v.Editor = gocui.DefaultEditor
-		v.Highlight = true
-		g.Cursor = true
-	}
-	gui.updateKeyBindingsView(g, commitMessageViewFeature.Name)
-	if _, err := g.SetCurrentView(commitMessageViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
-}
-
-// close the opened commite mesage view
-func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
-	w, err := entity.Repository.Worktree()
-	if err != nil {
-		return err
-	}
-	config, err := entity.Repository.Config()
-	if err != nil {
-		return err
-	}
-	name := config.Raw.Section("user").Option("name")
-	email := config.Raw.Section("user").Option("email")
-	if len(email) <= 0 {
-		return errors.New("User email needs to be provided")
-	}
-	_, err = w.Commit(v.ViewBuffer(), &ggt.CommitOptions{
-		Author: &object.Signature{
-			Name:  name,
-			Email: email,
-			When:  time.Now(),
-		},
-	})
-	if err != nil {
-		return err
-	}
-	entity.Refresh()
-	err = gui.closeCommitMessageView(g, v)
-	return err
-}
-
-// close the opened commite mesage view
-func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
-	g.Cursor = false
-	if err := g.DeleteView(commitMessageViewFeature.Name); err != nil {
-		return err
-	}
-	if err := gui.refreshMain(g); err != nil {
-		return err
-	}
-	if err := gui.refreshViews(g, entity); err != nil {
-		return err
-	}
-	if err := refreshAllStatusView(g, entity); err != nil {
-		return err
-	}
-	return gui.closeViewCleanup(commitMesageReturnView)
 }

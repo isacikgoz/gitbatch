@@ -37,7 +37,7 @@ const (
 func Config(entity *RepoEntity, options ConfigOptions) (value string, err error) {
 	// here we configure config operation
 	// default mode is go-git (this may be configured)
-	configCmdMode = configCmdModeNative
+	configCmdMode = configCmdModeLegacy
 
 	switch configCmdMode {
 	case configCmdModeLegacy:
@@ -53,7 +53,7 @@ func Config(entity *RepoEntity, options ConfigOptions) (value string, err error)
 // configWithGit is simply a bare git commit -m <msg> command which is flexible
 func configWithGit(entity *RepoEntity, options ConfigOptions) (value string, err error) {
 	args := make([]string, 0)
-	args = append(args, commitCommand)
+	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
 		args = append(args, "--"+string(options.Site))
 	}
@@ -62,21 +62,21 @@ func configWithGit(entity *RepoEntity, options ConfigOptions) (value string, err
 	// parse options to command line arguments
 	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)
 	if err != nil {
-		log.Warn("Error at git command (commit)")
 		return out, err
 	}
 	// till this step everything should be ok
-	return out, entity.Refresh()
+	return out, nil
 }
 
 // commitWithGoGit is the primary commit method
 func configWithGoGit(entity *RepoEntity, options ConfigOptions) (value string, err error) {
+	// TODO: add global search
 	config, err := entity.Repository.Config()
 	if err != nil {
 		return value, err
 	}
 	value = config.Raw.Section(options.Section).Option(options.Option)
-	return value, entity.Refresh()
+	return value, nil
 }
 
 // AddConfig

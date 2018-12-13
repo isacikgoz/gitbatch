@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ type File struct {
 }
 
 // FileStatus is the short representation of state of a file
-type FileStatus rune
+type FileStatus byte
 
 var (
 	// StatusNotupdated says file not updated
@@ -84,8 +85,8 @@ func statusWithGit(entity *RepoEntity) ([]*File, error) {
 	}
 	fileslist := strings.Split(output, "\n")
 	for _, file := range fileslist {
-		x := rune(file[0])
-		y := rune(file[1])
+		x := byte(file[0])
+		y := byte(file[1])
 		relativePathRegex := regexp.MustCompile(`[(\w|/|.|\-)]+`)
 		path := relativePathRegex.FindString(file[2:])
 
@@ -96,6 +97,7 @@ func statusWithGit(entity *RepoEntity) ([]*File, error) {
 			Y:       FileStatus(y),
 		})
 	}
+	sort.Sort(filesAlphabetical(files))
 	return files, nil
 }
 
@@ -117,6 +119,7 @@ func statusWithGoGit(entity *RepoEntity) ([]*File, error) {
 			Y:       FileStatus(v.Worktree),
 		})
 	}
+	sort.Sort(filesAlphabetical(files))
 	return files, nil
 }
 

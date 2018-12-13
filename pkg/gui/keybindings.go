@@ -206,6 +206,38 @@ func (gui *Gui) generateKeybindings() error {
 			gui.KeyBindings = append(gui.KeyBindings, binding)
 		}
 	}
+	for _, view := range commitViews {
+		commitKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         gocui.KeyEsc,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.closeCommitMessageView,
+				Display:     "esc",
+				Description: "close/cancel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyTab,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextCommitView,
+				Display:     "tab",
+				Description: "Next Panel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyEnter, //TODO: enter should be replaced with a better option
+				Modifier:    gocui.ModNone,
+				Handler:     gui.submitCommitMessageView,
+				Display:     "ctrl + enter",
+				Description: "Submit",
+				Vital:       true,
+			},
+		}
+		for _, binding := range commitKeybindings {
+			gui.KeyBindings = append(gui.KeyBindings, binding)
+		}
+	}
 	individualKeybindings := []*KeyBinding{
 		// stash view
 		{
@@ -275,24 +307,6 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.openFileDiffView,
 			Display:     "d",
 			Description: "Show diff",
-			Vital:       true,
-		},
-		// commit message view
-		{
-			View:        commitMessageViewFeature.Name,
-			Key:         gocui.KeyEsc,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.closeCommitMessageView,
-			Display:     "esc",
-			Description: "Close / Cancel",
-			Vital:       true,
-		}, {
-			View:        commitMessageViewFeature.Name,
-			Key:         gocui.KeyEnter, //TODO: enter should be replaced with a better option
-			Modifier:    gocui.ModNone,
-			Handler:     gui.submitCommitMessageView,
-			Display:     "ctrl + enter",
-			Description: "Submit",
 			Vital:       true,
 		},
 		// Main view controls

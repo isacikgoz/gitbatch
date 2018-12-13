@@ -62,9 +62,9 @@ func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 	var files []*git.File
 	switch v.Name() {
 	case unstageViewFeature.Name:
-		_, files, err = generateFileLists(entity)
+		_, files, err = populateFileLists(entity)
 	case stageViewFeature.Name:
-		files, _, err = generateFileLists(entity)
+		files, _, err = populateFileLists(entity)
 	}
 	if err != nil {
 		return err

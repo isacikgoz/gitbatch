@@ -33,7 +33,9 @@ For more information;
 ## Further goals
 - add testing
 - full src-d/go-git integration (*having some performance issues*)
-- add commit and maybe push?
+  - fetch, config, add, reset, commit, status, diff ✔
+  - merge, rev-list, stash ✗
+- add push
 
 ## Known issues
 Please refer to [Known issues page](https://github.com/isacikgoz/gitbatch/wiki/Known-issues)
