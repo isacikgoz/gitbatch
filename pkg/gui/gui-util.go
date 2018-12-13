@@ -78,7 +78,6 @@ func (gui *Gui) previousViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFea
 }
 
 // siwtch the app mode
-// TODO: switching can be made with conventional iteration
 func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 	for i, mode := range modes {
 		if mode == gui.State.Mode {
@@ -90,6 +89,27 @@ func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
 			break
 		}
 	}
+	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	return nil
+}
+
+// siwtch the app's mode to fetch
+func (gui *Gui) switchToFetchMode(g *gocui.Gui, v *gocui.View) error {
+	gui.State.Mode = fetchMode
+	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	return nil
+}
+
+// siwtch the app's mode to pull
+func (gui *Gui) switchToPullMode(g *gocui.Gui, v *gocui.View) error {
+	gui.State.Mode = pullMode
+	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	return nil
+}
+
+// siwtch the app's mode to merge
+func (gui *Gui) switchToMergeMode(g *gocui.Gui, v *gocui.View) error {
+	gui.State.Mode = mergeMode
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }
