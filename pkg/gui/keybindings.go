@@ -65,9 +65,7 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       false,
 			},
 		}
-		for _, binding := range mainKeybindings {
-			gui.KeyBindings = append(gui.KeyBindings, binding)
-		}
+		gui.KeyBindings = append(gui.KeyBindings, mainKeybindings...)
 	}
 	// Statusviews common keybindings
 	for _, view := range statusViews {
@@ -138,9 +136,7 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       true,
 			},
 		}
-		for _, binding := range statusKeybindings {
-			gui.KeyBindings = append(gui.KeyBindings, binding)
-		}
+		gui.KeyBindings = append(gui.KeyBindings, statusKeybindings...)
 	}
 	for _, view := range authViews {
 		authKeybindings := []*KeyBinding{
@@ -170,9 +166,7 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       true,
 			},
 		}
-		for _, binding := range authKeybindings {
-			gui.KeyBindings = append(gui.KeyBindings, binding)
-		}
+		gui.KeyBindings = append(gui.KeyBindings, authKeybindings...)
 	}
 	for _, view := range commitViews {
 		commitKeybindings := []*KeyBinding{
@@ -194,7 +188,7 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       true,
 			}, {
 				View:        view.Name,
-				Key:         gocui.KeyEnter, //TODO: enter should be replaced with a better option
+				Key:         gocui.KeyEnter,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.submitCommitMessageView,
 				Display:     "enter",
@@ -202,9 +196,7 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       true,
 			},
 		}
-		for _, binding := range commitKeybindings {
-			gui.KeyBindings = append(gui.KeyBindings, binding)
-		}
+		gui.KeyBindings = append(gui.KeyBindings, commitKeybindings...)
 	}
 	individualKeybindings := []*KeyBinding{
 		// stash view
@@ -662,9 +654,7 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		},
 	}
-	for _, binding := range individualKeybindings {
-		gui.KeyBindings = append(gui.KeyBindings, binding)
-	}
+	gui.KeyBindings = append(gui.KeyBindings, individualKeybindings...)
 	return nil
 }
 

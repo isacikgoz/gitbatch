@@ -11,13 +11,13 @@ import (
 
 var (
 	commitFrameViewFeature          = viewFeature{Name: "commitframe", Title: " Frame "}
-	commitUserNameLabelFeature      = viewFeature{Name: "commitusername", Title: " Name: "}
-	commitUserEmailLabelViewFeature = viewFeature{Name: "commituseremail", Title: " E-Mail: "}
+	commitUserNameLabelFeature      = viewFeature{Name: "commitusernamelabel", Title: " Name: "}
+	commitUserEmailLabelViewFeature = viewFeature{Name: "commituseremaillabel", Title: " E-Mail: "}
 
 	// these views used as a input for the credentials
 	commitMessageViewFeature   = viewFeature{Name: "commitmessage", Title: " Commit Mesage "}
-	commitUserUserViewFeature  = viewFeature{Name: "authuser", Title: " Name "}
-	commitUserEmailViewFeature = viewFeature{Name: "authpasswd", Title: " E-Mail "}
+	commitUserUserViewFeature  = viewFeature{Name: "commitusername", Title: " Name "}
+	commitUserEmailViewFeature = viewFeature{Name: "commituseremail", Title: " E-Mail "}
 
 	commitViews      = []viewFeature{commitMessageViewFeature, commitUserUserViewFeature, commitUserEmailViewFeature}
 	commitLabelViews = []viewFeature{commitFrameViewFeature, commitUserNameLabelFeature, commitUserEmailLabelViewFeature}

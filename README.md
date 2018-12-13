@@ -4,7 +4,7 @@
 This tool is beening built to make your local repositories synchronized with remotes easily. Although the focus is batch jobs, you can still do de facto micro management of your git repositories (e.g *add/reset, stash, commit etc.*)
 
 Here is the screencast of the app:
-[![asciicast](https://asciinema.org/a/eXgXpzZfuHxMpZqGMVODUipyc.svg)](https://asciinema.org/a/eXgXpzZfuHxMpZqGMVODUipyc)
+[![asciicast](https://asciinema.org/a/QQPVDWVxUR3bvJhIZY3c4PTuG.svg)](https://asciinema.org/a/QQPVDWVxUR3bvJhIZY3c4PTuG)
 
 ## Installation
 For now, installation requires golang compiler and minimum golang 1.10 is recommended. (binary distribution will be provided on minimum viable product)
