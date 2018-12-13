@@ -197,7 +197,7 @@ func (gui *Gui) generateKeybindings() error {
 				Key:         gocui.KeyEnter, //TODO: enter should be replaced with a better option
 				Modifier:    gocui.ModNone,
 				Handler:     gui.submitCommitMessageView,
-				Display:     "ctrl + enter",
+				Display:     "enter",
 				Description: "Submit",
 				Vital:       true,
 			},
