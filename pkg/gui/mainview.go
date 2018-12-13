@@ -5,7 +5,6 @@ import (
 	"sort"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	"github.com/isacikgoz/gitbatch/pkg/queue"
 	"github.com/jroimartin/gocui"
 )
 
@@ -112,18 +111,18 @@ func (gui *Gui) getSelectedRepository() *git.RepoEntity {
 
 // adds given entity to job queue
 func (gui *Gui) addToQueue(entity *git.RepoEntity) error {
-	var jt queue.JobType
+	var jt git.JobType
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
-		jt = queue.Fetch
+		jt = git.FetchJob
 	case PullMode:
-		jt = queue.Pull
+		jt = git.PullJob
 	case MergeMode:
-		jt = queue.Merge
+		jt = git.MergeJob
 	default:
 		return nil
 	}
-	err := gui.State.Queue.AddJob(&queue.Job{
+	err := gui.State.Queue.AddJob(&git.Job{
 		JobType: jt,
 		Entity:  entity,
 	})
@@ -148,7 +147,8 @@ func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
-	if r.State == git.Available || r.State == git.Success {
+	// maybe, failed entities may be added to queue again
+	if r.State == git.Available || r.State == git.Success || r.State == git.Paused {
 		if err := gui.addToQueue(r); err != nil {
 			return err
 		}

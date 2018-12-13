@@ -22,8 +22,7 @@ func (gui *Gui) prepareDiffView(g *gocui.Gui, v *gocui.View, display []string) (
 	out.Title = diffViewFeature.Title
 	out.Overwrite = true
 	out.Wrap = true
-	gui.updateKeyBindingsView(g, diffViewFeature.Name)
-	if _, err = g.SetCurrentView(diffViewFeature.Name); err != nil {
+	if err = gui.focusToView(diffViewFeature.Name); err != nil {
 		return out, err
 	}
 	for _, line := range display {
@@ -63,9 +62,9 @@ func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 	var files []*git.File
 	switch v.Name() {
 	case unstageViewFeature.Name:
-		_, files, err = generateFileLists(entity)
+		_, files, err = populateFileLists(entity)
 	case stageViewFeature.Name:
-		files, _, err = generateFileLists(entity)
+		files, _, err = populateFileLists(entity)
 	}
 	if err != nil {
 		return err
@@ -126,9 +125,5 @@ func (gui *Gui) closeCommitDiffView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
 	}
-	if _, err := g.SetCurrentView(diffReturnView); err != nil {
-		return err
-	}
-	gui.updateKeyBindingsView(g, diffReturnView)
-	return nil
+	return gui.closeViewCleanup(diffReturnView)
 }

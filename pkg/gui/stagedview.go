@@ -22,38 +22,36 @@ func (gui *Gui) openStageView(g *gocui.Gui) error {
 	if err := refreshStagedView(g, entity); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, stageViewFeature.Name)
-	if _, err := g.SetCurrentView(stageViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
+	return gui.focusToView(stageViewFeature.Name)
 }
 
 func (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	files, _, err := generateFileLists(entity)
-	if err != nil {
-		return err
-	}
-	if len(files) <= 0 {
-		return nil
-	}
+
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
-	if err := files[cy+oy].Reset(git.ResetOptions{}); err != nil {
+	if len(stagedFiles) <= 0 || len(stagedFiles) <= cy+oy {
+		return nil
+	}
+	if err := git.Reset(entity, stagedFiles[cy+oy], git.ResetOptions{}); err != nil {
 		return err
 	}
-	err = refreshAllStatusView(g, entity)
-	return err
+	return refreshAllStatusView(g, entity, true)
 }
 
 func (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	if err := entity.ResetAll(git.ResetOptions{}); err != nil {
+	ref, err := entity.Repository.Head()
+	if err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, entity)
-	return err
+	if err := git.ResetAll(entity, git.ResetOptions{
+		Hash:  ref.Hash().String(),
+		Rtype: git.ResetMixed,
+	}); err != nil {
+		return err
+	}
+	return refreshAllStatusView(g, entity, true)
 }
 
 // refresh the main view and re-render the repository representations
@@ -65,11 +63,7 @@ func refreshStagedView(g *gocui.Gui, entity *git.RepoEntity) error {
 	stageView.Clear()
 	_, cy := stageView.Cursor()
 	_, oy := stageView.Origin()
-	files, _, err := generateFileLists(entity)
-	if err != nil {
-		return err
-	}
-	for i, file := range files {
+	for i, file := range stagedFiles {
 		var prefix string
 		if i == cy+oy {
 			prefix = prefix + selectionIndicator

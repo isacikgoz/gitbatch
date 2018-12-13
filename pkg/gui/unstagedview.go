@@ -18,40 +18,36 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 		}
 		v.Title = unstageViewFeature.Title
 	}
-	entity := gui.getSelectedRepository()
-	err = refreshUnstagedView(g, entity)
+	err = refreshUnstagedView(g)
 	return err
 }
 
 func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	_, files, err := generateFileLists(entity)
-	if err != nil {
-		return err
-	}
-	if len(files) <= 0 {
-		return nil
-	}
+
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
-	if err := files[cy+oy].Add(git.AddOptions{}); err != nil {
+	if len(unstagedFiles) <= 0 || len(unstagedFiles) < cy+oy {
+		return nil
+	}
+	if err := git.Add(entity, unstagedFiles[cy+oy], git.AddOptions{}); err != nil {
 		return err
 	}
-	err = refreshAllStatusView(g, entity)
+	err := refreshAllStatusView(g, entity, true)
 	return err
 }
 
 func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
 	entity := gui.getSelectedRepository()
-	if err := entity.AddAll(git.AddOptions{}); err != nil {
+	if err := git.AddAll(entity, git.AddOptions{}); err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, entity)
+	err := refreshAllStatusView(g, entity, true)
 	return err
 }
 
 // refresh the main view and re-render the repository representations
-func refreshUnstagedView(g *gocui.Gui, entity *git.RepoEntity) error {
+func refreshUnstagedView(g *gocui.Gui) error {
 	stageView, err := g.View(unstageViewFeature.Name)
 	if err != nil {
 		return err
@@ -59,11 +55,7 @@ func refreshUnstagedView(g *gocui.Gui, entity *git.RepoEntity) error {
 	stageView.Clear()
 	_, cy := stageView.Cursor()
 	_, oy := stageView.Origin()
-	_, files, err := generateFileLists(entity)
-	if err != nil {
-		return err
-	}
-	for i, file := range files {
+	for i, file := range unstagedFiles {
 		var prefix string
 		if i == cy+oy {
 			prefix = prefix + selectionIndicator

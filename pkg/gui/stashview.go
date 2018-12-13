@@ -34,7 +34,7 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	err = refreshAllStatusView(g, entity)
+	err = refreshAllStatusView(g, entity, true)
 	return err
 }
 
@@ -58,7 +58,7 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 	if err := entity.Refresh(); err != nil {
 		return err
 	}
-	err = refreshAllStatusView(g, entity)
+	err = refreshAllStatusView(g, entity, true)
 	return err
 }
 
