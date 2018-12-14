@@ -24,7 +24,7 @@ func LoadRepositoryEntities(directories []string) (entities []*RepoEntity, err e
 			// decrement the wait counter by one, we call it in a defer so it's
 			// called at the end of this goroutine
 			defer wg.Done()
-			entity, err := InitializeRepository(d)
+			entity, err := InitializeRepo(d)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"directory": d,

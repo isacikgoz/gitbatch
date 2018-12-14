@@ -11,7 +11,7 @@ import (
 
 // generateDirectories returns poosible git repositories to pipe into git pkg's
 // load function
-func GenerateDirectories(directories []string, depth int) (gitDirectories []string) {
+func generateDirectories(directories []string, depth int) (gitDirectories []string) {
 	for i := 0; i <= depth; i++ {
 		nonrepos, repos := walkRecursive(directories, gitDirectories)
 		directories = nonrepos

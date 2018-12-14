@@ -85,8 +85,7 @@ func fetchWithGit(entity *RepoEntity, options FetchOptions) (err error) {
 		return err
 	}
 	// till this step everything should be ok
-	err = entity.Refresh()
-	return err
+	return entity.Refresh()
 }
 
 // fetchWithGoGit is the primary fetch method and refspec is the main feature.
@@ -141,6 +140,5 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 		}
 	}
 	// till this step everything should be ok
-	err = entity.Refresh()
-	return err
+	return entity.Refresh()
 }

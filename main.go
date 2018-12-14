@@ -15,6 +15,7 @@ var (
 	ignoreConfig    = kingpin.Flag("ignore-config", "Ignore config file").Short('i').Bool()
 	recurseDepth    = kingpin.Flag("recursive-depth", "Find directories recursively").Default("1").Short('r').Int()
 	logLevel        = kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
+	quick           = kingpin.Flag("quick", "runs without gui and fetches/pull remote upstream. modes are fetch or pull").Short('q').String()
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 		LogLevel:     *logLevel,
 		IgnoreConfig: *ignoreConfig,
 		Depth:        *recurseDepth,
+		QuickMode:    *quick,
 	})
 	if err != nil {
 		log.Fatal(err)

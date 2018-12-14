@@ -18,6 +18,7 @@ type SetupConfig struct {
 	LogLevel     string
 	IgnoreConfig bool
 	Depth        int
+	QuickMode    string
 }
 
 // Setup will handle pre-required operations. It is designed to be a wrapper for
@@ -36,9 +37,19 @@ func Setup(setupConfig SetupConfig) (*App, error) {
 	var directories []string
 
 	if len(app.Config.Directories) <= 0 || setupConfig.IgnoreConfig {
-		directories = GenerateDirectories(setupConfig.Directories, setupConfig.Depth)
+		directories = generateDirectories(setupConfig.Directories, setupConfig.Depth)
 	} else {
-		directories = GenerateDirectories(app.Config.Directories, setupConfig.Depth)
+		directories = generateDirectories(app.Config.Directories, setupConfig.Depth)
+	}
+
+	if len(setupConfig.QuickMode) > 0 {
+		x := setupConfig.QuickMode == "fetch"
+		y := setupConfig.QuickMode == "pull"
+		if x == y {
+			log.Fatal("Unrecognized quick mode: " + setupConfig.QuickMode)
+		}
+		quick(directories, setupConfig.Depth, setupConfig.QuickMode)
+		log.Fatal("Finished")
 	}
 
 	// create a gui.Gui struct and set it as App's gui
