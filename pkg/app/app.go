@@ -36,9 +36,9 @@ func Setup(setupConfig SetupConfig) (*App, error) {
 	var directories []string
 
 	if len(app.Config.Directories) <= 0 || setupConfig.IgnoreConfig {
-		directories = generateDirectories(setupConfig.Directories, setupConfig.Depth)
+		directories = GenerateDirectories(setupConfig.Directories, setupConfig.Depth)
 	} else {
-		directories = generateDirectories(app.Config.Directories, setupConfig.Depth)
+		directories = GenerateDirectories(app.Config.Directories, setupConfig.Depth)
 	}
 
 	// create a gui.Gui struct and set it as App's gui
