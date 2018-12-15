@@ -9,12 +9,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config type is the configuration entity of the application
-type Config struct {
-	Mode        string
-	Directories []string
-}
-
 // config file stuff
 var (
 	configFileName = "config"
@@ -28,14 +22,20 @@ var (
 
 // configuration items
 var (
-	modeKey         = "mode"
-	modeKeyDefault  = "fetch"
-	pathsKey        = "paths"
-	pathsKeyDefault = []string{"."}
+	modeKey             = "mode"
+	modeKeyDefault      = "fetch"
+	pathsKey            = "paths"
+	pathsKeyDefault     = []string{"."}
+	logLevelKey         = "loglevel"
+	logLevelKeyDefault  = "error"
+	qucikKey            = "quick"
+	qucikKeyDefault     = false
+	recursionKey        = "recursion"
+	recursionKeyDefault = 1
 )
 
 // LoadConfiguration returns a Config struct is filled
-func LoadConfiguration() (*Config, error) {
+func LoadConfiguration() (*SetupConfig, error) {
 	if err := initializeConfigurationManager(); err != nil {
 		return nil, err
 	}
@@ -45,15 +45,28 @@ func LoadConfiguration() (*Config, error) {
 	if err := readConfiguration(); err != nil {
 		return nil, err
 	}
-	config := &Config{
+	var directories []string
+	if len(viper.GetStringSlice(pathsKey)) <= 0 {
+		d, _ := os.Getwd()
+		directories = []string{d}
+	} else {
+		directories = viper.GetStringSlice(pathsKey)
+	}
+	config := &SetupConfig{
+		Directories: directories,
+		LogLevel:    viper.GetString(logLevelKey),
+		Depth:       viper.GetInt(recursionKey),
+		QuickMode:   viper.GetBool(qucikKey),
 		Mode:        viper.GetString(modeKey),
-		Directories: viper.GetStringSlice(pathsKey),
 	}
 	return config, nil
 }
 
 // set default configuration parameters
 func setDefaults() error {
+	viper.SetDefault(logLevelKey, logLevelKeyDefault)
+	viper.SetDefault(qucikKey, qucikKeyDefault)
+	viper.SetDefault(recursionKey, recursionKeyDefault)
 	viper.SetDefault(modeKey, modeKeyDefault)
 	// viper.SetDefault(pathsKey, pathsKeyDefault)
 	return nil
