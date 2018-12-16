@@ -54,7 +54,13 @@ func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
 		return err
 	case fetchCmdModeNative:
 		// this should be the refspec as default, let's give it a try
-		refspec := "+" + "refs/heads/" + entity.Branch.Name + ":" + "/refs/remotes/" + entity.Remote.Branch.Name
+		// TODO: Fix for quick mode, maybe better read config file
+		var refspec string
+		if entity.Branch == nil {
+			refspec = "+refs/heads/*:refs/remotes/origin/*"
+		} else {
+			refspec = "+" + "refs/heads/" + entity.Branch.Name + ":" + "/refs/remotes/" + entity.Remote.Branch.Name
+		}
 		err = fetchWithGoGit(entity, options, refspec)
 		return err
 	}

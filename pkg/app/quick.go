@@ -1,11 +1,11 @@
 package app
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
-	log "github.com/sirupsen/logrus"
 )
 
 func quick(directories []string, depth int, mode string) {
@@ -18,13 +18,15 @@ func quick(directories []string, depth int, mode string) {
 			defer wg.Done()
 			err := operate(d, mode)
 			if err != nil {
-				log.Errorf("%s: %s", d, err.Error())
+				fmt.Printf("%s: %s\n", d, err.Error())
+			} else {
+				fmt.Printf("%s: successful\n", d)
 			}
 		}(dir, mode)
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
-	log.Infof("%d repositories finished in: %s\n", len(directories), elapsed)
+	fmt.Printf("%d repositories finished in: %s\n", len(directories), elapsed)
 }
 
 func operate(directory, mode string) error {

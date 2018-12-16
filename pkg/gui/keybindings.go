@@ -421,12 +421,38 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Synch with Remote",
 			Vital:       true,
 		}, {
+			View:        branchViewFeature.Name,
+			Key:         'u',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.setUpstreamToBranch,
+			Display:     "u",
+			Description: "Set Upstream",
+			Vital:       true,
+		}, {
 			View:        commitViewFeature.Name,
 			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.openCommitDiffView,
 			Display:     "d",
 			Description: "Show commit diff",
+			Vital:       true,
+		},
+		// upstream confirmation
+		{
+			View:        confirmationViewFeature.Name,
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeConfirmationView,
+			Display:     "esc",
+			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        confirmationViewFeature.Name,
+			Key:         gocui.KeyEnter,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.confirmSetUpstreamToBranch,
+			Display:     "enter",
+			Description: "Set Upstream",
 			Vital:       true,
 		},
 		// Diff View Controls

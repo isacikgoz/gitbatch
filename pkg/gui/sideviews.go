@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	sideViews = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
+	confirmationViewFeature = viewFeature{Name: "confirmation", Title: " Confirmation "}
+	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
 )
 
 // updates the remotesview for given entity
@@ -209,6 +210,52 @@ func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	gui.sideViewsPreviousItem(g, vr)
 	err = gui.updateRemoteBranches(g, entity)
 	return err
+}
+
+// basically does fetch --prune
+func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
+	maxX, maxY := g.Size()
+
+	entity := gui.getSelectedRepository()
+	v, err := g.SetView(confirmationViewFeature.Name, maxX/2-30, maxY/2-2, maxX/2+30, maxY/2+2)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		fmt.Fprintln(v, "branch."+entity.Branch.Name+"."+"remote"+"="+entity.Remote.Name)
+		fmt.Fprintln(v, "branch."+entity.Branch.Name+"."+"merge"+"="+entity.Branch.Reference.Name().String())
+	}
+	return gui.focusToView(confirmationViewFeature.Name)
+}
+
+// basically does fetch --prune
+func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	entity := gui.getSelectedRepository()
+	if err = git.AddConfig(entity, git.ConfigOptions{
+		Section: "branch." + entity.Branch.Name,
+		Option:  "remote",
+		Site:    git.ConfigSiteLocal,
+	}, entity.Remote.Name); err != nil {
+		return err
+	}
+	if err = git.AddConfig(entity, git.ConfigOptions{
+		Section: "branch." + entity.Branch.Name,
+		Option:  "merge",
+		Site:    git.ConfigSiteLocal,
+	}, entity.Branch.Reference.Name().String()); err != nil {
+		return err
+	}
+	entity.Refresh()
+	gui.refreshMain(g)
+	return gui.closeConfirmationView(g, v)
+}
+
+func (gui *Gui) closeConfirmationView(g *gocui.Gui, v *gocui.View) error {
+	if err := g.DeleteView(v.Name()); err != nil {
+		return err
+	}
+	return gui.closeViewCleanup(branchViewFeature.Name)
 }
 
 // after checkout a remote some refreshments needed
