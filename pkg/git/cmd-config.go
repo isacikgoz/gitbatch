@@ -28,7 +28,7 @@ type ConfigSite string
 
 const (
 	// ConfigStieLocal
-	ConfigStieLocal ConfigSite = "local"
+	ConfigSiteLocal ConfigSite = "local"
 	// ConfgiSiteGlobal
 	ConfgiSiteGlobal ConfigSite = "global"
 )
@@ -86,10 +86,10 @@ func AddConfig(entity *RepoEntity, options ConfigOptions, value string) (err err
 
 }
 
-// addConfigWithGit is simply a bare git commit -m <msg> command which is flexible
+// addConfigWithGit is simply a bare git config --add <option> command which is flexible
 func addConfigWithGit(entity *RepoEntity, options ConfigOptions, value string) (err error) {
 	args := make([]string, 0)
-	args = append(args, commitCommand)
+	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
 		args = append(args, "--"+string(options.Site))
 	}
@@ -99,7 +99,7 @@ func addConfigWithGit(entity *RepoEntity, options ConfigOptions, value string) (
 		args = append(args, value)
 	}
 	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
-		log.Warn("Error at git command (commit)")
+		log.Warn("Error at git command (config)")
 		return err
 	}
 	// till this step everything should be ok

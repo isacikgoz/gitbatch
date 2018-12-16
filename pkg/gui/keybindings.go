@@ -67,6 +67,44 @@ func (gui *Gui) generateKeybindings() error {
 		}
 		gui.KeyBindings = append(gui.KeyBindings, mainKeybindings...)
 	}
+	for _, view := range sideViews {
+		sideViewKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         gocui.KeyArrowDown,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsNextItem,
+				Display:     "↓",
+				Description: "Iterate over branches",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowUp,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsPreviousItem,
+				Display:     "↑",
+				Description: "Iterate over branches",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'j',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsNextItem,
+				Display:     "j",
+				Description: "Down",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'k',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsPreviousItem,
+				Display:     "k",
+				Description: "Up",
+				Vital:       false,
+			},
+		}
+		gui.KeyBindings = append(gui.KeyBindings, sideViewKeybindings...)
+	}
 	// Statusviews common keybindings
 	for _, view := range statusViews {
 		statusKeybindings := []*KeyBinding{
@@ -374,108 +412,6 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "ctrl + c",
 			Description: "Force application to quit",
 			Vital:       false,
-		},
-		// Branch View Controls
-		{
-			View:        branchViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextBranch,
-			Display:     "↓",
-			Description: "Iterate over branches",
-			Vital:       false,
-		}, {
-			View:        branchViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousBranch,
-			Display:     "↑",
-			Description: "Iterate over branches",
-			Vital:       false,
-		}, {
-			View:        branchViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextBranch,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        branchViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousBranch,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
-		},
-		// Remote View Controls
-		{
-			View:        remoteViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemote,
-			Display:     "↓",
-			Description: "Iterate over remotes",
-			Vital:       false,
-		}, {
-			View:        remoteViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemote,
-			Display:     "↑",
-			Description: "Iterate over remotes",
-			Vital:       false,
-		}, {
-			View:        remoteViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemote,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        remoteViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemote,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
-		},
-		// Remote Branch View Controls
-		{
-			View:        remoteBranchViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemoteBranch,
-			Display:     "↓",
-			Description: "Iterate over remote branches",
-			Vital:       false,
-		}, {
-			View:        remoteBranchViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemoteBranch,
-			Display:     "↑",
-			Description: "Iterate over remote branches",
-			Vital:       false,
-		}, {
-			View:        remoteBranchViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemoteBranch,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        remoteBranchViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemoteBranch,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
 		}, {
 			View:        remoteBranchViewFeature.Name,
 			Key:         's',
@@ -484,40 +420,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "s",
 			Description: "Synch with Remote",
 			Vital:       true,
-		},
-		// Commit View Controls
-		{
-			View:        commitViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextCommit,
-			Display:     "↓",
-			Description: "Iterate over commits",
-			Vital:       false,
 		}, {
-			View:        commitViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
+			View:        branchViewFeature.Name,
+			Key:         'u',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.prevCommit,
-			Display:     "↑",
-			Description: "Iterate over commits",
-			Vital:       false,
-		}, {
-			View:        commitViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextCommit,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        commitViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.prevCommit,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
+			Handler:     gui.setUpstreamToBranch,
+			Display:     "u",
+			Description: "Set Upstream",
+			Vital:       true,
 		}, {
 			View:        commitViewFeature.Name,
 			Key:         'd',
@@ -525,6 +435,24 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.openCommitDiffView,
 			Display:     "d",
 			Description: "Show commit diff",
+			Vital:       true,
+		},
+		// upstream confirmation
+		{
+			View:        confirmationViewFeature.Name,
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeConfirmationView,
+			Display:     "esc",
+			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        confirmationViewFeature.Name,
+			Key:         gocui.KeyEnter,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.confirmSetUpstreamToBranch,
+			Display:     "enter",
+			Description: "Set Upstream",
 			Vital:       true,
 		},
 		// Diff View Controls

@@ -1,33 +1,31 @@
 package main
 
 import (
-	"os"
-
 	"github.com/isacikgoz/gitbatch/pkg/app"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
-	// take this as default directory if user does not start app with -d flag
-	currentDir, err = os.Getwd()
-	dirs            = kingpin.Flag("directory", "Directory to roam for git repositories").Default(currentDir).Short('d').Strings()
-	ignoreConfig    = kingpin.Flag("ignore-config", "Ignore config file").Short('i').Bool()
-	recurseDepth    = kingpin.Flag("recursive-depth", "Find directories recursively").Default("1").Short('r').Int()
-	logLevel        = kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
+	dirs         = kingpin.Flag("directory", "Directory(s) to roam for git repositories.").Short('d').Strings()
+	mode         = kingpin.Flag("mode", "Application start mode, more sensible with quick run.").Short('m').String()
+	recurseDepth = kingpin.Flag("recursive-depth", "Find directories recursively.").Default("0").Short('r').Int()
+	logLevel     = kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
+	quick        = kingpin.Flag("quick", "runs without gui and fetches/pull remote upstream.").Short('q').Bool()
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.1.0 (alpha)")
+	kingpin.Version("gitbatch version 0.1.1 (alpha)")
 	// parse the command line flag and options
 	kingpin.Parse()
 
 	// set the app
-	app, err := app.Setup(app.SetupConfig{
-		Directories:  *dirs,
-		LogLevel:     *logLevel,
-		IgnoreConfig: *ignoreConfig,
-		Depth:        *recurseDepth,
+	app, err := app.Setup(&app.SetupConfig{
+		Directories: *dirs,
+		LogLevel:    *logLevel,
+		Depth:       *recurseDepth,
+		QuickMode:   *quick,
+		Mode:        *mode,
 	})
 	if err != nil {
 		log.Fatal(err)

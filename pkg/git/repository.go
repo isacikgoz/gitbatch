@@ -47,32 +47,11 @@ const (
 	Fail RepoState = 5
 )
 
-// InitializeRepository initializes a RepoEntity struct with its belongings.
-func InitializeRepository(directory string) (entity *RepoEntity, err error) {
-	file, err := os.Open(directory)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"directory": directory,
-		}).Trace("Cannot open as directory")
-		return nil, err
-	}
-	fileInfo, err := file.Stat()
+// InitializeRepo initializes a RepoEntity struct with its belongings.
+func InitializeRepo(directory string) (entity *RepoEntity, err error) {
+	entity, err = FastInitializeRepo(directory)
 	if err != nil {
 		return nil, err
-	}
-	r, err := git.PlainOpen(directory)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"directory": directory,
-		}).Trace("Cannot open directory as a git repository")
-		return nil, err
-	}
-	entity = &RepoEntity{RepoID: helpers.RandomString(8),
-		Name:       fileInfo.Name(),
-		AbsPath:    directory,
-		ModTime:    fileInfo.ModTime(),
-		Repository: *r,
-		State:      Available,
 	}
 	// after we intiate the struct we can fill its values
 	entity.loadLocalBranches()
@@ -107,11 +86,44 @@ func InitializeRepository(directory string) (entity *RepoEntity, err error) {
 	return entity, nil
 }
 
+// FastInitializeRepo initializes a RepoEntity struct without its belongings.
+func FastInitializeRepo(directory string) (entity *RepoEntity, err error) {
+	file, err := os.Open(directory)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"directory": directory,
+		}).Trace("Cannot open as directory")
+		return nil, err
+	}
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	r, err := git.PlainOpen(directory)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"directory": directory,
+		}).Trace("Cannot open directory as a git repository")
+		return nil, err
+	}
+	entity = &RepoEntity{RepoID: helpers.RandomString(8),
+		Name:       fileInfo.Name(),
+		AbsPath:    directory,
+		ModTime:    fileInfo.ModTime(),
+		Repository: *r,
+		State:      Available,
+	}
+	return entity, nil
+}
+
 // Refresh the belongings of a repositoriy, this function is called right after
 // fetch/pull/merge operations
 func (entity *RepoEntity) Refresh() error {
 	var err error
 	// error can be ignored since the file already exists when app is loading
+	if entity.Branch == nil {
+		return nil
+	}
 	file, _ := os.Open(entity.AbsPath)
 	fileInfo, err := file.Stat()
 	if err != nil {
