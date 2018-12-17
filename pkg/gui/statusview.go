@@ -121,13 +121,7 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	}
 	stagedFiles = make([]*git.File, 0)
 	unstagedFiles = make([]*git.File, 0)
-	entity := gui.getSelectedRepository()
-	if err := gui.refreshMain(g); err != nil {
-		return err
-	}
-	if err := gui.refreshViews(g, entity); err != nil {
-		return err
-	}
+
 	return gui.closeViewCleanup(mainViewFeature.Name)
 }
 

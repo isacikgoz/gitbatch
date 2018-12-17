@@ -131,7 +131,7 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.RefreshPushPull()
 	// make this conditional on global scale
 	err = entity.Remote.SyncBranches(branch.Name)
-	return err
+	return entity.Refresh()
 }
 
 // checking the branch if it has any changes from its head revision. Initially

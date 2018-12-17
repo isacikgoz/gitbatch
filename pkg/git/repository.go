@@ -3,6 +3,7 @@ package git
 import (
 	"errors"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
@@ -26,7 +27,20 @@ type RepoEntity struct {
 	Commit     *Commit
 	Commits    []*Commit
 	Stasheds   []*StashedItem
-	State      RepoState
+	state      RepoState
+
+	mutex     *sync.RWMutex
+	listeners map[string][]RepositoryListener
+}
+
+// RepositoryListener is a type for listeners
+type RepositoryListener func(event *RepositoryEvent) error
+
+// RepositoryEvent is used to transfer event-related data.
+// It is passed to listeners when Emit() is called
+type RepositoryEvent struct {
+	Name string
+	Data interface{}
 }
 
 // RepoState is the state of the repository for an operation
@@ -45,6 +59,9 @@ const (
 	Success RepoState = 4
 	// Fail is the unexpected outcome of the operation
 	Fail RepoState = 5
+
+	// This is the repository updated topic
+	RepositoryUpdated = "repository.updated"
 )
 
 // InitializeRepo initializes a RepoEntity struct with its belongings.
@@ -53,6 +70,7 @@ func InitializeRepo(directory string) (entity *RepoEntity, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// after we intiate the struct we can fill its values
 	entity.loadLocalBranches()
 	entity.loadCommits()
@@ -106,14 +124,60 @@ func FastInitializeRepo(directory string) (entity *RepoEntity, err error) {
 		}).Trace("Cannot open directory as a git repository")
 		return nil, err
 	}
+	// initialize entity with minimum viable fields
 	entity = &RepoEntity{RepoID: helpers.RandomString(8),
 		Name:       fileInfo.Name(),
 		AbsPath:    directory,
 		ModTime:    fileInfo.ModTime(),
 		Repository: *r,
-		State:      Available,
+		state:      Available,
+		mutex:      &sync.RWMutex{},
+		listeners:  make(map[string][]RepositoryListener),
 	}
 	return entity, nil
+}
+
+// On adds new listener.
+// listener is a callback function that will be called when event emits
+func (entity *RepoEntity) On(event string, listener RepositoryListener) {
+	entity.mutex.Lock()
+	defer entity.mutex.Unlock()
+
+	entity.listeners[event] = append(entity.listeners[event], listener)
+}
+
+// Emit notifies listeners about the event
+func (entity *RepoEntity) Emit(eventName string, data interface{}) error {
+	entity.mutex.RLock()
+	defer entity.mutex.RUnlock()
+
+	listeners, ok := entity.listeners[eventName]
+	if !ok {
+		return nil
+	}
+
+	for i := range listeners {
+		event := &RepositoryEvent{
+			Name: eventName,
+			Data: data,
+		}
+		if err := listeners[i](event); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// State returns the state of the repository such as queued, failed etc.
+func (entity *RepoEntity) State() RepoState {
+	return entity.state
+}
+
+// SetState sets the state of repository and sends repository updated event
+func (entity *RepoEntity) SetState(state RepoState) {
+	entity.state = state
+	// we could send an event data but we don't need for this topic
+	entity.Emit(RepositoryUpdated, nil)
 }
 
 // Refresh the belongings of a repositoriy, this function is called right after
@@ -147,5 +211,6 @@ func (entity *RepoEntity) Refresh() error {
 		return err
 	}
 	err = entity.loadStashedItems()
-	return err
+	// we could send an event data but we don't need for this topic
+	return entity.Emit(RepositoryUpdated, nil)
 }

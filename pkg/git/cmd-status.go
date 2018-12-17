@@ -18,38 +18,6 @@ var (
 	statusCmdModeNative = "go-git"
 )
 
-// File represents the status of a file in an index or work tree
-type File struct {
-	Name    string
-	AbsPath string
-	X       FileStatus
-	Y       FileStatus
-}
-
-// FileStatus is the short representation of state of a file
-type FileStatus byte
-
-var (
-	// StatusNotupdated says file not updated
-	StatusNotupdated FileStatus = ' '
-	// StatusModified says file is modifed
-	StatusModified FileStatus = 'M'
-	// StatusAdded says file is added to index
-	StatusAdded FileStatus = 'A'
-	// StatusDeleted says file is deleted
-	StatusDeleted FileStatus = 'D'
-	// StatusRenamed says file is renamed
-	StatusRenamed FileStatus = 'R'
-	// StatusCopied says file is copied
-	StatusCopied FileStatus = 'C'
-	// StatusUpdated says file is updated
-	StatusUpdated FileStatus = 'U'
-	// StatusUntracked says file is untraced
-	StatusUntracked FileStatus = '?'
-	// StatusIgnored says file is ignored
-	StatusIgnored FileStatus = '!'
-)
-
 func shortStatus(entity *RepoEntity, option string) string {
 	args := make([]string, 0)
 	args = append(args, statusCommand)
@@ -121,14 +89,4 @@ func statusWithGoGit(entity *RepoEntity) ([]*File, error) {
 	}
 	sort.Sort(filesAlphabetical(files))
 	return files, nil
-}
-
-// Diff is a wrapper of "git diff" command for a file to compare with HEAD rev
-func (file *File) Diff() (output string, err error) {
-	args := make([]string, 0)
-	args = append(args, "diff")
-	args = append(args, "HEAD")
-	args = append(args, file.Name)
-	output, err = GenericGitCommandWithErrorOutput(strings.TrimSuffix(file.AbsPath, file.Name), args)
-	return output, err
 }

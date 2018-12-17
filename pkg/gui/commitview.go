@@ -174,12 +174,6 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := gui.refreshMain(g); err != nil {
-		return err
-	}
-	if err := gui.refreshViews(g, entity); err != nil {
-		return err
-	}
 	if err := refreshAllStatusView(g, entity, true); err != nil {
 		return err
 	}

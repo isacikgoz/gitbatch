@@ -55,9 +55,9 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := entity.Refresh(); err != nil {
-		return err
-	}
+	// since the pop is a func of stashed item, we need to refresh entity here
+	entity.Refresh()
+
 	err = refreshAllStatusView(g, entity, true)
 	return err
 }

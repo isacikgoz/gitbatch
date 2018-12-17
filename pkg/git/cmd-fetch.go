@@ -90,6 +90,7 @@ func fetchWithGit(entity *RepoEntity, options FetchOptions) (err error) {
 		log.Warn("Error at git command (fetch)")
 		return err
 	}
+	entity.SetState(Success)
 	// till this step everything should be ok
 	return entity.Refresh()
 }
@@ -145,6 +146,8 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 			return err
 		}
 	}
+
+	entity.SetState(Success)
 	// till this step everything should be ok
 	return entity.Refresh()
 }

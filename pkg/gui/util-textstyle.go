@@ -86,7 +86,7 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 	}
 
 	// rendering the satus according to repository's state
-	if entity.State == git.Queued {
+	if entity.State() == git.Queued {
 		if inQueue, ty := gui.State.Queue.IsInTheQueue(entity); inQueue {
 			switch mode := ty; mode {
 			case git.FetchJob:
@@ -100,14 +100,14 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 			}
 		}
 		return prefix + repoName + ws + suffix
-	} else if entity.State == git.Working {
+	} else if entity.State() == git.Working {
 		// TODO: maybe the type of the job can be written while its working?
 		return prefix + repoName + ws + green.Sprint(workingSymbol)
-	} else if entity.State == git.Success {
+	} else if entity.State() == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
-	} else if entity.State == git.Paused {
+	} else if entity.State() == git.Paused {
 		return prefix + repoName + ws + yellow.Sprint(pauseSymbol)
-	} else if entity.State == git.Fail {
+	} else if entity.State() == git.Fail {
 		return prefix + repoName + ws + red.Sprint(failSymbol)
 	} else {
 		return prefix + repoName

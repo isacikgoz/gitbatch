@@ -37,7 +37,7 @@ func (gui *Gui) openAuthenticationView(g *gocui.Gui, jobQueue *git.JobQueue, job
 		return err
 	}
 	jobRequiresAuth = job
-	if job.Entity.State != git.Fail {
+	if job.Entity.State() != git.Fail {
 		if err := jobQueue.RemoveFromQueue(job.Entity); err != nil {
 			log.Fatal(err.Error())
 			return err
@@ -96,7 +96,7 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 		}
 	case git.PullJob:
 		// we handle pull as fetch&merge so same rule applies
-		jobRequiresAuth.Options = git.FetchOptions{
+		jobRequiresAuth.Options = git.PullOptions{
 			RemoteName: jobRequiresAuth.Entity.Remote.Name,
 			Credentials: git.Credentials{
 				User:     creduser,
@@ -104,14 +104,12 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 			},
 		}
 	}
-	jobRequiresAuth.Entity.State = git.Queued
+	jobRequiresAuth.Entity.SetState(git.Queued)
 	// add this job to the last of the queue
 	err = gui.State.Queue.AddJob(jobRequiresAuth)
 	if err != nil {
 		return err
 	}
-	// refresh views with the updates
-	gui.refreshMain(g)
 	gui.closeAuthenticationView(g, v)
 	v_return, err := g.View(authenticationReturnView)
 	gui.startQueue(g, v_return)

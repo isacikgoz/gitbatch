@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
@@ -64,6 +65,7 @@ func pullWithGit(entity *RepoEntity, options PullOptions) (err error) {
 		log.Warn("Error at git command (pull)")
 		return err
 	}
+	entity.SetState(Success)
 	return entity.Refresh()
 }
 
@@ -98,7 +100,17 @@ func pullWithGoGit(entity *RepoEntity, options PullOptions) (err error) {
 	}
 	err = w.Pull(opt)
 	if err != nil {
-		return err
+		if err == git.NoErrAlreadyUpToDate {
+			// Already up-to-date
+			log.Warn(err.Error())
+		} else if err == transport.ErrAuthenticationRequired {
+			log.Warn(err.Error())
+			return ErrAuthenticationRequired
+		} else {
+			log.Warn(err.Error())
+			return err
+		}
 	}
+	entity.SetState(Success)
 	return entity.Refresh()
 }

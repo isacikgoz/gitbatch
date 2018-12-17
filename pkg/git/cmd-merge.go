@@ -34,6 +34,7 @@ func Merge(entity *RepoEntity, options MergeOptions) error {
 		log.Warn("Error while merging")
 		return err
 	}
+	entity.SetState(Success)
 	entity.Refresh()
 	return nil
 }

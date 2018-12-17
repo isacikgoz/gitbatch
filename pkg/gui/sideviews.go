@@ -12,10 +12,28 @@ var (
 	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
 )
 
-// updates the remotesview for given entity
-func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
+// refreshes the side views of the application for given git.RepoEntity struct
+func (gui *Gui) refreshSideViews(entity *git.RepoEntity) error {
 	var err error
-	out, err := g.View(remoteViewFeature.Name)
+	if err = gui.updateRemotes(entity); err != nil {
+		return err
+	}
+	if err = gui.updateBranch(entity); err != nil {
+		return err
+	}
+	if err = gui.updateRemoteBranches(entity); err != nil {
+		return err
+	}
+	if err = gui.updateCommits(entity); err != nil {
+		return err
+	}
+	return err
+}
+
+// updates the remotesview for given entity
+func (gui *Gui) updateRemotes(entity *git.RepoEntity) error {
+	var err error
+	out, err := gui.g.View(remoteViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -43,9 +61,9 @@ func (gui *Gui) updateRemotes(g *gocui.Gui, entity *git.RepoEntity) error {
 }
 
 // updates the remotebranchview for given entity
-func (gui *Gui) updateRemoteBranches(g *gocui.Gui, entity *git.RepoEntity) error {
+func (gui *Gui) updateRemoteBranches(entity *git.RepoEntity) error {
 	var err error
-	out, err := g.View(remoteBranchViewFeature.Name)
+	out, err := gui.g.View(remoteBranchViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -73,9 +91,9 @@ func (gui *Gui) updateRemoteBranches(g *gocui.Gui, entity *git.RepoEntity) error
 }
 
 // updates the branchview for given entity
-func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
+func (gui *Gui) updateBranch(entity *git.RepoEntity) error {
 	var err error
-	out, err := g.View(branchViewFeature.Name)
+	out, err := gui.g.View(branchViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -96,9 +114,9 @@ func (gui *Gui) updateBranch(g *gocui.Gui, entity *git.RepoEntity) error {
 }
 
 // updates the commitsview for given entity
-func (gui *Gui) updateCommits(g *gocui.Gui, entity *git.RepoEntity) error {
+func (gui *Gui) updateCommits(entity *git.RepoEntity) error {
 	var err error
-	out, err := g.View(commitViewFeature.Name)
+	out, err := gui.g.View(commitViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -136,12 +154,12 @@ func (gui *Gui) sideViewsNextItem(g *gocui.Gui, v *gocui.View) error {
 		if err = entity.Remote.NextRemoteBranch(); err != nil {
 			return err
 		}
-		err = gui.updateRemoteBranches(g, entity)
+		err = gui.updateRemoteBranches(entity)
 	case remoteViewFeature.Name:
 		if err = entity.NextRemote(); err != nil {
 			return err
 		}
-		err = gui.remoteChangeFollowUp(g, entity)
+		err = gui.remoteChangeFollowUp(entity)
 	case branchViewFeature.Name:
 		if err = entity.Checkout(entity.NextBranch()); err != nil {
 			err = gui.openErrorView(g, err.Error(),
@@ -149,12 +167,12 @@ func (gui *Gui) sideViewsNextItem(g *gocui.Gui, v *gocui.View) error {
 				branchViewFeature.Name)
 			return err
 		}
-		err = gui.checkoutFollowUp(g, entity)
+		err = gui.checkoutFollowUp(entity)
 	case commitViewFeature.Name:
 		if err = entity.NextCommit(); err != nil {
 			return err
 		}
-		err = gui.updateCommits(g, entity)
+		err = gui.updateCommits(entity)
 	}
 	return err
 }
@@ -167,12 +185,12 @@ func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
 		if err = entity.Remote.PreviousRemoteBranch(); err != nil {
 			return err
 		}
-		err = gui.updateRemoteBranches(g, entity)
+		err = gui.updateRemoteBranches(entity)
 	case remoteViewFeature.Name:
 		if err = entity.PreviousRemote(); err != nil {
 			return err
 		}
-		err = gui.remoteChangeFollowUp(g, entity)
+		err = gui.remoteChangeFollowUp(entity)
 	case branchViewFeature.Name:
 		if err = entity.Checkout(entity.PreviousBranch()); err != nil {
 			err = gui.openErrorView(g, err.Error(),
@@ -180,12 +198,12 @@ func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
 				branchViewFeature.Name)
 			return err
 		}
-		err = gui.checkoutFollowUp(g, entity)
+		err = gui.checkoutFollowUp(entity)
 	case commitViewFeature.Name:
 		if err = entity.PreviousCommit(); err != nil {
 			return err
 		}
-		err = gui.updateCommits(g, entity)
+		err = gui.updateCommits(entity)
 	}
 	return err
 }
@@ -208,7 +226,7 @@ func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	// some time need to fix, movement aint bad huh?
 	gui.sideViewsNextItem(g, vr)
 	gui.sideViewsPreviousItem(g, vr)
-	err = gui.updateRemoteBranches(g, entity)
+	err = gui.updateRemoteBranches(entity)
 	return err
 }
 
@@ -247,7 +265,6 @@ func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	entity.Refresh()
-	gui.refreshMain(g)
 	return gui.closeConfirmationView(g, v)
 }
 
@@ -259,25 +276,24 @@ func (gui *Gui) closeConfirmationView(g *gocui.Gui, v *gocui.View) error {
 }
 
 // after checkout a remote some refreshments needed
-func (gui *Gui) remoteChangeFollowUp(g *gocui.Gui, entity *git.RepoEntity) (err error) {
-	if err = gui.updateRemotes(g, entity); err != nil {
+func (gui *Gui) remoteChangeFollowUp(entity *git.RepoEntity) (err error) {
+	if err = gui.updateRemotes(entity); err != nil {
 		return err
 	}
-	err = gui.updateRemoteBranches(g, entity)
+	err = gui.updateRemoteBranches(entity)
 	return err
 }
 
 // after checkout a branch some refreshments needed
-func (gui *Gui) checkoutFollowUp(g *gocui.Gui, entity *git.RepoEntity) (err error) {
-	if err = gui.updateBranch(g, entity); err != nil {
+func (gui *Gui) checkoutFollowUp(entity *git.RepoEntity) (err error) {
+	if err = gui.updateBranch(entity); err != nil {
 		return err
 	}
-	if err = gui.updateCommits(g, entity); err != nil {
+	if err = gui.updateCommits(entity); err != nil {
 		return err
 	}
-	if err = gui.updateRemoteBranches(g, entity); err != nil {
+	if err = gui.updateRemoteBranches(entity); err != nil {
 		return err
 	}
-	err = gui.refreshMain(g)
 	return err
 }
