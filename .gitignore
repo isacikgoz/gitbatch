@@ -1,3 +1,4 @@
 exec.go.test
+build.sh
 test.go
 .vscode
