@@ -23,11 +23,7 @@ func (gui *Gui) openErrorView(g *gocui.Gui, message, note, returnViewName string
 		fmt.Fprintln(v, message)
 		fmt.Fprintln(v, ps)
 	}
-	gui.updateKeyBindingsView(g, errorViewFeature.Name)
-	if _, err := g.SetCurrentView(errorViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
+	return gui.focusToView(errorViewFeature.Name)
 }
 
 // close the opened error view
@@ -36,9 +32,5 @@ func (gui *Gui) closeErrorView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
 	}
-	if _, err := g.SetCurrentView(errorReturnView); err != nil {
-		return err
-	}
-	gui.updateKeyBindingsView(g, errorReturnView)
-	return nil
+	return gui.closeViewCleanup(errorReturnView)
 }

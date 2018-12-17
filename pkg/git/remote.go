@@ -10,6 +10,7 @@ import (
 type Remote struct {
 	Name     string
 	URL      []string
+	RefSpecs []string
 	Branch   *RemoteBranch
 	Branches []*RemoteBranch
 }
@@ -57,10 +58,14 @@ func (entity *RepoEntity) loadRemotes() error {
 
 	remotes, err := r.Remotes()
 	for _, rm := range remotes {
-
+		rfs := make([]string, 0)
+		for _, rf := range rm.Config().Fetch {
+			rfs = append(rfs, string(rf))
+		}
 		remote := &Remote{
-			Name: rm.Config().Name,
-			URL:  rm.Config().URLs,
+			Name:     rm.Config().Name,
+			URL:      rm.Config().URLs,
+			RefSpecs: rfs,
 		}
 		remote.loadRemoteBranches(entity)
 		if len(remote.Branches) > 0 {

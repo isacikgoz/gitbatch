@@ -24,11 +24,7 @@ func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 	}
-	gui.updateKeyBindingsView(g, cheatSheetViewFeature.Name)
-	if _, err := g.SetCurrentView(cheatSheetViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
+	return gui.focusToView(cheatSheetViewFeature.Name)
 }
 
 // close the application controls and do the clean job
@@ -36,9 +32,5 @@ func (gui *Gui) closeCheatSheetView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(v.Name()); err != nil {
 		return nil
 	}
-	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
-		return err
-	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	return nil
+	return gui.closeViewCleanup(mainViewFeature.Name)
 }

@@ -33,93 +33,97 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       true,
 			}, {
 				View:        view.Name,
+				Key:         'f',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.switchToFetchMode,
+				Display:     "f",
+				Description: "Fetch mode",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'p',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.switchToPullMode,
+				Display:     "p",
+				Description: "Pull mode",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'm',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.switchToMergeMode,
+				Display:     "m",
+				Description: "Merge mode",
+				Vital:       false,
+			}, {
+				View:        view.Name,
 				Key:         gocui.KeyTab,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.switchMode,
+				Handler:     gui.nextMainView,
 				Display:     "tab",
-				Description: "Switch mode",
-				Vital:       true,
-			}, {
-				View:        view.Name,
-				Key:         gocui.KeyArrowLeft,
-				Modifier:    gocui.ModNone,
-				Handler:     gui.previousMainView,
-				Display:     "←",
-				Description: "Previous Panel",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         gocui.KeyArrowRight,
-				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
-				Display:     "→",
-				Description: "Next Panel",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'l',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
-				Display:     "l",
-				Description: "Previous Panel",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'h',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.previousMainView,
-				Display:     "h",
 				Description: "Next Panel",
 				Vital:       false,
 			},
 		}
-		for _, binding := range mainKeybindings {
-			gui.KeyBindings = append(gui.KeyBindings, binding)
+		gui.KeyBindings = append(gui.KeyBindings, mainKeybindings...)
+	}
+	for _, view := range sideViews {
+		sideViewKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         gocui.KeyArrowDown,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsNextItem,
+				Display:     "↓",
+				Description: "Iterate over branches",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowUp,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsPreviousItem,
+				Display:     "↑",
+				Description: "Iterate over branches",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'j',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsNextItem,
+				Display:     "j",
+				Description: "Down",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'k',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.sideViewsPreviousItem,
+				Display:     "k",
+				Description: "Up",
+				Vital:       false,
+			},
 		}
+		gui.KeyBindings = append(gui.KeyBindings, sideViewKeybindings...)
 	}
 	// Statusviews common keybindings
 	for _, view := range statusViews {
 		statusKeybindings := []*KeyBinding{
 			{
 				View:        view.Name,
-				Key:         'c',
+				Key:         gocui.KeyEsc,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.closeStatusView,
-				Display:     "c",
+				Display:     "esc",
 				Description: "Close/Cancel",
 				Vital:       true,
 			}, {
 				View:        view.Name,
-				Key:         gocui.KeyArrowLeft,
-				Modifier:    gocui.ModNone,
-				Handler:     gui.previousStatusView,
-				Display:     "←",
-				Description: "Previous Panel",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         gocui.KeyArrowRight,
+				Key:         gocui.KeyTab,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.nextStatusView,
-				Display:     "→",
+				Display:     "tab",
 				Description: "Next Panel",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'l',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.nextStatusView,
-				Display:     "l",
-				Description: "Previous Panel",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'h',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.previousStatusView,
-				Display:     "h",
-				Description: "Next Panel",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        view.Name,
 				Key:         gocui.KeyArrowUp,
@@ -160,11 +164,77 @@ func (gui *Gui) generateKeybindings() error {
 				Display:     "t",
 				Description: "Save to Stash",
 				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         'm',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.openCommitMessageView,
+				Display:     "m",
+				Description: "Commit Changes",
+				Vital:       true,
 			},
 		}
-		for _, binding := range statusKeybindings {
-			gui.KeyBindings = append(gui.KeyBindings, binding)
+		gui.KeyBindings = append(gui.KeyBindings, statusKeybindings...)
+	}
+	for _, view := range authViews {
+		authKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         gocui.KeyEsc,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.closeAuthenticationView,
+				Display:     "esc",
+				Description: "close/cancel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyTab,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextAuthView,
+				Display:     "tab",
+				Description: "Next Panel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyEnter,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.submitAuthenticationView,
+				Display:     "enter",
+				Description: "Submit",
+				Vital:       true,
+			},
 		}
+		gui.KeyBindings = append(gui.KeyBindings, authKeybindings...)
+	}
+	for _, view := range commitViews {
+		commitKeybindings := []*KeyBinding{
+			{
+				View:        view.Name,
+				Key:         gocui.KeyEsc,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.closeCommitMessageView,
+				Display:     "esc",
+				Description: "close/cancel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyTab,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextCommitView,
+				Display:     "tab",
+				Description: "Next Panel",
+				Vital:       true,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyEnter,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.submitCommitMessageView,
+				Display:     "enter",
+				Description: "Submit",
+				Vital:       true,
+			},
+		}
+		gui.KeyBindings = append(gui.KeyBindings, commitKeybindings...)
 	}
 	individualKeybindings := []*KeyBinding{
 		// stash view
@@ -276,7 +346,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.markRepository,
 			Display:     "space",
-			Description: "Add to queue",
+			Description: "Select",
 			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
@@ -284,7 +354,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.startQueue,
 			Display:     "enter",
-			Description: "Start queue",
+			Description: "Start",
 			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
@@ -292,7 +362,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.markAllRepositories,
 			Display:     "ctrl + space",
-			Description: "Add all to queue",
+			Description: "Select All",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
@@ -300,7 +370,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.unmarkAllRepositories,
 			Display:     "backspace",
-			Description: "Remove all from queue",
+			Description: "Deselect All",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
@@ -320,10 +390,10 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'm',
+			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.sortByMod,
-			Display:     "m",
+			Display:     "r",
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
 		}, {
@@ -342,108 +412,6 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "ctrl + c",
 			Description: "Force application to quit",
 			Vital:       false,
-		},
-		// Branch View Controls
-		{
-			View:        branchViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextBranch,
-			Display:     "↓",
-			Description: "Iterate over branches",
-			Vital:       false,
-		}, {
-			View:        branchViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousBranch,
-			Display:     "↑",
-			Description: "Iterate over branches",
-			Vital:       false,
-		}, {
-			View:        branchViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextBranch,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        branchViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousBranch,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
-		},
-		// Remote View Controls
-		{
-			View:        remoteViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemote,
-			Display:     "↓",
-			Description: "Iterate over remotes",
-			Vital:       false,
-		}, {
-			View:        remoteViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemote,
-			Display:     "↑",
-			Description: "Iterate over remotes",
-			Vital:       false,
-		}, {
-			View:        remoteViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemote,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        remoteViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemote,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
-		},
-		// Remote Branch View Controls
-		{
-			View:        remoteBranchViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemoteBranch,
-			Display:     "↓",
-			Description: "Iterate over remote branches",
-			Vital:       false,
-		}, {
-			View:        remoteBranchViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemoteBranch,
-			Display:     "↑",
-			Description: "Iterate over remote branches",
-			Vital:       false,
-		}, {
-			View:        remoteBranchViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextRemoteBranch,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        remoteBranchViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.previousRemoteBranch,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
 		}, {
 			View:        remoteBranchViewFeature.Name,
 			Key:         's',
@@ -452,40 +420,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "s",
 			Description: "Synch with Remote",
 			Vital:       true,
-		},
-		// Commit View Controls
-		{
-			View:        commitViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextCommit,
-			Display:     "↓",
-			Description: "Iterate over commits",
-			Vital:       false,
 		}, {
-			View:        commitViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
+			View:        branchViewFeature.Name,
+			Key:         'u',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.prevCommit,
-			Display:     "↑",
-			Description: "Iterate over commits",
-			Vital:       false,
-		}, {
-			View:        commitViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.nextCommit,
-			Display:     "j",
-			Description: "Down",
-			Vital:       false,
-		}, {
-			View:        commitViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.prevCommit,
-			Display:     "k",
-			Description: "Up",
-			Vital:       false,
+			Handler:     gui.setUpstreamToBranch,
+			Display:     "u",
+			Description: "Set Upstream",
+			Vital:       true,
 		}, {
 			View:        commitViewFeature.Name,
 			Key:         'd',
@@ -495,13 +437,31 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Show commit diff",
 			Vital:       true,
 		},
+		// upstream confirmation
+		{
+			View:        confirmationViewFeature.Name,
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeConfirmationView,
+			Display:     "esc",
+			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        confirmationViewFeature.Name,
+			Key:         gocui.KeyEnter,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.confirmSetUpstreamToBranch,
+			Display:     "enter",
+			Description: "Set Upstream",
+			Vital:       true,
+		},
 		// Diff View Controls
 		{
 			View:        diffViewFeature.Name,
-			Key:         'c',
+			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCommitDiffView,
-			Display:     "c",
+			Display:     "esc",
 			Description: "close/cancel",
 			Vital:       true,
 		}, {
@@ -540,10 +500,10 @@ func (gui *Gui) generateKeybindings() error {
 		// Application Controls
 		{
 			View:        cheatSheetViewFeature.Name,
-			Key:         'c',
+			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCheatSheetView,
-			Display:     "c",
+			Display:     "esc",
 			Description: "close/cancel",
 			Vital:       true,
 		}, {
@@ -582,10 +542,10 @@ func (gui *Gui) generateKeybindings() error {
 		// Error View
 		{
 			View:        errorViewFeature.Name,
-			Key:         'c',
+			Key:         gocui.KeyEsc,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeErrorView,
-			Display:     "c",
+			Display:     "esc",
 			Description: "close/cancel",
 			Vital:       true,
 		}, {
@@ -622,9 +582,7 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		},
 	}
-	for _, binding := range individualKeybindings {
-		gui.KeyBindings = append(gui.KeyBindings, binding)
-	}
+	gui.KeyBindings = append(gui.KeyBindings, individualKeybindings...)
 	return nil
 }
 
