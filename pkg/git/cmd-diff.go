@@ -18,36 +18,36 @@ var (
 // Diff is a wrapper function for "git diff" command
 // Diff function returns the diff to previous commit detail of the given has
 // of a specific commit
-func Diff(entity *RepoEntity, hash string) (diff string, err error) {
+func Diff(e *RepoEntity, hash string) (diff string, err error) {
 	diffCmdMode = diffCmdModeNative
 
 	switch diffCmdMode {
 	case diffCmdModeLegacy:
-		return diffWithGit(entity, hash)
+		return diffWithGit(e, hash)
 	case diffCmdModeNative:
-		return diffWithGoGit(entity, hash)
+		return diffWithGoGit(e, hash)
 	}
 	return diff, errors.New("Unhandled diff operation")
 }
 
-func diffWithGit(entity *RepoEntity, hash string) (diff string, err error) {
+func diffWithGit(e *RepoEntity, hash string) (diff string, err error) {
 	return diff, nil
 }
 
-func diffWithGoGit(entity *RepoEntity, hash string) (diff string, err error) {
+func diffWithGoGit(e *RepoEntity, hash string) (diff string, err error) {
 	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
+	for i, cs := range e.Commits {
 		if cs.Hash == hash {
 			currentCommitIndex = i
 		}
 	}
-	if len(entity.Commits)-currentCommitIndex <= 1 {
+	if len(e.Commits)-currentCommitIndex <= 1 {
 		return "there is no diff", nil
 	}
 
 	// maybe we dont need to log the repo again?
-	commits, err := entity.Repository.Log(&git.LogOptions{
-		From:  plumbing.NewHash(entity.Commit.Hash),
+	commits, err := e.Repository.Log(&git.LogOptions{
+		From:  plumbing.NewHash(e.Commit.Hash),
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {

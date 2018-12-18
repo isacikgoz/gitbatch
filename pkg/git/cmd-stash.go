@@ -19,11 +19,11 @@ type StashedItem struct {
 	EntityPath  string
 }
 
-func stashGet(entity *RepoEntity, option string) string {
+func stashGet(e *RepoEntity, option string) string {
 	args := make([]string, 0)
 	args = append(args, stashCommand)
 	args = append(args, option)
-	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)
+	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
 	if err != nil {
 		log.Warn("Error while stash command")
 		return "?"
@@ -31,9 +31,9 @@ func stashGet(entity *RepoEntity, option string) string {
 	return out
 }
 
-func (entity *RepoEntity) loadStashedItems() error {
-	entity.Stasheds = make([]*StashedItem, 0)
-	output := stashGet(entity, "list")
+func (e *RepoEntity) loadStashedItems() error {
+	e.Stasheds = make([]*StashedItem, 0)
+	output := stashGet(e, "list")
 	stashIDRegex := regexp.MustCompile(`stash@{[\d]+}:`)
 	stashIDRegexInt := regexp.MustCompile(`[\d]+`)
 	stashBranchRegex := regexp.MustCompile(`[\w]+: `)
@@ -63,24 +63,24 @@ func (entity *RepoEntity) loadStashedItems() error {
 		// trim hash
 		desc := stashHashRegex.Split(trimmed, 2)[1][1:]
 
-		entity.Stasheds = append(entity.Stasheds, &StashedItem{
+		e.Stasheds = append(e.Stasheds, &StashedItem{
 			StashID:     i,
 			BranchName:  branchName,
 			Hash:        hash,
 			Description: desc,
-			EntityPath:  entity.AbsPath,
+			EntityPath:  e.AbsPath,
 		})
 	}
 	return nil
 }
 
 // Stash is the wrapper of convetional "git stash" command
-func (entity *RepoEntity) Stash() (output string, err error) {
+func (e *RepoEntity) Stash() (output string, err error) {
 	args := make([]string, 0)
 	args = append(args, stashCommand)
 
-	output, err = GenericGitCommandWithErrorOutput(entity.AbsPath, args)
-	entity.Refresh()
+	output, err = GenericGitCommandWithErrorOutput(e.AbsPath, args)
+	e.Refresh()
 	return output, err
 }
 

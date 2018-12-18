@@ -34,7 +34,7 @@ type PullOptions struct {
 }
 
 // Pull ncorporates changes from a remote repository into the current branch.
-func Pull(entity *RepoEntity, options PullOptions) (err error) {
+func Pull(e *RepoEntity, options PullOptions) (err error) {
 	// here we configure pull operation
 	// default mode is go-git (this may be configured)
 	pullCmdMode = pullCmdModeNative
@@ -42,16 +42,16 @@ func Pull(entity *RepoEntity, options PullOptions) (err error) {
 
 	switch pullCmdMode {
 	case pullCmdModeLegacy:
-		err = pullWithGit(entity, options)
+		err = pullWithGit(e, options)
 		return err
 	case pullCmdModeNative:
-		err = pullWithGoGit(entity, options)
+		err = pullWithGoGit(e, options)
 		return err
 	}
 	return nil
 }
 
-func pullWithGit(entity *RepoEntity, options PullOptions) (err error) {
+func pullWithGit(e *RepoEntity, options PullOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, pullCommand)
 	// parse options to command line arguments
@@ -61,15 +61,15 @@ func pullWithGit(entity *RepoEntity, options PullOptions) (err error) {
 	if options.Force {
 		args = append(args, "-f")
 	}
-	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
+	if err := GenericGitCommand(e.AbsPath, args); err != nil {
 		log.Warn("Error at git command (pull)")
 		return err
 	}
-	entity.SetState(Success)
-	return entity.Refresh()
+	e.SetState(Success)
+	return e.Refresh()
 }
 
-func pullWithGoGit(entity *RepoEntity, options PullOptions) (err error) {
+func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 	opt := &git.PullOptions{
 		RemoteName:   options.RemoteName,
 		SingleBranch: options.SingleBranch,
@@ -81,7 +81,7 @@ func pullWithGoGit(entity *RepoEntity, options PullOptions) (err error) {
 	}
 	// if any credential is given, let's add it to the git.PullOptions
 	if len(options.Credentials.User) > 0 {
-		protocol, err := entity.authProtocol(entity.Remote)
+		protocol, err := authProtocol(e.Remote)
 		if err != nil {
 			return err
 		}
@@ -94,7 +94,7 @@ func pullWithGoGit(entity *RepoEntity, options PullOptions) (err error) {
 			return ErrInvalidAuthMethod
 		}
 	}
-	w, err := entity.Repository.Worktree()
+	w, err := e.Repository.Worktree()
 	if err != nil {
 		return err
 	}
@@ -111,6 +111,6 @@ func pullWithGoGit(entity *RepoEntity, options PullOptions) (err error) {
 			return err
 		}
 	}
-	entity.SetState(Success)
-	return entity.Refresh()
+	e.SetState(Success)
+	return e.Refresh()
 }

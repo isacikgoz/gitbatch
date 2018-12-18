@@ -11,7 +11,7 @@ type JobQueue struct {
 
 // CreateJobQueue creates a jobqueue struct and initialize its slice then return
 // its pointer
-func CreateJobQueue() (jobQueue *JobQueue) {
+func CreateJobQueue() (jq *JobQueue) {
 	s := make([]*Job, 0)
 	return &JobQueue{
 		series: s,
@@ -19,28 +19,28 @@ func CreateJobQueue() (jobQueue *JobQueue) {
 }
 
 // AddJob adds a job to the queue
-func (jobQueue *JobQueue) AddJob(j *Job) error {
-	for _, job := range jobQueue.series {
+func (jq *JobQueue) AddJob(j *Job) error {
+	for _, job := range jq.series {
 		if job.Entity.RepoID == j.Entity.RepoID && job.JobType == j.JobType {
 			return errors.New("Same job already is in the queue")
 		}
 	}
-	jobQueue.series = append(jobQueue.series, nil)
-	copy(jobQueue.series[1:], jobQueue.series[0:])
-	jobQueue.series[0] = j
+	jq.series = append(jq.series, nil)
+	copy(jq.series[1:], jq.series[0:])
+	jq.series[0] = j
 	return nil
 }
 
 // StartNext starts the next job in the queue
-func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
+func (jq *JobQueue) StartNext() (j *Job, finished bool, err error) {
 	finished = false
-	if len(jobQueue.series) < 1 {
+	if len(jq.series) < 1 {
 		finished = true
 		return nil, finished, nil
 	}
-	i := len(jobQueue.series) - 1
-	lastJob := jobQueue.series[i]
-	jobQueue.series = jobQueue.series[:i]
+	i := len(jq.series) - 1
+	lastJob := jq.series[i]
+	jq.series = jq.series[:i]
 	if err = lastJob.start(); err != nil {
 		return lastJob, finished, err
 	}
@@ -49,11 +49,11 @@ func (jobQueue *JobQueue) StartNext() (j *Job, finished bool, err error) {
 
 // RemoveFromQueue deletes the given entity and its job from the queue
 // TODO: it is not safe if the job has been started
-func (jobQueue *JobQueue) RemoveFromQueue(entity *RepoEntity) error {
+func (jq *JobQueue) RemoveFromQueue(entity *RepoEntity) error {
 	removed := false
-	for i, job := range jobQueue.series {
+	for i, job := range jq.series {
 		if job.Entity.RepoID == entity.RepoID {
-			jobQueue.series = append(jobQueue.series[:i], jobQueue.series[i+1:]...)
+			jq.series = append(jq.series[:i], jq.series[i+1:]...)
 			removed = true
 		}
 	}
@@ -66,9 +66,9 @@ func (jobQueue *JobQueue) RemoveFromQueue(entity *RepoEntity) error {
 // IsInTheQueue function; since the job and entity is not tied with its own
 // struct, this function returns true if that entity is in the queue along with
 // the jobs type
-func (jobQueue *JobQueue) IsInTheQueue(entity *RepoEntity) (inTheQueue bool, jt JobType) {
+func (jq *JobQueue) IsInTheQueue(entity *RepoEntity) (inTheQueue bool, jt JobType) {
 	inTheQueue = false
-	for _, job := range jobQueue.series {
+	for _, job := range jq.series {
 		if job.Entity.RepoID == entity.RepoID {
 			inTheQueue = true
 			jt = job.JobType

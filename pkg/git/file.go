@@ -39,12 +39,12 @@ var (
 )
 
 // Diff is a wrapper of "git diff" command for a file to compare with HEAD rev
-func (file *File) Diff() (output string, err error) {
+func (f *File) Diff() (output string, err error) {
 	args := make([]string, 0)
 	args = append(args, "diff")
 	args = append(args, "HEAD")
-	args = append(args, file.Name)
-	output, err = GenericGitCommandWithErrorOutput(strings.TrimSuffix(file.AbsPath, file.Name), args)
+	args = append(args, f.Name)
+	output, err = GenericGitCommandWithErrorOutput(strings.TrimSuffix(f.AbsPath, f.Name), args)
 	if err != nil {
 		log.Warn(err)
 	}

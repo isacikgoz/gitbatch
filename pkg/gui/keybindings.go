@@ -184,7 +184,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.closeAuthenticationView,
 				Display:     "esc",
-				Description: "close/cancel",
+				Description: "Close/Cancel",
 				Vital:       true,
 			}, {
 				View:        view.Name,
@@ -214,7 +214,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.closeCommitMessageView,
 				Display:     "esc",
-				Description: "close/cancel",
+				Description: "Close/Cancel",
 				Vital:       true,
 			}, {
 				View:        view.Name,
@@ -444,7 +444,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeConfirmationView,
 			Display:     "esc",
-			Description: "close/cancel",
+			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
 			View:        confirmationViewFeature.Name,
@@ -462,7 +462,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCommitDiffView,
 			Display:     "esc",
-			Description: "close/cancel",
+			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
 			View:        diffViewFeature.Name,
@@ -504,7 +504,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCheatSheetView,
 			Display:     "esc",
-			Description: "close/cancel",
+			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
 			View:        cheatSheetViewFeature.Name,
@@ -546,7 +546,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeErrorView,
 			Display:     "esc",
-			Description: "close/cancel",
+			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
 			View:        errorViewFeature.Name,
