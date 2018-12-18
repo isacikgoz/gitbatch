@@ -48,7 +48,7 @@ const (
 
 // Reset is the wrapper of "git reset" command
 func Reset(entity *RepoEntity, file *File, option ResetOptions) error {
-	resetCmdMode = addCmdModeLegacy
+	resetCmdMode = resetCmdModeLegacy
 
 	switch resetCmdMode {
 	case resetCmdModeLegacy:

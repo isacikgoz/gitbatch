@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-	"regexp"
+
 	"strconv"
 	"strings"
 )
@@ -22,18 +22,6 @@ type Branch struct {
 	Clean     bool
 }
 
-// returns the active branch of the repository entity by simply getting the
-// head reference and searching it from the entities branch slice
-func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
-	headRef, _ := entity.Repository.Head()
-	for _, lb := range entity.Branches {
-		if lb.Name == headRef.Name().Short() {
-			return lb
-		}
-	}
-	return nil
-}
-
 // search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
 // git cammand and its output
@@ -45,6 +33,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 		return err
 	}
 	defer branches.Close()
+	headRef, _ := entity.Repository.Head()
 	branches.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() == plumbing.HashReference {
 			var push, pull string
@@ -67,7 +56,16 @@ func (entity *RepoEntity) loadLocalBranches() error {
 				pull = strconv.Itoa(len(pullables))
 			}
 			clean := entity.isClean()
-			branch := &Branch{Name: b.Name().Short(), Reference: b, Pushables: push, Pullables: pull, Clean: clean}
+			branch := &Branch{
+				Name:      b.Name().Short(),
+				Reference: b,
+				Pushables: push,
+				Pullables: pull,
+				Clean:     clean,
+			}
+			if b.Hash() == headRef.Hash() {
+				entity.Branch = branch
+			}
 			lbs = append(lbs, branch)
 		}
 		return nil
@@ -128,7 +126,7 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 	entity.loadCommits()
 	entity.Commit = entity.Commits[0]
 	entity.Branch = branch
-	entity.RefreshPushPull()
+
 	// make this conditional on global scale
 	err = entity.Remote.SyncBranches(branch.Name)
 	return entity.Refresh()
@@ -151,63 +149,4 @@ func (entity *RepoEntity) isClean() bool {
 		}
 	}
 	return false
-}
-
-// RefreshPushPull refreshes the active branchs pushable and pullable count
-func (entity *RepoEntity) RefreshPushPull() {
-	pushables, err := RevList(entity, RevListOptions{
-		Ref1: "@{u}",
-		Ref2: "HEAD",
-	})
-	if err != nil {
-		entity.Branch.Pushables = pushables[0]
-	} else {
-		entity.Branch.Pushables = strconv.Itoa(len(pushables))
-	}
-	pullables, err := RevList(entity, RevListOptions{
-		Ref1: "HEAD",
-		Ref2: "@{u}",
-	})
-	if err != nil {
-		entity.Branch.Pullables = pullables[0]
-	} else {
-		entity.Branch.Pullables = strconv.Itoa(len(pullables))
-	}
-}
-
-// this function creates the commit entities according to active branchs diffs
-// to *its* configured upstream
-func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
-	remoteCommits := make([]*Commit, 0)
-	pullables, err := RevList(entity, RevListOptions{
-		Ref1: "HEAD",
-		Ref2: "@{u}",
-	})
-	if err != nil {
-		// possibly found nothing or no upstream set
-	} else {
-		re := regexp.MustCompile(`\r?\n`)
-		for _, s := range pullables {
-			commit := &Commit{
-				Hash:       s,
-				Author:     GitShowEmail(entity.AbsPath, s),
-				Message:    re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
-				Time:       GitShowDate(entity.AbsPath, s),
-				CommitType: RemoteCommit,
-			}
-			remoteCommits = append(remoteCommits, commit)
-		}
-	}
-	return remoteCommits, nil
-}
-
-func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
-	pushables, err := RevList(entity, RevListOptions{
-		Ref1: "@{u}",
-		Ref2: "HEAD",
-	})
-	if err != nil {
-		return make([]string, 0), nil
-	}
-	return pushables, nil
 }

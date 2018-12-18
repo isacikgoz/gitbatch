@@ -38,7 +38,7 @@ func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 	commit := entity.Commit
 	commitDetail := []string{("Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
 		"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n")}
-	diff, err := entity.Diff(entity.Commit.Hash)
+	diff, err := git.Diff(entity, entity.Commit.Hash)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
@@ -126,59 +125,39 @@ func (entity *RepoEntity) loadCommits() error {
 	return nil
 }
 
-// Diff function returns the diff to previous commit detail of the given has
-// of a specific commit
-func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
-
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == hash {
-			currentCommitIndex = i
-		}
-	}
-	if len(entity.Commits)-currentCommitIndex <= 1 {
-		return "there is no diff", nil
-	}
-
-	// maybe we dont need to log the repo again?
-	commits, err := entity.Repository.Log(&git.LogOptions{
-		From:  plumbing.NewHash(entity.Commit.Hash),
-		Order: git.LogOrderCommitterTime,
+// this function creates the commit entities according to active branchs diffs
+// to *its* configured upstream
+func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
+	remoteCommits := make([]*Commit, 0)
+	pullables, err := RevList(entity, RevListOptions{
+		Ref1: "HEAD",
+		Ref2: "@{u}",
 	})
 	if err != nil {
-		return "", err
-	}
-
-	currentCommit, err := commits.Next()
-	if err != nil {
-		return "", err
-	}
-	currentTree, err := currentCommit.Tree()
-	if err != nil {
-		return diff, err
-	}
-
-	prevCommit, err := commits.Next()
-	if err != nil {
-		return "", err
-	}
-	prevTree, err := prevCommit.Tree()
-	if err != nil {
-		return diff, err
-	}
-
-	changes, err := prevTree.Diff(currentTree)
-	if err != nil {
-		return "", err
-	}
-
-	// here we collect the actual diff
-	for _, c := range changes {
-		patch, err := c.Patch()
-		if err != nil {
-			break
+		// possibly found nothing or no upstream set
+	} else {
+		re := regexp.MustCompile(`\r?\n`)
+		for _, s := range pullables {
+			commit := &Commit{
+				Hash:       s,
+				Author:     GitShowEmail(entity.AbsPath, s),
+				Message:    re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
+				Time:       GitShowDate(entity.AbsPath, s),
+				CommitType: RemoteCommit,
+			}
+			remoteCommits = append(remoteCommits, commit)
 		}
-		diff = diff + patch.String() + "\n"
 	}
-	return diff, nil
+	return remoteCommits, nil
+}
+
+func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
+	pushables, err := RevList(entity, RevListOptions{
+		Ref1: "@{u}",
+		Ref2: "HEAD",
+	})
+	if err != nil {
+		return make([]string, 0), nil
+	}
+	return pushables, nil
 }
