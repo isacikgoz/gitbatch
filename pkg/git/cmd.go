@@ -72,9 +72,9 @@ func GitShowDate(repoPath, hash string) string {
 }
 
 // StatusWithGit returns the plaintext short status of the repo
-func (entity *RepoEntity) StatusWithGit() string {
+func (e *RepoEntity) StatusWithGit() string {
 	args := []string{"status"}
-	status, err := helpers.RunCommandWithOutput(entity.AbsPath, "git", args)
+	status, err := helpers.RunCommandWithOutput(e.AbsPath, "git", args)
 	if err != nil {
 		return "?"
 	}

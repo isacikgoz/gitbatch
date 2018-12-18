@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-	"regexp"
+
 	"strconv"
 	"strings"
 )
@@ -22,33 +22,22 @@ type Branch struct {
 	Clean     bool
 }
 
-// returns the active branch of the repository entity by simply getting the
-// head reference and searching it from the entities branch slice
-func (entity *RepoEntity) getActiveBranch() (branch *Branch) {
-	headRef, _ := entity.Repository.Head()
-	for _, lb := range entity.Branches {
-		if lb.Name == headRef.Name().Short() {
-			return lb
-		}
-	}
-	return nil
-}
-
 // search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
 // git cammand and its output
-func (entity *RepoEntity) loadLocalBranches() error {
+func (e *RepoEntity) loadLocalBranches() error {
 	lbs := make([]*Branch, 0)
-	branches, err := entity.Repository.Branches()
+	bs, err := e.Repository.Branches()
 	if err != nil {
 		log.Warn("Cannot load branches " + err.Error())
 		return err
 	}
-	defer branches.Close()
-	branches.ForEach(func(b *plumbing.Reference) error {
+	defer bs.Close()
+	headRef, _ := e.Repository.Head()
+	bs.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() == plumbing.HashReference {
 			var push, pull string
-			pushables, err := RevList(entity, RevListOptions{
+			pushables, err := RevList(e, RevListOptions{
 				Ref1: "@{u}",
 				Ref2: "HEAD",
 			})
@@ -57,7 +46,7 @@ func (entity *RepoEntity) loadLocalBranches() error {
 			} else {
 				push = strconv.Itoa(len(pushables))
 			}
-			pullables, err := RevList(entity, RevListOptions{
+			pullables, err := RevList(e, RevListOptions{
 				Ref1: "HEAD",
 				Ref2: "@{u}",
 			})
@@ -66,53 +55,53 @@ func (entity *RepoEntity) loadLocalBranches() error {
 			} else {
 				pull = strconv.Itoa(len(pullables))
 			}
-			clean := entity.isClean()
-			branch := &Branch{Name: b.Name().Short(), Reference: b, Pushables: push, Pullables: pull, Clean: clean}
+			clean := e.isClean()
+			branch := &Branch{
+				Name:      b.Name().Short(),
+				Reference: b,
+				Pushables: push,
+				Pullables: pull,
+				Clean:     clean,
+			}
+			if b.Name() == headRef.Name() {
+				e.Branch = branch
+			}
 			lbs = append(lbs, branch)
 		}
 		return nil
 	})
-	entity.Branches = lbs
+	e.Branches = lbs
 	return err
 }
 
 // NextBranch checkouts the next branch
-func (entity *RepoEntity) NextBranch() *Branch {
-	currentBranchIndex := entity.findCurrentBranchIndex()
-	if currentBranchIndex == len(entity.Branches)-1 {
-		return entity.Branches[0]
-	}
-	return entity.Branches[currentBranchIndex+1]
+func (e *RepoEntity) NextBranch() *Branch {
+	return e.Branches[(e.currentBranchIndex()+1)%len(e.Branches)]
 }
 
 // PreviousBranch checkouts the previous branch
-func (entity *RepoEntity) PreviousBranch() *Branch {
-	currentBranchIndex := entity.findCurrentBranchIndex()
-	if currentBranchIndex == 0 {
-		return entity.Branches[len(entity.Branches)-1]
-	}
-	return entity.Branches[currentBranchIndex-1]
+func (e *RepoEntity) PreviousBranch() *Branch {
+	return e.Branches[(len(e.Branches)+e.currentBranchIndex()-1)%len(e.Branches)]
 }
 
 // returns the active branch index
-func (entity *RepoEntity) findCurrentBranchIndex() int {
-	currentBranch := entity.Branch
-	currentBranchIndex := 0
-	for i, lbs := range entity.Branches {
-		if lbs.Name == currentBranch.Name {
-			currentBranchIndex = i
+func (e *RepoEntity) currentBranchIndex() int {
+	bix := 0
+	for i, lbs := range e.Branches {
+		if lbs.Name == e.Branch.Name {
+			bix = i
 		}
 	}
-	return currentBranchIndex
+	return bix
 }
 
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
-func (entity *RepoEntity) Checkout(branch *Branch) error {
-	if branch.Name == entity.Branch.Name {
+func (e *RepoEntity) Checkout(branch *Branch) error {
+	if branch.Name == e.Branch.Name {
 		return nil
 	}
-	w, err := entity.Repository.Worktree()
+	w, err := e.Repository.Worktree()
 	if err != nil {
 		log.Warn("Cannot get work tree " + err.Error())
 		return err
@@ -124,90 +113,26 @@ func (entity *RepoEntity) Checkout(branch *Branch) error {
 		return err
 	}
 
-	// after checking out we need to refresh some values such as;
-	entity.loadCommits()
-	entity.Commit = entity.Commits[0]
-	entity.Branch = branch
-	entity.RefreshPushPull()
 	// make this conditional on global scale
-	err = entity.Remote.SyncBranches(branch.Name)
-	return err
+	err = e.Remote.SyncBranches(branch.Name)
+	return e.Refresh()
 }
 
 // checking the branch if it has any changes from its head revision. Initially
 // I implemented this with go-git but it was incredibly slow and there is also
 // an issue about it: https://github.com/src-d/go-git/issues/844
-func (entity *RepoEntity) isClean() bool {
-	status := entity.StatusWithGit()
-	status = helpers.TrimTrailingNewline(status)
-	if status != "?" {
-		verbose := strings.Split(status, "\n")
-		lastLine := verbose[len(verbose)-1]
+func (e *RepoEntity) isClean() bool {
+	s := e.StatusWithGit()
+	s = helpers.TrimTrailingNewline(s)
+	if s != "?" {
+		vs := strings.Split(s, "\n")
+		line := vs[len(vs)-1]
 		// earlier versions of git returns "working directory clean" instead of
 		//"working tree clean" message
-		if strings.Contains(lastLine, "working tree clean") ||
-			strings.Contains(lastLine, "working directory clean") {
+		if strings.Contains(line, "working tree clean") ||
+			strings.Contains(line, "working directory clean") {
 			return true
 		}
 	}
 	return false
-}
-
-// RefreshPushPull refreshes the active branchs pushable and pullable count
-func (entity *RepoEntity) RefreshPushPull() {
-	pushables, err := RevList(entity, RevListOptions{
-		Ref1: "@{u}",
-		Ref2: "HEAD",
-	})
-	if err != nil {
-		entity.Branch.Pushables = pushables[0]
-	} else {
-		entity.Branch.Pushables = strconv.Itoa(len(pushables))
-	}
-	pullables, err := RevList(entity, RevListOptions{
-		Ref1: "HEAD",
-		Ref2: "@{u}",
-	})
-	if err != nil {
-		entity.Branch.Pullables = pullables[0]
-	} else {
-		entity.Branch.Pullables = strconv.Itoa(len(pullables))
-	}
-}
-
-// this function creates the commit entities according to active branchs diffs
-// to *its* configured upstream
-func (entity *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
-	remoteCommits := make([]*Commit, 0)
-	pullables, err := RevList(entity, RevListOptions{
-		Ref1: "HEAD",
-		Ref2: "@{u}",
-	})
-	if err != nil {
-		// possibly found nothing or no upstream set
-	} else {
-		re := regexp.MustCompile(`\r?\n`)
-		for _, s := range pullables {
-			commit := &Commit{
-				Hash:       s,
-				Author:     GitShowEmail(entity.AbsPath, s),
-				Message:    re.ReplaceAllString(GitShowBody(entity.AbsPath, s), " "),
-				Time:       GitShowDate(entity.AbsPath, s),
-				CommitType: RemoteCommit,
-			}
-			remoteCommits = append(remoteCommits, commit)
-		}
-	}
-	return remoteCommits, nil
-}
-
-func (entity *RepoEntity) pushDiffsToUpstream() ([]string, error) {
-	pushables, err := RevList(entity, RevListOptions{
-		Ref1: "@{u}",
-		Ref2: "HEAD",
-	})
-	if err != nil {
-		return make([]string, 0), nil
-	}
-	return pushables, nil
 }

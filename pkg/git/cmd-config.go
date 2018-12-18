@@ -34,24 +34,24 @@ const (
 )
 
 // Config
-func Config(entity *RepoEntity, options ConfigOptions) (value string, err error) {
+func Config(e *RepoEntity, options ConfigOptions) (value string, err error) {
 	// here we configure config operation
 	// default mode is go-git (this may be configured)
 	configCmdMode = configCmdModeLegacy
 
 	switch configCmdMode {
 	case configCmdModeLegacy:
-		value, err = configWithGit(entity, options)
+		value, err = configWithGit(e, options)
 		return value, err
 	case configCmdModeNative:
-		value, err = configWithGoGit(entity, options)
+		value, err = configWithGoGit(e, options)
 		return value, err
 	}
 	return value, errors.New("Unhandled config operation")
 }
 
 // configWithGit is simply a bare git commit -m <msg> command which is flexible
-func configWithGit(entity *RepoEntity, options ConfigOptions) (value string, err error) {
+func configWithGit(e *RepoEntity, options ConfigOptions) (value string, err error) {
 	args := make([]string, 0)
 	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
@@ -60,7 +60,7 @@ func configWithGit(entity *RepoEntity, options ConfigOptions) (value string, err
 	args = append(args, "--get")
 	args = append(args, options.Section+"."+options.Option)
 	// parse options to command line arguments
-	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)
+	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
 	if err != nil {
 		return out, err
 	}
@@ -69,25 +69,23 @@ func configWithGit(entity *RepoEntity, options ConfigOptions) (value string, err
 }
 
 // commitWithGoGit is the primary commit method
-func configWithGoGit(entity *RepoEntity, options ConfigOptions) (value string, err error) {
+func configWithGoGit(e *RepoEntity, options ConfigOptions) (value string, err error) {
 	// TODO: add global search
-	config, err := entity.Repository.Config()
+	config, err := e.Repository.Config()
 	if err != nil {
 		return value, err
 	}
-	value = config.Raw.Section(options.Section).Option(options.Option)
-	return value, nil
+	return config.Raw.Section(options.Section).Option(options.Option), nil
 }
 
 // AddConfig
-func AddConfig(entity *RepoEntity, options ConfigOptions, value string) (err error) {
-	err = addConfigWithGit(entity, options, value)
-	return err
+func AddConfig(e *RepoEntity, options ConfigOptions, value string) (err error) {
+	return addConfigWithGit(e, options, value)
 
 }
 
 // addConfigWithGit is simply a bare git config --add <option> command which is flexible
-func addConfigWithGit(entity *RepoEntity, options ConfigOptions, value string) (err error) {
+func addConfigWithGit(e *RepoEntity, options ConfigOptions, value string) (err error) {
 	args := make([]string, 0)
 	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
@@ -98,10 +96,10 @@ func addConfigWithGit(entity *RepoEntity, options ConfigOptions, value string) (
 	if len(value) > 0 {
 		args = append(args, value)
 	}
-	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
+	if err := GenericGitCommand(e.AbsPath, args); err != nil {
 		log.Warn("Error at git command (config)")
 		return err
 	}
 	// till this step everything should be ok
-	return entity.Refresh()
+	return e.Refresh()
 }

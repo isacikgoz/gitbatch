@@ -34,11 +34,11 @@ func (gui *Gui) prepareDiffView(g *gocui.Gui, v *gocui.View, display []string) (
 // open diff view for the selcted commit
 // called from commitview, so initial view is commitview
 func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) (err error) {
-	entity := gui.getSelectedRepository()
-	commit := entity.Commit
+	e := gui.getSelectedRepository()
+	commit := e.Commit
 	commitDetail := []string{("Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
 		"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n")}
-	diff, err := entity.Diff(entity.Commit.Hash)
+	diff, err := git.Diff(e, e.Commit.Hash)
 	if err != nil {
 		return err
 	}
@@ -56,15 +56,15 @@ func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 
 // called from status, so initial view may be stagedview or unstaged view
 func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
 	var files []*git.File
 	switch v.Name() {
 	case unstageViewFeature.Name:
-		_, files, err = populateFileLists(entity)
+		_, files, err = populateFileLists(e)
 	case stageViewFeature.Name:
-		files, _, err = populateFileLists(entity)
+		files, _, err = populateFileLists(e)
 	}
 	if err != nil {
 		return err
@@ -95,13 +95,13 @@ func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 
 // called from stashview, so initial view is stashview
 func (gui *Gui) showStash(g *gocui.Gui, v *gocui.View) (err error) {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	if len(entity.Stasheds) <= 0 {
+	if len(e.Stasheds) <= 0 {
 		return nil
 	}
-	stashedItem := entity.Stasheds[oy+cy]
+	stashedItem := e.Stasheds[oy+cy]
 	output, err := stashedItem.Show()
 	if err != nil {
 		if err = gui.openErrorView(g, output,

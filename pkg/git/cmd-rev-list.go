@@ -19,14 +19,14 @@ type RevListOptions struct {
 
 // RevList returns the commit hashes that are links from the given commit(s).
 // The output is given in reverse chronological order by default.
-func RevList(entity *RepoEntity, options RevListOptions) ([]string, error) {
+func RevList(e *RepoEntity, options RevListOptions) ([]string, error) {
 	args := make([]string, 0)
 	args = append(args, revlistCommand)
 	if len(options.Ref1) > 0 && len(options.Ref2) > 0 {
 		arg1 := options.Ref1 + ".." + options.Ref2
 		args = append(args, arg1)
 	}
-	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)
+	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
 	if err != nil {
 		log.Warn("Error while rev-list command")
 		return []string{out}, err
