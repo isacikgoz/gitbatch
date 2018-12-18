@@ -18,13 +18,15 @@ type Remote struct {
 // NextRemote iterates over next branch of a remote
 func (e *RepoEntity) NextRemote() error {
 	e.Remote = e.Remotes[(e.currentRemoteIndex()+1)%len(e.Remotes)]
-	return e.Remote.SyncBranches(e.Branch.Name)
+	e.Remote.SyncBranches(e.Branch.Name)
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemote iterates over previous branch of a remote
 func (e *RepoEntity) PreviousRemote() error {
 	e.Remote = e.Remotes[(len(e.Remotes)+e.currentRemoteIndex()-1)%len(e.Remotes)]
-	return e.Remote.SyncBranches(e.Branch.Name)
+	e.Remote.SyncBranches(e.Branch.Name)
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // returns the active remote index

@@ -32,8 +32,8 @@ func (gui *Gui) openStatusView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func reloadFiles(entity *git.RepoEntity) (err error) {
-	stagedFiles, unstagedFiles, err = populateFileLists(entity)
+func reloadFiles(e *git.RepoEntity) (err error) {
+	stagedFiles, unstagedFiles, err = populateFileLists(e)
 	return err
 }
 
@@ -67,8 +67,8 @@ func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		entity := gui.getSelectedRepository()
-		if err := refreshStatusView(v.Name(), g, entity, false); err != nil {
+		e := gui.getSelectedRepository()
+		if err := refreshStatusView(v.Name(), g, e, false); err != nil {
 			return err
 		}
 	}
@@ -85,8 +85,8 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 				return err
 			}
 		}
-		entity := gui.getSelectedRepository()
-		if err := refreshStatusView(v.Name(), g, entity, false); err != nil {
+		e := gui.getSelectedRepository()
+		if err := refreshStatusView(v.Name(), g, e, false); err != nil {
 			return err
 		}
 	}
@@ -96,13 +96,13 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 // header og the status layout
 func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 	maxX, _ := g.Size()
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	v, err := g.SetView(statusHeaderViewFeature.Name, 6, 2, maxX-6, 4)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, entity.AbsPath)
+		fmt.Fprintln(v, e.AbsPath)
 		// v.Frame = false
 		v.Wrap = true
 	}
@@ -125,8 +125,9 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	return gui.closeViewCleanup(mainViewFeature.Name)
 }
 
-func populateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, err error) {
-	files, err := git.Status(entity)
+// generate file lists by git status command
+func populateFileLists(e *git.RepoEntity) (staged, unstaged []*git.File, err error) {
+	files, err := git.Status(e)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -141,13 +142,13 @@ func populateFileLists(entity *git.RepoEntity) (staged, unstaged []*git.File, er
 	return staged, unstaged, err
 }
 
-func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity, reload bool) error {
+func refreshStatusView(viewName string, g *gocui.Gui, e *git.RepoEntity, reload bool) error {
 	if reload {
-		reloadFiles(entity)
+		reloadFiles(e)
 	}
 	switch viewName {
 	case stageViewFeature.Name:
-		if err := refreshStagedView(g, entity); err != nil {
+		if err := refreshStagedView(g); err != nil {
 			return err
 		}
 	case unstageViewFeature.Name:
@@ -155,16 +156,16 @@ func refreshStatusView(viewName string, g *gocui.Gui, entity *git.RepoEntity, re
 			return err
 		}
 	case stashViewFeature.Name:
-		if err := refreshStashView(g, entity); err != nil {
+		if err := refreshStashView(g, e); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func refreshAllStatusView(g *gocui.Gui, entity *git.RepoEntity, reload bool) error {
+func refreshAllStatusView(g *gocui.Gui, e *git.RepoEntity, reload bool) error {
 	for _, v := range statusViews {
-		if err := refreshStatusView(v.Name, g, entity, reload); err != nil {
+		if err := refreshStatusView(v.Name, g, e, reload); err != nil {
 			return err
 		}
 	}

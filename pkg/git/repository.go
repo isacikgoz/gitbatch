@@ -44,22 +44,27 @@ type RepositoryEvent struct {
 }
 
 // RepoState is the state of the repository for an operation
-type RepoState uint8
+type RepoState struct {
+	State uint8
+	Ready bool
+}
+
+var (
+	// Available implies repo is ready for the operation
+	Available = RepoState{State: 0, Ready: true}
+	// Queued means repo is queued for a operation
+	Queued = RepoState{State: 1, Ready: false}
+	// Working means an operation is just started for this repository
+	Working = RepoState{State: 2, Ready: false}
+	// Paused is expected when a user interaction is required
+	Paused = RepoState{State: 3, Ready: true}
+	// Success is the expected outcome of the operation
+	Success = RepoState{State: 4, Ready: true}
+	// Fail is the unexpected outcome of the operation
+	Fail = RepoState{State: 5, Ready: false}
+)
 
 const (
-	// Available implies repo is ready for the operation
-	Available RepoState = 0
-	// Queued means repo is queued for a operation
-	Queued RepoState = 1
-	// Working means an operation is just started for this repository
-	Working RepoState = 2
-	// Paused is expected when a user interaction is required
-	Paused RepoState = 3
-	// Success is the expected outcome of the operation
-	Success RepoState = 4
-	// Fail is the unexpected outcome of the operation
-	Fail RepoState = 5
-
 	// This is the repository updated topic
 	RepositoryUpdated = "repository.updated"
 )
@@ -90,8 +95,8 @@ func FastInitializeRepo(dir string) (e *RepoEntity, err error) {
 }
 
 // InitializeRepo initializes a RepoEntity struct with its belongings.
-func InitializeRepo(directory string) (e *RepoEntity, err error) {
-	e, err = FastInitializeRepo(directory)
+func InitializeRepo(dir string) (e *RepoEntity, err error) {
+	e, err = FastInitializeRepo(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +105,8 @@ func InitializeRepo(directory string) (e *RepoEntity, err error) {
 }
 
 // loadComponents initializes the fields of a repository such as branches,
-// remotes, commits etc.
-func (e *RepoEntity) loadComponents(hard bool) error {
+// remotes, commits etc. If reset, reload commit, remote pointers too
+func (e *RepoEntity) loadComponents(reset bool) error {
 	if err := e.loadLocalBranches(); err != nil {
 		return err
 	}
@@ -114,7 +119,7 @@ func (e *RepoEntity) loadComponents(hard bool) error {
 	if err := e.loadStashedItems(); err != nil {
 		log.Warn("Cannot load stashes")
 	}
-	if hard {
+	if reset {
 		// handle if there is no commit, maybe?
 		// set commit pointer for repository
 		if len(e.Commits) > 0 {

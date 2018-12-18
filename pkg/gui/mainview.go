@@ -6,6 +6,7 @@ import (
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
+	log "github.com/sirupsen/logrus"
 )
 
 // this is the initial function for filling the values for the main view. the
@@ -24,8 +25,8 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 		if _, err = gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
 			return err
 		}
-		// Sort by name is default behavior as expected, so it handles redrwaing
-		// the main view
+		// Sort by name is default behavior as expected, so it handles initial
+		// rendering of the main view
 		if err = gui.sortByName(g, v); err != nil {
 			return err
 		}
@@ -35,7 +36,7 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 }
 
 // refresh the main view and re-render the repository representations
-func (gui *Gui) refreshMain() error {
+func (gui *Gui) renderMain() error {
 	gui.mutex.Lock()
 	defer gui.mutex.Unlock()
 
@@ -45,17 +46,17 @@ func (gui *Gui) refreshMain() error {
 	}
 	mainView.Clear()
 	for _, r := range gui.State.Repositories {
-		fmt.Fprintln(mainView, gui.displayString(r))
+		fmt.Fprintln(mainView, gui.repositoryLabel(r))
 	}
 	// while refreshing, refresh sideViews for selected entity, something may
 	// be changed?
-	return gui.refreshSideViews(gui.getSelectedRepository())
+	return gui.renderSideViews(gui.getSelectedRepository())
 }
 
 // listens the event -> "repository.updated"
 func (gui *Gui) repositoryUpdated(event *git.RepositoryEvent) error {
 	gui.g.Update(func(g *gocui.Gui) error {
-		return gui.refreshMain()
+		return gui.renderMain()
 	})
 	return nil
 }
@@ -78,7 +79,7 @@ func (gui *Gui) cursorDown(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 	}
-	return gui.refreshMain()
+	return gui.renderMain()
 }
 
 // moves the cursor upwards for the main view
@@ -92,7 +93,7 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 			}
 		}
 	}
-	return gui.refreshMain()
+	return gui.renderMain()
 }
 
 // returns the entity at cursors position by taking its position in the gui's
@@ -103,9 +104,6 @@ func (gui *Gui) getSelectedRepository() *git.RepoEntity {
 	v, _ := gui.g.View(mainViewFeature.Name)
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	// if _, err := v.Line(cy); err != nil {
-	// 	return r, err
-	// }
 	return gui.State.Repositories[cy+oy]
 }
 
@@ -143,12 +141,41 @@ func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
 	return nil
 }
 
+// this function starts the queue and updates the gui with the result of an
+// operation
+func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
+	go func(gui_go *Gui, g_go *gocui.Gui) {
+		for {
+			job, finished, err := gui_go.State.Queue.StartNext()
+
+			if err != nil {
+				if err == git.ErrAuthenticationRequired {
+					// pause the job, so it will be indicated to being blocking
+					job.Entity.SetState(git.Paused)
+					err := gui_go.openAuthenticationView(g, gui_go.State.Queue, job, v.Name())
+					if err != nil {
+						log.Warn(err.Error())
+						return
+					}
+				}
+				return
+				// with not returning here, we simply ignore and continue
+			}
+			// if queue is finished simply return from this goroutine
+			if finished {
+				return
+			}
+		}
+	}(gui, g)
+	return nil
+}
+
 // marking repository is simply adding the repostirory into the queue. the
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	// maybe, failed entities may be added to queue again
-	if r.State() == git.Available || r.State() == git.Success || r.State() == git.Paused {
+	if r.State().Ready {
 		if err := gui.addToQueue(r); err != nil {
 			return err
 		}
@@ -156,8 +183,6 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 		if err := gui.removeFromQueue(r); err != nil {
 			return err
 		}
-	} else {
-		return nil
 	}
 	return nil
 }
@@ -166,7 +191,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 // current state into account before adding it
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
-		if r.State() == git.Available || r.State() == git.Success {
+		if r.State().Ready {
 			if err := gui.addToQueue(r); err != nil {
 				return err
 			}
@@ -195,7 +220,7 @@ func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 // sortByName sorts the repositories by A to Z order
 func (gui *Gui) sortByName(g *gocui.Gui, v *gocui.View) error {
 	sort.Sort(git.Alphabetical(gui.State.Repositories))
-	gui.refreshMain()
+	gui.renderMain()
 	return nil
 }
 
@@ -203,6 +228,6 @@ func (gui *Gui) sortByName(g *gocui.Gui, v *gocui.View) error {
 // the top element will be the last modified
 func (gui *Gui) sortByMod(g *gocui.Gui, v *gocui.View) error {
 	sort.Sort(git.LastModified(gui.State.Repositories))
-	gui.refreshMain()
+	gui.renderMain()
 	return nil
 }

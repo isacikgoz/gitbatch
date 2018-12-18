@@ -52,16 +52,12 @@ func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if err := gui.openCommitUserEmailView(g); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, commitMessageViewFeature.Name)
-	if _, err := g.SetCurrentView(commitMessageViewFeature.Name); err != nil {
-		return err
-	}
-	return nil
+	return gui.focusToView(commitMessageViewFeature.Name)
 }
 
 // open an error view to inform user with a message and a useful note
 func (gui *Gui) openCommitUserNameView(g *gocui.Gui) error {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	maxX, maxY := g.Size()
 	// first, create the label for user
 	vlabel, err := g.SetView(commitUserNameLabelFeature.Name, maxX/2-30, maxY/2, maxX/2-19, maxY/2+2)
@@ -78,7 +74,7 @@ func (gui *Gui) openCommitUserNameView(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		name, err := git.Config(entity, git.ConfigOptions{
+		name, err := git.Config(e, git.ConfigOptions{
 			Section: "user",
 			Option:  "name",
 		})
@@ -94,7 +90,7 @@ func (gui *Gui) openCommitUserNameView(g *gocui.Gui) error {
 
 // open an error view to inform user with a message and a useful note
 func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	maxX, maxY := g.Size()
 	// first, create the label for password
 	vlabel, err := g.SetView(commitUserEmailLabelViewFeature.Name, maxX/2-30, maxY/2+1, maxX/2-19, maxY/2+3)
@@ -111,7 +107,7 @@ func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		email, err := git.Config(entity, git.ConfigOptions{
+		email, err := git.Config(e, git.ConfigOptions{
 			Section: "user",
 			Option:  "email",
 		})
@@ -127,7 +123,7 @@ func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
 
 // close the opened commite mesage view
 func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	// in order to read buffer of the views, first we need to find'em
 	v_msg, err := g.View(commitMessageViewFeature.Name)
 	v_name, err := g.View(commitUserUserViewFeature.Name)
@@ -141,7 +137,7 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if len(email) <= 0 {
 		return errors.New("User email needs to be provided")
 	}
-	err = git.CommitCommand(entity, git.CommitOptions{
+	err = git.CommitCommand(e, git.CommitOptions{
 		CommitMsg: msg,
 		User:      name,
 		Email:     email,
@@ -149,20 +145,17 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
-	entity.Refresh()
-	err = gui.closeCommitMessageView(g, v)
-	return err
+	return gui.closeCommitMessageView(g, v)
 }
 
 // focus to next view
 func (gui *Gui) nextCommitView(g *gocui.Gui, v *gocui.View) error {
-	err := gui.nextViewOfGroup(g, v, commitViews)
-	return err
+	return gui.nextViewOfGroup(g, v, commitViews)
 }
 
 // close the opened commite mesage view
 func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	g.Cursor = false
 	for _, view := range commitViews {
 		if err := g.DeleteView(view.Name); err != nil {
@@ -174,7 +167,7 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := refreshAllStatusView(g, entity, true); err != nil {
+	if err := refreshAllStatusView(g, e, true); err != nil {
 		return err
 	}
 	return gui.closeViewCleanup(commitMesageReturnView)

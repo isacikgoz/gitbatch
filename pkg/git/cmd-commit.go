@@ -55,6 +55,7 @@ func commitWithGit(e *RepoEntity, options CommitOptions) (err error) {
 	}
 	if err := GenericGitCommand(e.AbsPath, args); err != nil {
 		log.Warn("Error at git command (commit)")
+		e.Refresh()
 		return err
 	}
 	// till this step everything should be ok
@@ -84,6 +85,7 @@ func commitWithGoGit(e *RepoEntity, options CommitOptions) (err error) {
 
 	_, err = w.Commit(options.CommitMsg, opt)
 	if err != nil {
+		e.Refresh()
 		return err
 	}
 	// till this step everything should be ok

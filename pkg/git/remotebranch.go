@@ -14,19 +14,18 @@ import (
 type RemoteBranch struct {
 	Name      string
 	Reference *plumbing.Reference
-	Deleted   bool
 }
 
 // NextRemoteBranch iterates to the next remote branch
-func (r *Remote) NextRemoteBranch() error {
+func (r *Remote) NextRemoteBranch(e *RepoEntity) error {
 	r.Branch = r.Branches[(r.currentRemoteBranchIndex()+1)%len(r.Branches)]
-	return nil
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemoteBranch iterates to the previous remote branch
-func (r *Remote) PreviousRemoteBranch() error {
+func (r *Remote) PreviousRemoteBranch(e *RepoEntity) error {
 	r.Branch = r.Branches[(len(r.Branches)+r.currentRemoteBranchIndex()-1)%len(r.Branches)]
-	return nil
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // returns the active remote branch index
@@ -42,21 +41,19 @@ func (r *Remote) currentRemoteBranchIndex() int {
 
 // search for the remote branches of the remote. It takes the go-git's repo
 // pointer in order to get storer struct
-func (r *Remote) loadRemoteBranches(entity *RepoEntity) error {
+func (r *Remote) loadRemoteBranches(e *RepoEntity) error {
 	r.Branches = make([]*RemoteBranch, 0)
-	bs, err := remoteBranchesIter(entity.Repository.Storer)
+	bs, err := remoteBranchesIter(e.Repository.Storer)
 	if err != nil {
 		log.Warn("Cannot initiate iterator " + err.Error())
 		return err
 	}
 	defer bs.Close()
 	err = bs.ForEach(func(b *plumbing.Reference) error {
-		deleted := false
 		if strings.Split(b.Name().Short(), "/")[0] == r.Name {
 			r.Branches = append(r.Branches, &RemoteBranch{
 				Name:      b.Name().Short(),
 				Reference: b,
-				Deleted:   deleted,
 			})
 		}
 		return nil
