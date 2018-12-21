@@ -16,48 +16,38 @@ type Remote struct {
 }
 
 // NextRemote iterates over next branch of a remote
-func (entity *RepoEntity) NextRemote() error {
-	currentRemoteIndex := entity.findCurrentRemoteIndex()
-	if currentRemoteIndex == len(entity.Remotes)-1 {
-		entity.Remote = entity.Remotes[0]
-	} else {
-		entity.Remote = entity.Remotes[currentRemoteIndex+1]
-	}
-	err := entity.Remote.SyncBranches(entity.Branch.Name)
-	return err
+func (e *RepoEntity) NextRemote() error {
+	e.Remote = e.Remotes[(e.currentRemoteIndex()+1)%len(e.Remotes)]
+	e.Remote.SyncBranches(e.Branch.Name)
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemote iterates over previous branch of a remote
-func (entity *RepoEntity) PreviousRemote() error {
-	currentRemoteIndex := entity.findCurrentRemoteIndex()
-	if currentRemoteIndex == 0 {
-		entity.Remote = entity.Remotes[len(entity.Remotes)-1]
-	} else {
-		entity.Remote = entity.Remotes[currentRemoteIndex-1]
-	}
-	err := entity.Remote.SyncBranches(entity.Branch.Name)
-	return err
+func (e *RepoEntity) PreviousRemote() error {
+	e.Remote = e.Remotes[(len(e.Remotes)+e.currentRemoteIndex()-1)%len(e.Remotes)]
+	e.Remote.SyncBranches(e.Branch.Name)
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // returns the active remote index
-func (entity *RepoEntity) findCurrentRemoteIndex() int {
-	currentRemoteIndex := 0
-	for i, remote := range entity.Remotes {
-		if remote.Name == entity.Remote.Name {
-			currentRemoteIndex = i
+func (e *RepoEntity) currentRemoteIndex() int {
+	cix := 0
+	for i, remote := range e.Remotes {
+		if remote.Name == e.Remote.Name {
+			cix = i
 		}
 	}
-	return currentRemoteIndex
+	return cix
 }
 
 // search for remotes in go-git way. It is the short way to get remotes but it
 // does not give any insght about remote branches
-func (entity *RepoEntity) loadRemotes() error {
-	r := entity.Repository
-	entity.Remotes = make([]*Remote, 0)
+func (e *RepoEntity) loadRemotes() error {
+	r := e.Repository
+	e.Remotes = make([]*Remote, 0)
 
-	remotes, err := r.Remotes()
-	for _, rm := range remotes {
+	rms, err := r.Remotes()
+	for _, rm := range rms {
 		rfs := make([]string, 0)
 		for _, rf := range rm.Config().Fetch {
 			rfs = append(rfs, string(rf))
@@ -67,11 +57,11 @@ func (entity *RepoEntity) loadRemotes() error {
 			URL:      rm.Config().URLs,
 			RefSpecs: rfs,
 		}
-		remote.loadRemoteBranches(entity)
+		remote.loadRemoteBranches(e)
 		if len(remote.Branches) > 0 {
 			remote.Branch = remote.Branches[0]
 		}
-		entity.Remotes = append(entity.Remotes, remote)
+		e.Remotes = append(e.Remotes, remote)
 
 	}
 	if err != nil {
@@ -82,8 +72,8 @@ func (entity *RepoEntity) loadRemotes() error {
 }
 
 // SyncBranches sets the remote branch according to repository's active branch
-func (remote *Remote) SyncBranches(branchName string) error {
-	if err := remote.switchRemoteBranch(remote.Name + "/" + branchName); err != nil {
+func (r *Remote) SyncBranches(branchName string) error {
+	if err := r.switchRemoteBranch(r.Name + "/" + branchName); err != nil {
 		// probably couldn't find, but its ok.
 	}
 	return nil

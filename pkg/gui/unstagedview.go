@@ -23,26 +23,26 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 }
 
 func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
 	if len(unstagedFiles) <= 0 || len(unstagedFiles) < cy+oy {
 		return nil
 	}
-	if err := git.Add(entity, unstagedFiles[cy+oy], git.AddOptions{}); err != nil {
+	if err := git.Add(e, unstagedFiles[cy+oy], git.AddOptions{}); err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, entity, true)
+	err := refreshAllStatusView(g, e, true)
 	return err
 }
 
 func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
-	if err := git.AddAll(entity, git.AddOptions{}); err != nil {
+	e := gui.getSelectedRepository()
+	if err := git.AddAll(e, git.AddOptions{}); err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, entity, true)
+	err := refreshAllStatusView(g, e, true)
 	return err
 }
 

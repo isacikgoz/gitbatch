@@ -14,66 +14,50 @@ import (
 type RemoteBranch struct {
 	Name      string
 	Reference *plumbing.Reference
-	Deleted   bool
 }
 
 // NextRemoteBranch iterates to the next remote branch
-func (remote *Remote) NextRemoteBranch() error {
-	currentRemoteIndex := remote.findCurrentRemoteBranchIndex()
-	if currentRemoteIndex == len(remote.Branches)-1 {
-		remote.Branch = remote.Branches[0]
-	} else {
-		remote.Branch = remote.Branches[currentRemoteIndex+1]
-	}
-	return nil
+func (r *Remote) NextRemoteBranch(e *RepoEntity) error {
+	r.Branch = r.Branches[(r.currentRemoteBranchIndex()+1)%len(r.Branches)]
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemoteBranch iterates to the previous remote branch
-func (remote *Remote) PreviousRemoteBranch() error {
-	currentRemoteIndex := remote.findCurrentRemoteBranchIndex()
-	if currentRemoteIndex == 0 {
-		remote.Branch = remote.Branches[len(remote.Branches)-1]
-	} else {
-		remote.Branch = remote.Branches[currentRemoteIndex-1]
-	}
-	return nil
+func (r *Remote) PreviousRemoteBranch(e *RepoEntity) error {
+	r.Branch = r.Branches[(len(r.Branches)+r.currentRemoteBranchIndex()-1)%len(r.Branches)]
+	return e.Publish(RepositoryUpdated, nil)
 }
 
 // returns the active remote branch index
-func (remote *Remote) findCurrentRemoteBranchIndex() int {
-	currentRemoteIndex := 0
-	for i, rb := range remote.Branches {
-		if rb.Reference.Hash() == remote.Branch.Reference.Hash() {
-			currentRemoteIndex = i
+func (r *Remote) currentRemoteBranchIndex() int {
+	cix := 0
+	for i, rb := range r.Branches {
+		if rb.Reference.Hash() == r.Branch.Reference.Hash() {
+			cix = i
 		}
 	}
-	return currentRemoteIndex
+	return cix
 }
 
 // search for the remote branches of the remote. It takes the go-git's repo
 // pointer in order to get storer struct
-func (remote *Remote) loadRemoteBranches(entity *RepoEntity) error {
-	remote.Branches = make([]*RemoteBranch, 0)
-	bs, err := remoteBranchesIter(entity.Repository.Storer)
+func (r *Remote) loadRemoteBranches(e *RepoEntity) error {
+	r.Branches = make([]*RemoteBranch, 0)
+	bs, err := remoteBranchesIter(e.Repository.Storer)
 	if err != nil {
 		log.Warn("Cannot initiate iterator " + err.Error())
 		return err
 	}
 	defer bs.Close()
 	err = bs.ForEach(func(b *plumbing.Reference) error {
-		deleted := false
-		if strings.Split(b.Name().Short(), "/")[0] == remote.Name {
-			remote.Branches = append(remote.Branches, &RemoteBranch{
+		if strings.Split(b.Name().Short(), "/")[0] == r.Name {
+			r.Branches = append(r.Branches, &RemoteBranch{
 				Name:      b.Name().Short(),
 				Reference: b,
-				Deleted:   deleted,
 			})
 		}
 		return nil
 	})
-	if err != nil {
-		return err
-	}
 	return err
 }
 
@@ -95,10 +79,10 @@ func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) 
 }
 
 // switches to the given remote branch
-func (remote *Remote) switchRemoteBranch(remoteBranchName string) error {
-	for _, rb := range remote.Branches {
+func (r *Remote) switchRemoteBranch(remoteBranchName string) error {
+	for _, rb := range r.Branches {
 		if rb.Name == remoteBranchName {
-			remote.Branch = rb
+			r.Branch = rb
 			return nil
 		}
 	}

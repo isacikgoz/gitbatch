@@ -28,24 +28,24 @@ type CommitOptions struct {
 }
 
 // CommitCommand
-func CommitCommand(entity *RepoEntity, options CommitOptions) (err error) {
+func CommitCommand(e *RepoEntity, options CommitOptions) (err error) {
 	// here we configure commit operation
 	// default mode is go-git (this may be configured)
 	commitCmdMode = commitCmdModeNative
 
 	switch commitCmdMode {
 	case commitCmdModeLegacy:
-		err = commitWithGit(entity, options)
+		err = commitWithGit(e, options)
 		return err
 	case commitCmdModeNative:
-		err = commitWithGoGit(entity, options)
+		err = commitWithGoGit(e, options)
 		return err
 	}
 	return errors.New("Unhandled commit operation")
 }
 
 // commitWithGit is simply a bare git commit -m <msg> command which is flexible
-func commitWithGit(entity *RepoEntity, options CommitOptions) (err error) {
+func commitWithGit(e *RepoEntity, options CommitOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, commitCommand)
 	args = append(args, "-m")
@@ -53,18 +53,18 @@ func commitWithGit(entity *RepoEntity, options CommitOptions) (err error) {
 	if len(options.CommitMsg) > 0 {
 		args = append(args, options.CommitMsg)
 	}
-	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
+	if err := GenericGitCommand(e.AbsPath, args); err != nil {
 		log.Warn("Error at git command (commit)")
+		e.Refresh()
 		return err
 	}
 	// till this step everything should be ok
-	err = entity.Refresh()
-	return err
+	return e.Refresh()
 }
 
 // commitWithGoGit is the primary commit method
-func commitWithGoGit(entity *RepoEntity, options CommitOptions) (err error) {
-	config, err := entity.Repository.Config()
+func commitWithGoGit(e *RepoEntity, options CommitOptions) (err error) {
+	config, err := e.Repository.Config()
 	if err != nil {
 		return err
 	}
@@ -78,16 +78,16 @@ func commitWithGoGit(entity *RepoEntity, options CommitOptions) (err error) {
 		},
 	}
 
-	w, err := entity.Repository.Worktree()
+	w, err := e.Repository.Worktree()
 	if err != nil {
 		return err
 	}
 
 	_, err = w.Commit(options.CommitMsg, opt)
 	if err != nil {
+		e.Refresh()
 		return err
 	}
 	// till this step everything should be ok
-	err = entity.Refresh()
-	return err
+	return e.Refresh()
 }

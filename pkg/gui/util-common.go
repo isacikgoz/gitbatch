@@ -1,29 +1,10 @@
 package gui
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"github.com/jroimartin/gocui"
 	log "github.com/sirupsen/logrus"
 )
-
-// refreshes the side views of the application for given git.RepoEntity struct
-func (gui *Gui) refreshViews(g *gocui.Gui, entity *git.RepoEntity) error {
-	var err error
-	if err = gui.updateRemotes(g, entity); err != nil {
-		return err
-	}
-	if err = gui.updateBranch(g, entity); err != nil {
-		return err
-	}
-	if err = gui.updateRemoteBranches(g, entity); err != nil {
-		return err
-	}
-	if err = gui.updateCommits(g, entity); err != nil {
-		return err
-	}
-	return err
-}
 
 // focus to next view
 func (gui *Gui) nextViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFeature) error {
@@ -74,22 +55,6 @@ func (gui *Gui) previousViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFea
 		return nil
 	}
 	gui.updateKeyBindingsView(g, focusedViewName)
-	return nil
-}
-
-// siwtch the app mode
-func (gui *Gui) switchMode(g *gocui.Gui, v *gocui.View) error {
-	for i, mode := range modes {
-		if mode == gui.State.Mode {
-			if i == len(modes)-1 {
-				gui.State.Mode = modes[0]
-				break
-			}
-			gui.State.Mode = modes[i+1]
-			break
-		}
-	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }
 

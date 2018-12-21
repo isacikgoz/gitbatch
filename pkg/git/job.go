@@ -25,54 +25,47 @@ const (
 )
 
 // starts the job
-func (job *Job) start() error {
-	job.Entity.State = Working
+func (j *Job) start() error {
+	j.Entity.SetState(Working)
 	// TODO: Handle errors?
 	// TOOD: Better implementation required
-	switch mode := job.JobType; mode {
+	switch mode := j.JobType; mode {
 	case FetchJob:
 		var opts FetchOptions
-		if job.Options != nil {
-			opts = job.Options.(FetchOptions)
+		if j.Options != nil {
+			opts = j.Options.(FetchOptions)
 		} else {
 			opts = FetchOptions{
-				RemoteName: job.Entity.Remote.Name,
+				RemoteName: j.Entity.Remote.Name,
 			}
 		}
-		if err := Fetch(job.Entity, opts); err != nil {
-			job.Entity.State = Fail
+		if err := Fetch(j.Entity, opts); err != nil {
+			j.Entity.SetState(Fail)
 			return err
 		}
 	case PullJob:
-		var opts FetchOptions
-		if job.Options != nil {
-			opts = job.Options.(FetchOptions)
+		var opts PullOptions
+		if j.Options != nil {
+			opts = j.Options.(PullOptions)
 		} else {
-			opts = FetchOptions{
-				RemoteName: job.Entity.Remote.Name,
+			opts = PullOptions{
+				RemoteName: j.Entity.Remote.Name,
 			}
 		}
-		if err := Fetch(job.Entity, opts); err != nil {
-			job.Entity.State = Fail
+		if err := Pull(j.Entity, opts); err != nil {
+			j.Entity.SetState(Fail)
 			return err
 		}
-		if err := Merge(job.Entity, MergeOptions{
-			BranchName: job.Entity.Remote.Branch.Name,
-		}); err != nil {
-			job.Entity.State = Fail
-			return nil
-		}
 	case MergeJob:
-		if err := Merge(job.Entity, MergeOptions{
-			BranchName: job.Entity.Remote.Branch.Name,
+		if err := Merge(j.Entity, MergeOptions{
+			BranchName: j.Entity.Remote.Branch.Name,
 		}); err != nil {
-			job.Entity.State = Fail
+			j.Entity.SetState(Fail)
 			return nil
 		}
 	default:
-		job.Entity.State = Available
+		j.Entity.SetState(Available)
 		return nil
 	}
-	job.Entity.State = Success
 	return nil
 }

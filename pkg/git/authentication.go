@@ -7,7 +7,9 @@ import (
 // Credentials holds user credentials to authenticate and authorize while
 // communicating with remote if required
 type Credentials struct {
-	User     string
+	// User is the user id for authentication
+	User string
+	// Password is the secret information required for authetntication
 	Password string
 }
 
@@ -17,8 +19,10 @@ var (
 	authProtocolSSH   = "ssh"
 )
 
-func (entity *RepoEntity) authProtocol(remote *Remote) (p string, err error) {
-	u, err := url.Parse(remote.URL[0])
+// authentication protocol returns the type of protocol for given remote's URL
+// various auth protocols require different kind of authentication
+func authProtocol(r *Remote) (p string, err error) {
+	u, err := url.Parse(r.URL[0])
 	if err != nil {
 		return p, err
 	}

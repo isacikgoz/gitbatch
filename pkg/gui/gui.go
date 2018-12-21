@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
 	"github.com/jroimartin/gocui"
@@ -14,6 +15,7 @@ type Gui struct {
 	g           *gocui.Gui
 	KeyBindings []*KeyBinding
 	State       guiState
+	mutex       *sync.Mutex
 }
 
 // guiState struct holds the repositories, directiories, mode and queue of the
@@ -81,6 +83,7 @@ func NewGui(mode string, directoies []string) (*Gui, error) {
 	}
 	gui := &Gui{
 		State: initialState,
+		mutex: &sync.Mutex{},
 	}
 	for _, m := range modes {
 		if string(m.ModeID) == mode {
@@ -121,6 +124,10 @@ func (gui *Gui) Run() error {
 			return
 		}
 		g_ui.State.Repositories = rs
+		// add gui's repositoryUpdated func as an observer to repositories
+		for _, repo := range rs {
+			repo.On(git.RepositoryUpdated, gui.repositoryUpdated)
+		}
 		gui.fillMain(g)
 	}(gui)
 

@@ -18,15 +18,15 @@ func (gui *Gui) openStashView(g *gocui.Gui) error {
 		}
 		v.Title = stashViewFeature.Title
 	}
-	entity := gui.getSelectedRepository()
-	err = refreshStashView(g, entity)
+	e := gui.getSelectedRepository()
+	err = refreshStashView(g, e)
 	return err
 }
 
 //
 func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
-	output, err := entity.Stash()
+	e := gui.getSelectedRepository()
+	output, err := e.Stash()
 	if err != nil {
 		if err = gui.openErrorView(g, output,
 			"You should manually resolve this issue",
@@ -34,19 +34,19 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	err = refreshAllStatusView(g, entity, true)
+	err = refreshAllStatusView(g, e, true)
 	return err
 }
 
 //
 func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
-	entity := gui.getSelectedRepository()
+	e := gui.getSelectedRepository()
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	if len(entity.Stasheds) <= 0 {
+	if len(e.Stasheds) <= 0 {
 		return nil
 	}
-	stashedItem := entity.Stasheds[oy+cy]
+	stashedItem := e.Stasheds[oy+cy]
 	output, err := stashedItem.Pop()
 	if err != nil {
 		if err = gui.openErrorView(g, output,
@@ -55,15 +55,15 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := entity.Refresh(); err != nil {
-		return err
-	}
-	err = refreshAllStatusView(g, entity, true)
+	// since the pop is a func of stashed item, we need to refresh entity here
+	e.Refresh()
+
+	err = refreshAllStatusView(g, e, true)
 	return err
 }
 
 // refresh the main view and re-render the repository representations
-func refreshStashView(g *gocui.Gui, entity *git.RepoEntity) error {
+func refreshStashView(g *gocui.Gui, e *git.RepoEntity) error {
 	stashView, err := g.View(stashViewFeature.Name)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func refreshStashView(g *gocui.Gui, entity *git.RepoEntity) error {
 	stashView.Clear()
 	_, cy := stashView.Cursor()
 	_, oy := stashView.Origin()
-	stashedItems := entity.Stasheds
+	stashedItems := e.Stasheds
 	for i, stashedItem := range stashedItems {
 		var prefix string
 		if i == cy+oy {

@@ -25,31 +25,31 @@ type AddOptions struct {
 }
 
 // Add is a wrapper function for "git add" command
-func Add(entity *RepoEntity, file *File, option AddOptions) error {
+func Add(e *RepoEntity, file *File, option AddOptions) error {
 	addCmdMode = addCmdModeNative
 	if option.Update || option.Force || option.DryRun {
 		addCmdMode = addCmdModeLegacy
 	}
 	switch addCmdMode {
 	case addCmdModeLegacy:
-		err := addWithGit(entity, file, option)
+		err := addWithGit(e, file, option)
 		return err
 	case addCmdModeNative:
-		err := addWithGoGit(entity, file)
+		err := addWithGoGit(e, file)
 		return err
 	}
 	return errors.New("Unhandled add operation")
 }
 
 // AddAll function is the wrapper of "git add ." command
-func AddAll(entity *RepoEntity, option AddOptions) error {
+func AddAll(e *RepoEntity, option AddOptions) error {
 	args := make([]string, 0)
 	args = append(args, addCommand)
 	if option.DryRun {
 		args = append(args, "--dry-run")
 	}
 	args = append(args, ".")
-	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)
+	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
 	if err != nil {
 		log.Warn("Error while add command")
 		return errors.New(out + "\n" + err.Error())
@@ -57,7 +57,7 @@ func AddAll(entity *RepoEntity, option AddOptions) error {
 	return nil
 }
 
-func addWithGit(entity *RepoEntity, file *File, option AddOptions) error {
+func addWithGit(e *RepoEntity, file *File, option AddOptions) error {
 	args := make([]string, 0)
 	args = append(args, addCommand)
 	args = append(args, file.Name)
@@ -70,7 +70,7 @@ func addWithGit(entity *RepoEntity, file *File, option AddOptions) error {
 	if option.DryRun {
 		args = append(args, "--dry-run")
 	}
-	out, err := GenericGitCommandWithOutput(entity.AbsPath, args)
+	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
 	if err != nil {
 		log.Warn("Error while add command")
 		return errors.New(out + "\n" + err.Error())
@@ -78,8 +78,8 @@ func addWithGit(entity *RepoEntity, file *File, option AddOptions) error {
 	return nil
 }
 
-func addWithGoGit(entity *RepoEntity, file *File) error {
-	w, err := entity.Repository.Worktree()
+func addWithGoGit(e *RepoEntity, file *File) error {
+	w, err := e.Repository.Worktree()
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
@@ -34,49 +33,37 @@ const (
 
 // NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
-func (entity *RepoEntity) NextCommit() error {
-	currentCommitIndex := entity.findCurrentCommitIndex()
-	if currentCommitIndex == len(entity.Commits)-1 {
-		entity.Commit = entity.Commits[0]
-		return nil
-	}
-	entity.Commit = entity.Commits[currentCommitIndex+1]
-	return nil
+func (e *RepoEntity) NextCommit() {
+	e.Commit = e.Commits[(e.currentCommitIndex()+1)%len(e.Commits)]
 }
 
 // PreviousCommit iterates to opposite direction
-func (entity *RepoEntity) PreviousCommit() error {
-	currentCommitIndex := entity.findCurrentCommitIndex()
-	if currentCommitIndex == 0 {
-		entity.Commit = entity.Commits[len(entity.Commits)-1]
-		return nil
-	}
-	entity.Commit = entity.Commits[currentCommitIndex-1]
-	return nil
+func (e *RepoEntity) PreviousCommit() {
+	e.Commit = e.Commits[(len(e.Commits)+e.currentCommitIndex()-1)%len(e.Commits)]
 }
 
 // returns the active commit index
-func (entity *RepoEntity) findCurrentCommitIndex() int {
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == entity.Commit.Hash {
-			currentCommitIndex = i
+func (e *RepoEntity) currentCommitIndex() int {
+	cix := 0
+	for i, c := range e.Commits {
+		if c.Hash == e.Commit.Hash {
+			cix = i
 		}
 	}
-	return currentCommitIndex
+	return cix
 }
 
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
-func (entity *RepoEntity) loadCommits() error {
-	r := entity.Repository
-	entity.Commits = make([]*Commit, 0)
+func (e *RepoEntity) loadCommits() error {
+	r := e.Repository
+	e.Commits = make([]*Commit, 0)
 	ref, err := r.Head()
 	if err != nil {
 		log.Trace("Cannot get HEAD " + err.Error())
 		return err
 	}
-
+	// git log first
 	cIter, err := r.Log(&git.LogOptions{
 		From:  ref.Hash(),
 		Order: git.LogOrderCommitterTime,
@@ -86,19 +73,13 @@ func (entity *RepoEntity) loadCommits() error {
 		return err
 	}
 	defer cIter.Close()
-	rmcs, err := entity.pullDiffsToUpstream()
-	if err != nil {
-		log.Trace("git rev-list failed " + err.Error())
-		return err
-	}
-	for _, rmc := range rmcs {
-		entity.Commits = append(entity.Commits, rmc)
-	}
-	lcs, err := entity.pushDiffsToUpstream()
-	if err != nil {
-		log.Trace("git rev-list failed " + err.Error())
-		return err
-	}
+	// find commits that fetched from upstream but not merged commits
+	rmcs, _ := e.pullDiffsToUpstream()
+	e.Commits = append(e.Commits, rmcs...)
+
+	// find commits that not pushed to upstream
+	lcs, _ := e.pushDiffsToUpstream()
+
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
 		re := regexp.MustCompile(`\r?\n`)
@@ -115,70 +96,50 @@ func (entity *RepoEntity) loadCommits() error {
 			Time:       c.Author.When.String(),
 			CommitType: cmType,
 		}
-		entity.Commits = append(entity.Commits, commit)
-
+		e.Commits = append(e.Commits, commit)
 		return nil
 	})
 	if err != nil {
 		return err
 	}
-	// entity.Commits = commits
 	return nil
 }
 
-// Diff function returns the diff to previous commit detail of the given has
-// of a specific commit
-func (entity *RepoEntity) Diff(hash string) (diff string, err error) {
-
-	currentCommitIndex := 0
-	for i, cs := range entity.Commits {
-		if cs.Hash == hash {
-			currentCommitIndex = i
-		}
-	}
-	if len(entity.Commits)-currentCommitIndex <= 1 {
-		return "there is no diff", nil
-	}
-
-	// maybe we dont need to log the repo again?
-	commits, err := entity.Repository.Log(&git.LogOptions{
-		From:  plumbing.NewHash(entity.Commit.Hash),
-		Order: git.LogOrderCommitterTime,
+// this function creates the commit entities according to active branchs diffs
+// to *its* configured upstream
+func (e *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
+	remoteCommits := make([]*Commit, 0)
+	pullables, err := RevList(e, RevListOptions{
+		Ref1: "HEAD",
+		Ref2: "@{u}",
 	})
 	if err != nil {
-		return "", err
-	}
-
-	currentCommit, err := commits.Next()
-	if err != nil {
-		return "", err
-	}
-	currentTree, err := currentCommit.Tree()
-	if err != nil {
-		return diff, err
-	}
-
-	prevCommit, err := commits.Next()
-	if err != nil {
-		return "", err
-	}
-	prevTree, err := prevCommit.Tree()
-	if err != nil {
-		return diff, err
-	}
-
-	changes, err := prevTree.Diff(currentTree)
-	if err != nil {
-		return "", err
-	}
-
-	// here we collect the actual diff
-	for _, c := range changes {
-		patch, err := c.Patch()
-		if err != nil {
-			break
+		// possibly found nothing or no upstream set
+	} else {
+		re := regexp.MustCompile(`\r?\n`)
+		for _, s := range pullables {
+			commit := &Commit{
+				Hash:       s,
+				Author:     GitShowEmail(e.AbsPath, s),
+				Message:    re.ReplaceAllString(GitShowBody(e.AbsPath, s), " "),
+				Time:       GitShowDate(e.AbsPath, s),
+				CommitType: RemoteCommit,
+			}
+			remoteCommits = append(remoteCommits, commit)
 		}
-		diff = diff + patch.String() + "\n"
 	}
-	return diff, nil
+	return remoteCommits, nil
+}
+
+// this function returns the hashes of the commits that are not pushed to the
+// upstream of the specific branch
+func (e *RepoEntity) pushDiffsToUpstream() ([]string, error) {
+	pushables, err := RevList(e, RevListOptions{
+		Ref1: "@{u}",
+		Ref2: "HEAD",
+	})
+	if err != nil {
+		return make([]string, 0), nil
+	}
+	return pushables, nil
 }

@@ -24,13 +24,10 @@ var (
 	maxRepositoryLength = 20
 	hashLength          = 7
 
-	ws               = " "
-	pushable         = string(blue.Sprint("↖"))
-	pullable         = string(blue.Sprint("↘"))
-	confidentArrow   = string(magenta.Sprint(""))
-	unconfidentArrow = string(yellow.Sprint(""))
-	dirty            = string(yellow.Sprint("✗"))
-	unknown          = magenta.Sprint("?")
+	ws       = " "
+	pushable = string(blue.Sprint("↖"))
+	pullable = string(blue.Sprint("↘"))
+	dirty    = string(yellow.Sprint("✗"))
 
 	queuedSymbol  = "•"
 	workingSymbol = "•"
@@ -53,41 +50,41 @@ var (
 
 // this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
-func (gui *Gui) displayString(entity *git.RepoEntity) string {
+func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 	suffix := ""
 	prefix := ""
 	repoName := ""
 
-	if entity.Branch.Pushables != "?" {
-		prefix = prefix + pushable + ws + entity.Branch.Pushables +
-			ws + pullable + ws + entity.Branch.Pullables
+	if e.Branch.Pushables != "?" {
+		prefix = prefix + pushable + ws + e.Branch.Pushables +
+			ws + pullable + ws + e.Branch.Pullables
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(entity.Branch.Pushables) +
-			ws + pullable + ws + yellow.Sprint(entity.Branch.Pullables)
+		prefix = prefix + pushable + ws + yellow.Sprint(e.Branch.Pushables) +
+			ws + pullable + ws + yellow.Sprint(e.Branch.Pullables)
 	}
 
-	selectedEntity := gui.getSelectedRepository()
-	if selectedEntity == entity {
+	se := gui.getSelectedRepository()
+	if se == e {
 		prefix = prefix + selectionIndicator
-		repoName = green.Sprint(entity.Name)
+		repoName = green.Sprint(e.Name)
 	} else {
 		prefix = prefix + ws
-		repoName = entity.Name
+		repoName = e.Name
 	}
 	// some branch names can be really long, in that times I hope the first
 	// characters are important and meaningful
-	branch := adjustTextLength(entity.Branch.Name, maxBranchLength)
+	branch := adjustTextLength(e.Branch.Name, maxBranchLength)
 	prefix = prefix + string(cyan.Sprint(branch))
 
-	if !entity.Branch.Clean {
+	if !e.Branch.Clean {
 		prefix = prefix + ws + dirty + ws
 	} else {
 		prefix = prefix + ws
 	}
 
 	// rendering the satus according to repository's state
-	if entity.State == git.Queued {
-		if inQueue, ty := gui.State.Queue.IsInTheQueue(entity); inQueue {
+	if e.State() == git.Queued {
+		if inQueue, ty := gui.State.Queue.IsInTheQueue(e); inQueue {
 			switch mode := ty; mode {
 			case git.FetchJob:
 				suffix = blue.Sprint(queuedSymbol)
@@ -100,18 +97,33 @@ func (gui *Gui) displayString(entity *git.RepoEntity) string {
 			}
 		}
 		return prefix + repoName + ws + suffix
-	} else if entity.State == git.Working {
+	} else if e.State() == git.Working {
 		// TODO: maybe the type of the job can be written while its working?
 		return prefix + repoName + ws + green.Sprint(workingSymbol)
-	} else if entity.State == git.Success {
+	} else if e.State() == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
-	} else if entity.State == git.Paused {
+	} else if e.State() == git.Paused {
 		return prefix + repoName + ws + yellow.Sprint(pauseSymbol)
-	} else if entity.State == git.Fail {
+	} else if e.State() == git.Fail {
 		return prefix + repoName + ws + red.Sprint(failSymbol)
 	} else {
 		return prefix + repoName
 	}
+}
+
+func commitLabel(c *git.Commit) string {
+	var body string
+	switch c.CommitType {
+	case git.EvenCommit:
+		body = cyan.Sprint(c.Hash[:hashLength]) + " " + c.Message
+	case git.LocalCommit:
+		body = blue.Sprint(c.Hash[:hashLength]) + " " + c.Message
+	case git.RemoteCommit:
+		body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+	default:
+		body = c.Hash[:hashLength] + " " + c.Message
+	}
+	return body
 }
 
 // limit the text length for visual concerns

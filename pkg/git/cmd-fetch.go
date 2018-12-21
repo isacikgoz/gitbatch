@@ -39,7 +39,7 @@ type FetchOptions struct {
 
 // Fetch branches refs from one or more other repositories, along with the
 // objects necessary to complete their histories
-func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
+func Fetch(e *RepoEntity, options FetchOptions) (err error) {
 	// here we configure fetch operation
 	// default mode is go-git (this may be configured)
 	fetchCmdMode = fetchCmdModeNative
@@ -50,18 +50,18 @@ func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
 	}
 	switch fetchCmdMode {
 	case fetchCmdModeLegacy:
-		err = fetchWithGit(entity, options)
+		err = fetchWithGit(e, options)
 		return err
 	case fetchCmdModeNative:
 		// this should be the refspec as default, let's give it a try
 		// TODO: Fix for quick mode, maybe better read config file
 		var refspec string
-		if entity.Branch == nil {
+		if e.Branch == nil {
 			refspec = "+refs/heads/*:refs/remotes/origin/*"
 		} else {
-			refspec = "+" + "refs/heads/" + entity.Branch.Name + ":" + "/refs/remotes/" + entity.Remote.Branch.Name
+			refspec = "+" + "refs/heads/" + e.Branch.Name + ":" + "/refs/remotes/" + e.Remote.Branch.Name
 		}
-		err = fetchWithGoGit(entity, options, refspec)
+		err = fetchWithGoGit(e, options, refspec)
 		return err
 	}
 	return nil
@@ -70,7 +70,7 @@ func Fetch(entity *RepoEntity, options FetchOptions) (err error) {
 // fetchWithGit is simply a bare git fetch <remote> command which is flexible
 // for complex operations, but on the other hand, it ties the app to another
 // tool. To avoid that, using native implementation is preferred.
-func fetchWithGit(entity *RepoEntity, options FetchOptions) (err error) {
+func fetchWithGit(e *RepoEntity, options FetchOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, fetchCommand)
 	// parse options to command line arguments
@@ -86,12 +86,13 @@ func fetchWithGit(entity *RepoEntity, options FetchOptions) (err error) {
 	if options.DryRun {
 		args = append(args, "--dry-run")
 	}
-	if err := GenericGitCommand(entity.AbsPath, args); err != nil {
+	if err := GenericGitCommand(e.AbsPath, args); err != nil {
 		log.Warn("Error at git command (fetch)")
 		return err
 	}
+	e.SetState(Success)
 	// till this step everything should be ok
-	return entity.Refresh()
+	return e.Refresh()
 }
 
 // fetchWithGoGit is the primary fetch method and refspec is the main feature.
@@ -100,7 +101,7 @@ func fetchWithGit(entity *RepoEntity, options FetchOptions) (err error) {
 // pattern for references on the remote side and <dst> is where those references
 // will be written locally. The + tells Git to update the reference even if it
 // isn’t a fast-forward.
-func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (err error) {
+func fetchWithGoGit(e *RepoEntity, options FetchOptions, refspec string) (err error) {
 	opt := &git.FetchOptions{
 		RemoteName: options.RemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
@@ -108,7 +109,7 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 	}
 	// if any credential is given, let's add it to the git.FetchOptions
 	if len(options.Credentials.User) > 0 {
-		protocol, err := entity.authProtocol(entity.Remote)
+		protocol, err := authProtocol(e.Remote)
 		if err != nil {
 			return err
 		}
@@ -122,7 +123,7 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 		}
 	}
 
-	err = entity.Repository.Fetch(opt)
+	err = e.Repository.Fetch(opt)
 	if err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			// Already up-to-date
@@ -130,10 +131,10 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
 			// we dont have remote ref, so lets pull other things.. maybe it'd be useful
-			rp := entity.Remote.RefSpecs[0]
+			rp := e.Remote.RefSpecs[0]
 			if fetchTryCount < fetchMaxTry {
 				fetchTryCount++
-				fetchWithGoGit(entity, options, rp)
+				fetchWithGoGit(e, options, rp)
 			} else {
 				return err
 			}
@@ -145,6 +146,8 @@ func fetchWithGoGit(entity *RepoEntity, options FetchOptions, refspec string) (e
 			return err
 		}
 	}
+
+	e.SetState(Success)
 	// till this step everything should be ok
-	return entity.Refresh()
+	return e.Refresh()
 }
