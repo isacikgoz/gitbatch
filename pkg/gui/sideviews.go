@@ -14,6 +14,9 @@ var (
 
 // refreshes the side views of the application for given git.RepoEntity struct
 func (gui *Gui) renderSideViews(e *git.RepoEntity) error {
+	if e == nil {
+		return nil
+	}
 	var err error
 	if err = gui.renderRemotes(e); err != nil {
 		return err
