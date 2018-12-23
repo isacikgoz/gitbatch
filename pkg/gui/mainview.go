@@ -101,6 +101,9 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 // rrequire a better implementation or the slice's order must be synchronized
 // with the views lines
 func (gui *Gui) getSelectedRepository() *git.RepoEntity {
+	if len(gui.State.Repositories) == 0 {
+		return nil
+	}
 	v, _ := gui.g.View(mainViewFeature.Name)
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
