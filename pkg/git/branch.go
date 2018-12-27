@@ -1,13 +1,13 @@
 package git
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-
-	"strconv"
-	"strings"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it

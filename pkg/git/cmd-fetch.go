@@ -113,7 +113,7 @@ func fetchWithGoGit(e *RepoEntity, options FetchOptions, refspec string) (err er
 		if err != nil {
 			return err
 		}
-		if protocol == authProtocolHttp || protocol == authProtocolHttps {
+		if protocol == authProtocolHTTP || protocol == authProtocolHTTPS {
 			opt.Auth = &http.BasicAuth{
 				Username: options.Credentials.User,
 				Password: options.Credentials.Password,
@@ -123,8 +123,7 @@ func fetchWithGoGit(e *RepoEntity, options FetchOptions, refspec string) (err er
 		}
 	}
 
-	err = e.Repository.Fetch(opt)
-	if err != nil {
+	if err := e.Repository.Fetch(opt); err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())
