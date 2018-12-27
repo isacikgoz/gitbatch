@@ -65,7 +65,7 @@ var (
 )
 
 const (
-	// This is the repository updated topic
+	// RepositoryUpdated defines the topic for an updated repository.
 	RepositoryUpdated = "repository.updated"
 )
 
@@ -176,7 +176,7 @@ func (e *RepoEntity) On(event string, listener RepositoryListener) {
 	e.listeners[event] = append(e.listeners[event], listener)
 }
 
-// Emit notifies listeners about the event
+// Publish publishes the data to a certain event by its name.
 func (e *RepoEntity) Publish(eventName string, data interface{}) error {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()

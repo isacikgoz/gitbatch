@@ -27,7 +27,7 @@ type CommitOptions struct {
 	Email string
 }
 
-// CommitCommand
+// CommitCommand defines which commit command to use.
 func CommitCommand(e *RepoEntity, options CommitOptions) (err error) {
 	// here we configure commit operation
 	// default mode is go-git (this may be configured)

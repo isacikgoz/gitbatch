@@ -14,7 +14,7 @@ var (
 	configCmdModeNative = "go-git"
 )
 
-// CommitOptions defines the rules for commit operation
+// ConfigOptions defines the rules for commit operation
 type ConfigOptions struct {
 	// Section
 	Section string
@@ -24,12 +24,14 @@ type ConfigOptions struct {
 	Site ConfigSite
 }
 
+// ConfigSite defines a string type for the site.
 type ConfigSite string
 
 const (
-	// ConfigStieLocal
+	// ConfigSiteLocal defines a local config.
 	ConfigSiteLocal ConfigSite = "local"
-	// ConfgiSiteGlobal
+
+	// ConfgiSiteGlobal defines a global config.
 	ConfgiSiteGlobal ConfigSite = "global"
 )
 
@@ -78,7 +80,7 @@ func configWithGoGit(e *RepoEntity, options ConfigOptions) (value string, err er
 	return config.Raw.Section(options.Section).Option(options.Option), nil
 }
 
-// AddConfig
+// AddConfig adds an entry on the ConfigOptions field.
 func AddConfig(e *RepoEntity, options ConfigOptions, value string) (err error) {
 	return addConfigWithGit(e, options, value)
 
