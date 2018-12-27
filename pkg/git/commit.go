@@ -99,10 +99,7 @@ func (e *RepoEntity) loadCommits() error {
 		e.Commits = append(e.Commits, commit)
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // this function creates the commit entities according to active branchs diffs
