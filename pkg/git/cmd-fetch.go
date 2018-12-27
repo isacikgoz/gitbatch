@@ -123,8 +123,7 @@ func fetchWithGoGit(e *RepoEntity, options FetchOptions, refspec string) (err er
 		}
 	}
 
-	err = e.Repository.Fetch(opt)
-	if err != nil {
+	if err := e.Repository.Fetch(opt); err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())

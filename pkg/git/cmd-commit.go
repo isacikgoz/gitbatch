@@ -35,11 +35,9 @@ func CommitCommand(e *RepoEntity, options CommitOptions) (err error) {
 
 	switch commitCmdMode {
 	case commitCmdModeLegacy:
-		err = commitWithGit(e, options)
-		return err
+		return commitWithGit(e, options)
 	case commitCmdModeNative:
-		err = commitWithGoGit(e, options)
-		return err
+		return commitWithGoGit(e, options)
 	}
 	return errors.New("Unhandled commit operation")
 }

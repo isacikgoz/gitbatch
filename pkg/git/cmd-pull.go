@@ -98,8 +98,8 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 	if err != nil {
 		return err
 	}
-	err = w.Pull(opt)
-	if err != nil {
+
+	if err = w.Pull(opt); err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())
