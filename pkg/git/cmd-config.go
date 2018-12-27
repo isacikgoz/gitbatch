@@ -43,11 +43,9 @@ func Config(e *RepoEntity, options ConfigOptions) (value string, err error) {
 
 	switch configCmdMode {
 	case configCmdModeLegacy:
-		value, err = configWithGit(e, options)
-		return value, err
+		return configWithGit(e, options)
 	case configCmdModeNative:
-		value, err = configWithGoGit(e, options)
-		return value, err
+		return configWithGoGit(e, options)
 	}
 	return value, errors.New("Unhandled config operation")
 }
