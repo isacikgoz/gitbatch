@@ -1,7 +1,5 @@
 package git
 
-import ()
-
 // Job relates the type of the operation and the entity
 type Job struct {
 	// JobType is to select operation type that will be applied to repository
@@ -16,11 +14,13 @@ type Job struct {
 type JobType string
 
 const (
-	// Fetch is wrapper of git fetch command
+	// FetchJob is wrapper of git fetch command
 	FetchJob JobType = "fetch"
-	// Pull is wrapper of git pull command
+
+	// PullJob is wrapper of git pull command
 	PullJob JobType = "pull"
-	// Merge is wrapper of git merge command
+
+	// MergeJob is wrapper of git merge command
 	MergeJob JobType = "merge"
 )
 
