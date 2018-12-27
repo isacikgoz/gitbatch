@@ -85,7 +85,7 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 		if err != nil {
 			return err
 		}
-		if protocol == authProtocolHttp || protocol == authProtocolHttps {
+		if protocol == authProtocolHTTP || protocol == authProtocolHTTPS {
 			opt.Auth = &http.BasicAuth{
 				Username: options.Credentials.User,
 				Password: options.Credentials.Password,

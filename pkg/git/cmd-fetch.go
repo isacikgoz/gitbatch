@@ -113,7 +113,7 @@ func fetchWithGoGit(e *RepoEntity, options FetchOptions, refspec string) (err er
 		if err != nil {
 			return err
 		}
-		if protocol == authProtocolHttp || protocol == authProtocolHttps {
+		if protocol == authProtocolHTTP || protocol == authProtocolHTTPS {
 			opt.Auth = &http.BasicAuth{
 				Username: options.Credentials.User,
 				Password: options.Credentials.Password,

@@ -14,8 +14,8 @@ type Credentials struct {
 }
 
 var (
-	authProtocolHttp  = "http"
-	authProtocolHttps = "https"
+	authProtocolHTTP  = "http"
+	authProtocolHTTPS = "https"
 	authProtocolSSH   = "ssh"
 )
 
