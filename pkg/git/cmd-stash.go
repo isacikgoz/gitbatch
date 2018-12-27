@@ -67,7 +67,7 @@ func (e *RepoEntity) loadStashedItems() error {
 		hash := stashHashRegex.FindString(trimmed)
 
 		var desc string
-		if stashHashRegex.MatchString(hash) {
+		if stashHashRegex.MatchString(hash) && len(stashHashRegex.Split(trimmed, 2)) >= 2 {
 			desc = stashHashRegex.Split(trimmed, 2)[1][1:]
 		} else {
 			desc = trimmed
