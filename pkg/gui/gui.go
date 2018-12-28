@@ -101,6 +101,16 @@ func (gui *Gui) Run() error {
 		return err
 	}
 
+	defer g.Close()
+	gui.g = g
+	g.Highlight = true
+	g.SelFgColor = gocui.ColorGreen
+
+	// If InputEsc is true, when ESC sequence is in the buffer and it doesn't
+	// match any known sequence, ESC means KeyEsc.
+	g.InputEsc = true
+	g.SetManagerFunc(gui.layout)
+
 	// start an async view apart from this loop to show loading screen
 	go func(g_ui *Gui) {
 		maxX, maxY := g.Size()
@@ -130,16 +140,6 @@ func (gui *Gui) Run() error {
 		}
 		gui.fillMain(g)
 	}(gui)
-
-	defer g.Close()
-	gui.g = g
-	g.Highlight = true
-	g.SelFgColor = gocui.ColorGreen
-
-	// If InputEsc is true, when ESC sequence is in the buffer and it doesn't
-	// match any known sequence, ESC means KeyEsc.
-	g.InputEsc = true
-	g.SetManagerFunc(gui.layout)
 
 	if err := gui.generateKeybindings(); err != nil {
 		log.Error("Keybindings could not be created.")

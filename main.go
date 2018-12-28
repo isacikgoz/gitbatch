@@ -15,7 +15,7 @@ var (
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.2.0")
+	kingpin.Version("gitbatch version 0.2.1")
 	// parse the command line flag and options
 	kingpin.Parse()
 
