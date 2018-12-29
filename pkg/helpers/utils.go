@@ -7,7 +7,7 @@ import (
 )
 
 var characterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-var src = rand.NewSource(time.Now().UnixNano())
+var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // TrimTrailingNewline removes the trailing new line form a string. this method
 // is used mostly on outputs of a command
@@ -30,7 +30,7 @@ func Min(x, y int) int {
 func RandomString(n int) string {
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = characterRunes[rand.Intn(len(characterRunes))]
+		b[i] = characterRunes[r.Intn(len(characterRunes))]
 	}
 	return string(b)
 }
