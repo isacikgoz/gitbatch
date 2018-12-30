@@ -32,65 +32,61 @@ func (gui *Gui) openStatusView(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func reloadFiles(e *git.RepoEntity) (err error) {
-	stagedFiles, unstagedFiles, err = populateFileLists(e)
+func reloadFiles(e *git.RepoEntity) error {
+	_, _, err := populateFileLists(e)
 	return err
 }
 
 // focus to next view
 func (gui *Gui) nextStatusView(g *gocui.Gui, v *gocui.View) error {
-	err := gui.nextViewOfGroup(g, v, statusViews)
-	return err
+	return gui.nextViewOfGroup(g, v, statusViews)
 }
 
 // focus to previous view
 func (gui *Gui) previousStatusView(g *gocui.Gui, v *gocui.View) error {
-	err := gui.previousViewOfGroup(g, v, statusViews)
-	return err
+	return gui.previousViewOfGroup(g, v, statusViews)
 }
 
 // moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
-	if v != nil {
-		cx, cy := v.Cursor()
-		ox, oy := v.Origin()
-		ly := len(v.BufferLines()) - 2 // why magic number? have no idea
+	if v == nil {
+		return nil
+	}
 
-		// if we are at the end we just return
-		if cy+oy == ly {
-			return nil
-		}
-		if err := v.SetCursor(cx, cy+1); err != nil {
+	cx, cy := v.Cursor()
+	ox, oy := v.Origin()
+	ly := len(v.BufferLines()) - 2 // why magic number? have no idea
 
-			if err := v.SetOrigin(ox, oy+1); err != nil {
-				return err
-			}
-		}
-		e := gui.getSelectedRepository()
-		if err := refreshStatusView(v.Name(), g, e, false); err != nil {
+	// if we are at the end we just return
+	if cy+oy == ly {
+		return nil
+	}
+	if err := v.SetCursor(cx, cy+1); err != nil {
+
+		if err := v.SetOrigin(ox, oy+1); err != nil {
 			return err
 		}
 	}
-	return nil
+	e := gui.getSelectedRepository()
+	return refreshStatusView(v.Name(), g, e, false)
 }
 
 // moves the cursor upwards for the main view
 func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
-	if v != nil {
-		ox, oy := v.Origin()
-		cx, cy := v.Cursor()
-		if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
-			if err := v.SetOrigin(ox, oy-1); err != nil {
-				return err
-			}
-		}
-		e := gui.getSelectedRepository()
-		if err := refreshStatusView(v.Name(), g, e, false); err != nil {
+	if v == nil {
+		return nil
+	}
+
+	ox, oy := v.Origin()
+	cx, cy := v.Cursor()
+	if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
+		if err := v.SetOrigin(ox, oy-1); err != nil {
 			return err
 		}
 	}
-	return nil
+	e := gui.getSelectedRepository()
+	return refreshStatusView(v.Name(), g, e, false)
 }
 
 // header og the status layout
@@ -146,21 +142,16 @@ func refreshStatusView(viewName string, g *gocui.Gui, e *git.RepoEntity, reload 
 	if reload {
 		reloadFiles(e)
 	}
+	var err error
 	switch viewName {
 	case stageViewFeature.Name:
-		if err := refreshStagedView(g); err != nil {
-			return err
-		}
+		err = refreshStagedView(g)
 	case unstageViewFeature.Name:
-		if err := refreshUnstagedView(g); err != nil {
-			return err
-		}
+		err = refreshUnstagedView(g)
 	case stashViewFeature.Name:
-		if err := refreshStashView(g, e); err != nil {
-			return err
-		}
+		err = refreshStashView(g, e)
 	}
-	return nil
+	return err
 }
 
 func refreshAllStatusView(g *gocui.Gui, e *git.RepoEntity, reload bool) error {

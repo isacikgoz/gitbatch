@@ -17,20 +17,20 @@ func (gui *Gui) renderSideViews(e *git.RepoEntity) error {
 	if e == nil {
 		return nil
 	}
-	var err error
-	if err = gui.renderRemotes(e); err != nil {
+
+	if err := gui.renderRemotes(e); err != nil {
 		return err
 	}
-	if err = gui.renderBranch(e); err != nil {
+	if err := gui.renderBranch(e); err != nil {
 		return err
 	}
-	if err = gui.renderRemoteBranches(e); err != nil {
+	if err := gui.renderRemoteBranches(e); err != nil {
 		return err
 	}
-	if err = gui.renderCommits(e); err != nil {
+	if err := gui.renderCommits(e); err != nil {
 		return err
 	}
-	return err
+	return nil
 }
 
 // updates the remotesview for given entity
@@ -104,8 +104,8 @@ func (gui *Gui) renderBranch(e *git.RepoEntity) error {
 		}
 		fmt.Fprintln(out, tab+b.Name)
 	}
-	err = gui.smartAnchorRelativeToLine(out, currentindex, totalbranches)
-	return err
+
+	return gui.smartAnchorRelativeToLine(out, currentindex, totalbranches)
 }
 
 // updates the commitsview for given entity
@@ -126,10 +126,7 @@ func (gui *Gui) renderCommits(e *git.RepoEntity) error {
 		}
 		fmt.Fprintln(out, tab+commitLabel(c))
 	}
-	if err = gui.smartAnchorRelativeToLine(out, currentindex, totalcommits); err != nil {
-		return err
-	}
-	return err
+	return gui.smartAnchorRelativeToLine(out, currentindex, totalcommits)
 }
 
 // cursor down variant for sideviews

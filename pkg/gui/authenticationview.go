@@ -12,10 +12,12 @@ import (
 var (
 	// this is required so we can know where we can return
 	authenticationReturnView string
+
 	// these views used as a label for git repository address and credential views
 	authenticationViewFeature = viewFeature{Name: "authentication", Title: " Authentication "}
 	authUserLabelFeature      = viewFeature{Name: "authuserlabel", Title: " User: "}
 	authPswdLabelViewFeature  = viewFeature{Name: "authpasswdlabel", Title: " Password: "}
+
 	// these views used as a input for the credentials
 	authUserFeature         = viewFeature{Name: "authuser", Title: " User "}
 	authPasswordViewFeature = viewFeature{Name: "authpasswd", Title: " Password "}
@@ -77,13 +79,25 @@ func (gui *Gui) closeAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 // close the opened auth views and submit the credentials
 func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 	g.Cursor = false
+
 	// in order to read buffer of the views, first we need to find'em
-	v_user, err := g.View(authUserFeature.Name)
-	v_pswd, err := g.View(authPasswordViewFeature.Name)
+	vUser, err := g.View(authUserFeature.Name)
+	if err != nil {
+		log.Errorln("error while retrieving user from view:", err)
+		return err // should return??
+	}
+
+	vPswd, err := g.View(authPasswordViewFeature.Name)
+	if err != nil {
+		log.Errorln("error while retrieving password from view:", err)
+		return err // should return??
+	}
+
 	// the return string of the views contain trailing new lines
 	re := regexp.MustCompile(`\r?\n`)
-	creduser := re.ReplaceAllString(v_user.ViewBuffer(), "")
-	credpswd := re.ReplaceAllString(v_pswd.ViewBuffer(), "")
+	creduser := re.ReplaceAllString(vUser.ViewBuffer(), "")
+	credpswd := re.ReplaceAllString(vPswd.ViewBuffer(), "")
+
 	// since the git ops require different types of options we better switch
 	switch mode := jobRequiresAuth.JobType; mode {
 	case git.FetchJob:
@@ -105,15 +119,22 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 	jobRequiresAuth.Entity.SetState(git.Queued)
+
 	// add this job to the last of the queue
-	err = gui.State.Queue.AddJob(jobRequiresAuth)
-	if err != nil {
+	if err := gui.State.Queue.AddJob(jobRequiresAuth); err != nil {
 		return err
 	}
-	gui.closeAuthenticationView(g, v)
-	v_return, err := g.View(authenticationReturnView)
-	gui.startQueue(g, v_return)
-	return nil
+
+	if err := gui.closeAuthenticationView(g, v); err != nil {
+		return err // should return??
+	}
+
+	vReturn, err := g.View(authenticationReturnView)
+	if err != nil {
+		return err // should return??
+	}
+
+	return gui.startQueue(g, vReturn)
 }
 
 // open an error view to inform user with a message and a useful note

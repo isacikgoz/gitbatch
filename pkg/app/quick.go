@@ -9,7 +9,6 @@ import (
 )
 
 func quick(directories []string, depth int, mode string) {
-
 	var wg sync.WaitGroup
 	start := time.Now()
 	for _, dir := range directories {

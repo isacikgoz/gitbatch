@@ -27,13 +27,13 @@ var (
 func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	maxX, maxY := g.Size()
 	commitMesageReturnView = v.Name()
-	v_frame, err := g.SetView(commitFrameViewFeature.Name, maxX/2-30, maxY/2-4, maxX/2+30, maxY/2+3)
+	vFrame, err := g.SetView(commitFrameViewFeature.Name, maxX/2-30, maxY/2-4, maxX/2+30, maxY/2+3)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v_frame.Frame = true
-		fmt.Fprintln(v_frame, " Enter your commit message:")
+		vFrame.Frame = true
+		fmt.Fprintln(vFrame, " Enter your commit message:")
 	}
 	v, err = g.SetView(commitMessageViewFeature.Name, maxX/2-29, maxY/2-3, maxX/2+29, maxY/2)
 	if err != nil {
@@ -124,19 +124,33 @@ func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
 // close the opened commite mesage view
 func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	e := gui.getSelectedRepository()
+
 	// in order to read buffer of the views, first we need to find'em
-	v_msg, err := g.View(commitMessageViewFeature.Name)
-	v_name, err := g.View(commitUserUserViewFeature.Name)
-	v_email, err := g.View(commitUserEmailViewFeature.Name)
+	vMsg, err := g.View(commitMessageViewFeature.Name)
+	if err != nil {
+		return err // should return??
+	}
+
+	vName, err := g.View(commitUserUserViewFeature.Name)
+	if err != nil {
+		return err // should return??
+	}
+
+	vEmail, err := g.View(commitUserEmailViewFeature.Name)
+	if err != nil {
+		return err // should return??
+	}
+
 	// the return string of the views contain trailing new lines
 	re := regexp.MustCompile(`\r?\n`)
 	// TODO: maybe intentionally added new lines?
-	msg := re.ReplaceAllString(v_msg.ViewBuffer(), "")
-	name := re.ReplaceAllString(v_name.ViewBuffer(), "")
-	email := re.ReplaceAllString(v_email.ViewBuffer(), "")
+	msg := re.ReplaceAllString(vMsg.ViewBuffer(), "")
+	name := re.ReplaceAllString(vName.ViewBuffer(), "")
+	email := re.ReplaceAllString(vEmail.ViewBuffer(), "")
 	if len(email) <= 0 {
 		return errors.New("User email needs to be provided")
 	}
+
 	err = git.CommitCommand(e, git.CommitOptions{
 		CommitMsg: msg,
 		User:      name,
@@ -145,6 +159,7 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
+
 	return gui.closeCommitMessageView(g, v)
 }
 

@@ -56,10 +56,11 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 	// since the pop is a func of stashed item, we need to refresh entity here
-	e.Refresh()
+	if err := e.Refresh(); err != nil {
+		return err
+	}
 
-	err = refreshAllStatusView(g, e, true)
-	return err
+	return refreshAllStatusView(g, e, true)
 }
 
 // refresh the main view and re-render the repository representations
