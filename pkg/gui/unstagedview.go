@@ -18,8 +18,8 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 		}
 		v.Title = unstageViewFeature.Title
 	}
-	err = refreshUnstagedView(g)
-	return err
+
+	return refreshUnstagedView(g)
 }
 
 func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
@@ -33,8 +33,8 @@ func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	if err := git.Add(e, unstagedFiles[cy+oy], git.AddOptions{}); err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, e, true)
-	return err
+
+	return refreshAllStatusView(g, e, true)
 }
 
 func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
@@ -42,8 +42,8 @@ func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
 	if err := git.AddAll(e, git.AddOptions{}); err != nil {
 		return err
 	}
-	err := refreshAllStatusView(g, e, true)
-	return err
+
+	return refreshAllStatusView(g, e, true)
 }
 
 // refresh the main view and re-render the repository representations

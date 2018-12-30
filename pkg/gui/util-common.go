@@ -28,8 +28,8 @@ func (gui *Gui) nextViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFeature
 		}).Warn("View cannot be focused.")
 		return nil
 	}
-	gui.updateKeyBindingsView(g, focusedViewName)
-	return nil
+
+	return gui.updateKeyBindingsView(g, focusedViewName)
 }
 
 // focus to previous view
@@ -54,29 +54,26 @@ func (gui *Gui) previousViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFea
 		}).Warn("View cannot be focused.")
 		return nil
 	}
-	gui.updateKeyBindingsView(g, focusedViewName)
-	return nil
+
+	return gui.updateKeyBindingsView(g, focusedViewName)
 }
 
 // siwtch the app's mode to fetch
 func (gui *Gui) switchToFetchMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = fetchMode
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	return nil
+	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
 // siwtch the app's mode to pull
 func (gui *Gui) switchToPullMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = pullMode
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	return nil
+	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
 // siwtch the app's mode to merge
 func (gui *Gui) switchToMergeMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = mergeMode
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	return nil
+	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
 // bring the view on the top by its name

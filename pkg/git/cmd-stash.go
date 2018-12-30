@@ -38,7 +38,7 @@ func (e *RepoEntity) loadStashedItems() error {
 	stashIDRegexInt := regexp.MustCompile(`[\d]+`)
 	stashBranchRegex := regexp.MustCompile(`^(.*?): `)
 	stashMsgRegex := regexp.MustCompile(`WIP on \(?([^)]*)\)?`)
-	stashHashRegex := regexp.MustCompile(`[\w]{7}`)
+	stashHashRegex := regexp.MustCompile(`[\w|\d]{7}\s`)
 
 	stashlist := strings.Split(output, "\n")
 	for _, stashitem := range stashlist {
@@ -64,11 +64,12 @@ func (e *RepoEntity) loadStashedItems() error {
 
 		// trim branch section
 		trimmed = stashBranchRegex.Split(trimmed, 2)[1]
-		hash := stashHashRegex.FindString(trimmed)
+		hash := ""
 
 		var desc string
-		if stashHashRegex.MatchString(hash) && len(stashHashRegex.Split(trimmed, 2)) >= 2 {
-			desc = stashHashRegex.Split(trimmed, 2)[1][1:]
+		if stashHashRegex.MatchString(trimmed) {
+			hash = stashHashRegex.FindString(trimmed)[:7]
+			desc = stashHashRegex.Split(trimmed, 2)[1]
 		} else {
 			desc = trimmed
 		}

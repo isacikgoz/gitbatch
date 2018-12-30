@@ -51,10 +51,8 @@ var (
 // this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
-	suffix := ""
-	prefix := ""
-	repoName := ""
 
+	var prefix string
 	if e.Branch.Pushables != "?" {
 		prefix = prefix + pushable + ws + e.Branch.Pushables +
 			ws + pullable + ws + e.Branch.Pullables
@@ -63,6 +61,7 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 			ws + pullable + ws + yellow.Sprint(e.Branch.Pullables)
 	}
 
+	var repoName string
 	se := gui.getSelectedRepository()
 	if se == e {
 		prefix = prefix + selectionIndicator
@@ -82,6 +81,7 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 		prefix = prefix + ws
 	}
 
+	var suffix string
 	// rendering the satus according to repository's state
 	if e.State() == git.Queued {
 		if inQueue, ty := gui.State.Queue.IsInTheQueue(e); inQueue {
@@ -127,10 +127,9 @@ func commitLabel(c *git.Commit) string {
 }
 
 // limit the text length for visual concerns
-func adjustTextLength(text string, maxLength int) (adjusted string) {
+func adjustTextLength(text string, maxLength int) string {
 	if len(text) > maxLength {
-		adjusted := text[:maxLength-2] + ".."
-		return adjusted
+		return text[:maxLength-2] + ".."
 	}
 	return text
 }

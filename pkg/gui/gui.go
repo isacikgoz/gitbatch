@@ -100,6 +100,16 @@ func (gui *Gui) Run() error {
 	if err != nil {
 		return err
 	}
+	defer g.Close()
+
+	gui.g = g
+	g.Highlight = true
+	g.SelFgColor = gocui.ColorGreen
+
+	// If InputEsc is true, when ESC sequence is in the buffer and it doesn't
+	// match any known sequence, ESC means KeyEsc.
+	g.InputEsc = true
+	g.SetManagerFunc(gui.layout)
 
 	defer g.Close()
 	gui.g = g
@@ -213,14 +223,12 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 // focus to next view
 func (gui *Gui) nextMainView(g *gocui.Gui, v *gocui.View) error {
-	err := gui.nextViewOfGroup(g, v, mainViews)
-	return err
+	return gui.nextViewOfGroup(g, v, mainViews)
 }
 
 // focus to previous view
 func (gui *Gui) previousMainView(g *gocui.Gui, v *gocui.View) error {
-	err := gui.previousViewOfGroup(g, v, mainViews)
-	return err
+	return gui.previousViewOfGroup(g, v, mainViews)
 }
 
 // quit from the gui and end its loop
