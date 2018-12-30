@@ -17,20 +17,18 @@ func (gui *Gui) fillMain(g *gocui.Gui) error {
 		if err != nil {
 			return err
 		}
+
 		// if there is still a loading screen we better get rid of it
-		err = g.DeleteView(loadingViewFeature.Name)
-		if err != nil {
+		if err := g.DeleteView(loadingViewFeature.Name); err != nil {
 			return err
 		}
-		if _, err = gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
+		if _, err := gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
 			return err
 		}
+
 		// Sort by name is default behavior as expected, so it handles initial
 		// rendering of the main view
-		if err = gui.sortByName(g, v); err != nil {
-			return err
-		}
-		return nil
+		return gui.sortByName(g, v)
 	})
 	return nil
 }
