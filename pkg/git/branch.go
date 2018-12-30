@@ -117,6 +117,7 @@ func (e *RepoEntity) Checkout(branch *Branch) error {
 	if branch.Name == e.Branch.Name {
 		return nil
 	}
+
 	w, err := e.Repository.Worktree()
 	if err != nil {
 		log.Warn("Cannot get work tree " + err.Error())
@@ -130,7 +131,10 @@ func (e *RepoEntity) Checkout(branch *Branch) error {
 	}
 
 	// make this conditional on global scale
-	err = e.Remote.SyncBranches(branch.Name)
+	if err := e.Remote.SyncBranches(branch.Name); err != nil {
+		return err
+	}
+
 	return e.Refresh()
 }
 
