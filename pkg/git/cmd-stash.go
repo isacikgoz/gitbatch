@@ -36,7 +36,8 @@ func (e *RepoEntity) loadStashedItems() error {
 	output := stashGet(e, "list")
 	stashIDRegex := regexp.MustCompile(`stash@{[\d]+}:`)
 	stashIDRegexInt := regexp.MustCompile(`[\d]+`)
-	stashBranchRegex := regexp.MustCompile(`[\w]+: `)
+	stashBranchRegex := regexp.MustCompile(`^(.*?): `)
+	stashMsgRegex := regexp.MustCompile(`WIP on \(?([^)]*)\)?`)
 	stashHashRegex := regexp.MustCompile(`[\w]{7}`)
 
 	stashlist := strings.Split(output, "\n")
@@ -56,12 +57,22 @@ func (e *RepoEntity) loadStashedItems() error {
 		stashBranchRegexMatch := stashBranchRegex.FindString(trimmed)
 		branchName := stashBranchRegexMatch[:len(stashBranchRegexMatch)-2]
 
+		branchMatches := stashMsgRegex.FindStringSubmatch(branchName)
+		if len(branchMatches) >= 2 {
+			branchName = stashBranchRegexMatch[:len(stashBranchRegexMatch)-2]
+		}
+
 		// trim branch section
 		trimmed = stashBranchRegex.Split(trimmed, 2)[1]
 		hash := stashHashRegex.FindString(trimmed)
 
+		var desc string
+		if stashHashRegex.MatchString(hash) && len(stashHashRegex.Split(trimmed, 2)) >= 2 {
+			desc = stashHashRegex.Split(trimmed, 2)[1][1:]
+		} else {
+			desc = trimmed
+		}
 		// trim hash
-		desc := stashHashRegex.Split(trimmed, 2)[1][1:]
 
 		e.Stasheds = append(e.Stasheds, &StashedItem{
 			StashID:     i,

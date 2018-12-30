@@ -1,13 +1,13 @@
 package git
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
-
-	"strconv"
-	"strings"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -33,7 +33,11 @@ func (e *RepoEntity) loadLocalBranches() error {
 		return err
 	}
 	defer bs.Close()
-	headRef, _ := e.Repository.Head()
+	headRef, err := e.Repository.Head()
+	if err != nil {
+		return err
+	}
+	var branchFound bool
 	bs.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() == plumbing.HashReference {
 			var push, pull string
@@ -65,11 +69,23 @@ func (e *RepoEntity) loadLocalBranches() error {
 			}
 			if b.Name() == headRef.Name() {
 				e.Branch = branch
+				branchFound = true
 			}
 			lbs = append(lbs, branch)
 		}
 		return nil
 	})
+	if !branchFound {
+		branch := &Branch{
+			Name:      headRef.Hash().String(),
+			Reference: headRef,
+			Pushables: "?",
+			Pullables: "?",
+			Clean:     e.isClean(),
+		}
+		lbs = append(lbs, branch)
+		e.Branch = branch
+	}
 	e.Branches = lbs
 	return err
 }

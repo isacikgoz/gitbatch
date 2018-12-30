@@ -85,7 +85,7 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 		if err != nil {
 			return err
 		}
-		if protocol == authProtocolHttp || protocol == authProtocolHttps {
+		if protocol == authProtocolHTTP || protocol == authProtocolHTTPS {
 			opt.Auth = &http.BasicAuth{
 				Username: options.Credentials.User,
 				Password: options.Credentials.Password,
@@ -98,8 +98,8 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 	if err != nil {
 		return err
 	}
-	err = w.Pull(opt)
-	if err != nil {
+
+	if err = w.Pull(opt); err != nil {
 		if err == git.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())

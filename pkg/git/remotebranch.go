@@ -86,5 +86,5 @@ func (r *Remote) switchRemoteBranch(remoteBranchName string) error {
 			return nil
 		}
 	}
-	return errors.New("Remote branch not found.")
+	return errors.New("Remote branch not found")
 }
