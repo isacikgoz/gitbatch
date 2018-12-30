@@ -131,9 +131,8 @@ func (e *RepoEntity) Checkout(branch *Branch) error {
 	}
 
 	// make this conditional on global scale
-	if err := e.Remote.SyncBranches(branch.Name); err != nil {
-		return err
-	}
+	// we don't care if this function returns an error
+	e.Remote.SyncBranches(branch.Name)
 
 	return e.Refresh()
 }
