@@ -94,6 +94,44 @@ func (gui *Gui) cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return gui.renderMain()
 }
 
+// moves cursor to the top
+func (gui *Gui) cursorTop(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, _ := v.Origin()
+		cx, _ := v.Cursor()
+		if err := v.SetOrigin(ox, 0); err != nil {
+			return err
+		}
+		if err := v.SetCursor(cx, 0); err != nil {
+			return err
+		}
+	}
+	return gui.renderMain()
+}
+
+// moves cursor to the end
+func (gui *Gui) cursorEnd(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, _ := v.Origin()
+		cx, _ := v.Cursor()
+		_, vy := v.Size()
+		lr := len(gui.State.Repositories)
+		if lr <= vy {
+			if err := v.SetCursor(cx, lr-1); err != nil {
+				return err
+			}
+			return gui.renderMain()
+		}
+		if err := v.SetOrigin(ox, lr-vy); err != nil {
+			return err
+		}
+		if err := v.SetCursor(cx, vy-1); err != nil {
+			return err
+		}
+	}
+	return gui.renderMain()
+}
+
 // returns the entity at cursors position by taking its position in the gui's
 // slice of repositories. Since it is not a %100 percent safe methodology it may
 // rrequire a better implementation or the slice's order must be synchronized

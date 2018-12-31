@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/isacikgoz/gitbatch/pkg/app"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.2.1")
+	kingpin.Version("gitbatch version 0.2.2")
 	// parse the command line flag and options
 	kingpin.Parse()
 

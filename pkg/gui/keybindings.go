@@ -110,10 +110,10 @@ func (gui *Gui) generateKeybindings() error {
 		statusKeybindings := []*KeyBinding{
 			{
 				View:        view.Name,
-				Key:         gocui.KeyEsc,
+				Key:         'q',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.closeStatusView,
-				Display:     "esc",
+				Display:     "q",
 				Description: "Close/Cancel",
 				Vital:       true,
 			}, {
@@ -318,6 +318,22 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
+			Key:         gocui.KeyHome,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.cursorTop,
+			Display:     "home",
+			Description: "Home",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         gocui.KeyEnd,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.cursorEnd,
+			Display:     "end",
+			Description: "End",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorDown,
@@ -440,10 +456,10 @@ func (gui *Gui) generateKeybindings() error {
 		// upstream confirmation
 		{
 			View:        confirmationViewFeature.Name,
-			Key:         gocui.KeyEsc,
+			Key:         'q',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeConfirmationView,
-			Display:     "esc",
+			Display:     "q",
 			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
@@ -458,10 +474,10 @@ func (gui *Gui) generateKeybindings() error {
 		// Diff View Controls
 		{
 			View:        diffViewFeature.Name,
-			Key:         gocui.KeyEsc,
+			Key:         'q',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCommitDiffView,
-			Display:     "esc",
+			Display:     "q",
 			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
@@ -500,10 +516,10 @@ func (gui *Gui) generateKeybindings() error {
 		// Application Controls
 		{
 			View:        cheatSheetViewFeature.Name,
-			Key:         gocui.KeyEsc,
+			Key:         'q',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeCheatSheetView,
-			Display:     "esc",
+			Display:     "q",
 			Description: "Close/Cancel",
 			Vital:       true,
 		}, {
@@ -542,10 +558,10 @@ func (gui *Gui) generateKeybindings() error {
 		// Error View
 		{
 			View:        errorViewFeature.Name,
-			Key:         gocui.KeyEsc,
+			Key:         'q',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.closeErrorView,
-			Display:     "esc",
+			Display:     "q",
 			Description: "Close/Cancel",
 			Vital:       true,
 		}, {

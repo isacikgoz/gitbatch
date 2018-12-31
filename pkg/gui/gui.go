@@ -111,7 +111,6 @@ func (gui *Gui) Run() error {
 	g.InputEsc = true
 	g.SetManagerFunc(gui.layout)
 
-	defer g.Close()
 	gui.g = g
 	g.Highlight = true
 	g.SelFgColor = gocui.ColorGreen
