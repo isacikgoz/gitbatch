@@ -6,9 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-git.v4"
+	git "gopkg.in/src-d/go-git.v4"
 )
 
 // RepoEntity is the main entity of the application. The repository name is
@@ -82,7 +81,7 @@ func FastInitializeRepo(dir string) (e *RepoEntity, err error) {
 		return nil, err
 	}
 	// initialize RepoEntity with minimum viable fields
-	e = &RepoEntity{RepoID: helpers.RandomString(8),
+	e = &RepoEntity{RepoID: RandomString(8),
 		Name:       fstat.Name(),
 		AbsPath:    dir,
 		ModTime:    fstat.ModTime(),

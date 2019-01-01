@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	"github.com/jroimartin/gocui"
 	log "github.com/sirupsen/logrus"
 )
@@ -94,12 +93,20 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
 	if oy+cy <= ly {
 		return nil
 	}
-	newCy := helpers.Min(ly, maxY)
+	newCy := min(ly, maxY)
 	if err := v.SetCursor(cx, newCy); err != nil {
 		return err
 	}
 	err := v.SetOrigin(ox, ly-newCy)
 	return err
+}
+
+// min finds the minimum value of two int
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
 
 // this function handles the iteration of a side view and set its origin point

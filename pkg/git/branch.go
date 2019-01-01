@@ -4,9 +4,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/isacikgoz/gitbatch/pkg/helpers"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-git.v4"
+	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
@@ -142,7 +141,7 @@ func (e *RepoEntity) Checkout(branch *Branch) error {
 // an issue about it: https://github.com/src-d/go-git/issues/844
 func (e *RepoEntity) isClean() bool {
 	s := e.StatusWithGit()
-	s = helpers.TrimTrailingNewline(s)
+	s = TrimTrailingNewline(s)
 	if s != "?" {
 		vs := strings.Split(s, "\n")
 		line := vs[len(vs)-1]

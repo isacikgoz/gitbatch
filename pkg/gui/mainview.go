@@ -139,6 +139,9 @@ func (gui *Gui) pageDown(g *gocui.Gui, v *gocui.View) error {
 		cx, _ := v.Cursor()
 		_, vy := v.Size()
 		lr := len(gui.State.Repositories)
+		if lr < vy {
+			return nil
+		}
 		if oy+vy >= lr-vy {
 			if err := v.SetOrigin(ox, lr-vy); err != nil {
 				return err
