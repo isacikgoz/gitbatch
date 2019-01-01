@@ -132,6 +132,51 @@ func (gui *Gui) cursorEnd(g *gocui.Gui, v *gocui.View) error {
 	return gui.renderMain()
 }
 
+// moves cursor down for a page size
+func (gui *Gui) pageDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		cx, _ := v.Cursor()
+		_, vy := v.Size()
+		lr := len(gui.State.Repositories)
+		if oy+vy >= lr-vy {
+			if err := v.SetOrigin(ox, lr-vy); err != nil {
+				return err
+			}
+		} else if err := v.SetOrigin(ox, oy+vy); err != nil {
+			return err
+		}
+		if err := v.SetCursor(cx, 0); err != nil {
+			return err
+		}
+	}
+	return gui.renderMain()
+}
+
+// moves cursor up for a page size
+func (gui *Gui) pageUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		cx, cy := v.Cursor()
+		_, vy := v.Size()
+		if oy == 0 || oy+cy < vy {
+			if err := v.SetOrigin(ox, 0); err != nil {
+				return err
+			}
+		} else if oy <= vy {
+			if err := v.SetOrigin(ox, oy+cy-vy); err != nil {
+				return err
+			}
+		} else if err := v.SetOrigin(ox, oy-vy); err != nil {
+			return err
+		}
+		if err := v.SetCursor(cx, 0); err != nil {
+			return err
+		}
+	}
+	return gui.renderMain()
+}
+
 // returns the entity at cursors position by taking its position in the gui's
 // slice of repositories. Since it is not a %100 percent safe methodology it may
 // rrequire a better implementation or the slice's order must be synchronized

@@ -318,11 +318,27 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
+			Key:         gocui.KeyPgup,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.pageUp,
+			Display:     "page up",
+			Description: "Page up",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         gocui.KeyHome,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorTop,
 			Display:     "home",
 			Description: "Home",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         gocui.KeyPgdn,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.pageDown,
+			Display:     "page down",
+			Description: "Page Down",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
