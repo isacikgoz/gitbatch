@@ -4,20 +4,20 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
 // generateDirectories returns poosible git repositories to pipe into git pkg's
 // load function
-func generateDirectories(directories []string, depth int) (gitDirectories []string) {
+func generateDirectories(dirs []string, depth int) []string {
+	gitDirs := make([]string, 0)
 	for i := 0; i <= depth; i++ {
-		nonrepos, repos := walkRecursive(directories, gitDirectories)
-		directories = nonrepos
-		gitDirectories = repos
+		nonrepos, repos := walkRecursive(dirs, gitDirs)
+		dirs = nonrepos
+		gitDirs = repos
 	}
-	return gitDirectories
+	return gitDirs
 }
 
 // returns given values, first search directories and second stands for possible
@@ -33,7 +33,7 @@ func walkRecursive(search, appendant []string) ([]string, []string) {
 		if err != nil {
 			log.WithFields(log.Fields{
 				"directory": search[i],
-			}).Trace("Can't read directory")
+			}).WithError(err).Trace("Can't read directory")
 			continue
 		}
 		// since we started to search let's get rid of it and remove from search
@@ -49,14 +49,16 @@ func walkRecursive(search, appendant []string) ([]string, []string) {
 
 // seperateDirectories is to find all the files in given path. This method
 // does not check if the given file is a valid git repositories
-func seperateDirectories(directory string) (directories, gitDirectories []string, err error) {
+func seperateDirectories(directory string) ([]string, []string, error) {
+	dirs := make([]string, 0)
+	gitDirs := make([]string, 0)
 	files, err := ioutil.ReadDir(directory)
 	// can we read the directory?
 	if err != nil {
 		log.WithFields(log.Fields{
 			"directory": directory,
 		}).Trace("Can't read directory")
-		return directories, gitDirectories, nil
+		return nil, nil, nil
 	}
 	for _, f := range files {
 		repo := directory + string(os.PathSeparator) + f.Name()
@@ -66,38 +68,25 @@ func seperateDirectories(directory string) (directories, gitDirectories []string
 			log.WithFields(log.Fields{
 				"file":      file,
 				"directory": repo,
-			}).Trace("Failed to open file in the directory")
+			}).WithError(err).Trace("Failed to open file in the directory")
+			file.Close()
 			continue
 		}
 		dir, err := filepath.Abs(file.Name())
 		if err != nil {
-			return nil, nil, err
+			file.Close()
+			continue
 		}
 		// with this approach, we ignore submodule or sub repositoreis in a git repository
 		ff, err := os.Open(dir + string(os.PathSeparator) + ".git")
 		if err != nil {
-			directories = append(directories, dir)
+			dirs = append(dirs, dir)
 		} else {
-			gitDirectories = append(gitDirectories, dir)
+			gitDirs = append(gitDirs, dir)
 		}
 		ff.Close()
 		file.Close()
 
 	}
-	return directories, gitDirectories, nil
-}
-
-// takes a fileInfo slice and returns it with the ones matches with the
-// pattern string
-func filterDirectories(files []os.FileInfo, pattern string) []os.FileInfo {
-	var filteredRepos []os.FileInfo
-	for _, f := range files {
-		// it is just a simple filter
-		if strings.Contains(f.Name(), pattern) && f.Name() != ".git" {
-			filteredRepos = append(filteredRepos, f)
-		} else {
-			continue
-		}
-	}
-	return filteredRepos
+	return dirs, gitDirs, nil
 }

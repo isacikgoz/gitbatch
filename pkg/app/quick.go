@@ -37,10 +37,12 @@ func operate(directory, mode string) error {
 	case "fetch":
 		return git.Fetch(r, git.FetchOptions{
 			RemoteName: "origin",
+			Progress:   true,
 		})
 	case "pull":
 		return git.Pull(r, git.PullOptions{
 			RemoteName: "origin",
+			Progress:   true,
 		})
 	}
 	return nil

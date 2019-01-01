@@ -45,18 +45,18 @@ func Setup(setupConfig *SetupConfig) (*App, error) {
 		x := appConfig.Mode == "fetch"
 		y := appConfig.Mode == "pull"
 		if x == y {
-			log.Fatal("Unrecognized quick mode: " + appConfig.Mode)
+			log.Error("Unrecognized quick mode: " + appConfig.Mode)
+			os.Exit(1)
 		}
 		quick(directories, appConfig.Depth, appConfig.Mode)
-		log.Fatal("Finished")
+		os.Exit(0)
 	}
 
 	// create a gui.Gui struct and set it as App's gui
 	app.Gui, err = gui.NewGui(appConfig.Mode, directories)
 	if err != nil {
-		// the error types and handling is not considered yer
-		log.Error(err)
-		return app, err
+		// the error types and handling is not considered yet
+		return nil, err
 	}
 	// hopefull everything went smooth as butter
 	log.Trace("App configuration completed")

@@ -1,8 +1,11 @@
 package git
 
 import (
+	"os"
+	"strings"
+
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-git.v4"
+	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
@@ -28,6 +31,8 @@ type PullOptions struct {
 	SingleBranch bool
 	// Credentials holds the user and pswd information
 	Credentials Credentials
+	// Process logs the output to stdout
+	Progress bool
 	// Force allows the pull to update a local branch even when the remote
 	// branch does not descend from it.
 	Force bool
@@ -94,6 +99,9 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 			return ErrInvalidAuthMethod
 		}
 	}
+	if options.Progress {
+		opt.Progress = os.Stdout
+	}
 	w, err := e.Repository.Worktree()
 	if err != nil {
 		return err
@@ -103,6 +111,10 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 		if err == git.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())
+			// TODO: submit a PR for this kind of error, this type of catch is lame
+		} else if strings.Contains(err.Error(), "SSH_AUTH_SOCK") {
+			// The env variable SSH_AUTH_SOCK is not defined, maybe git can handle this
+			return pullWithGit(e, options)
 		} else if err == transport.ErrAuthenticationRequired {
 			log.Warn(err.Error())
 			return ErrAuthenticationRequired

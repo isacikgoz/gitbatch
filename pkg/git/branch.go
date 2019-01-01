@@ -38,40 +38,43 @@ func (e *RepoEntity) loadLocalBranches() error {
 	}
 	var branchFound bool
 	bs.ForEach(func(b *plumbing.Reference) error {
-		if b.Type() == plumbing.HashReference {
-			var push, pull string
-			pushables, err := RevList(e, RevListOptions{
-				Ref1: "@{u}",
-				Ref2: "HEAD",
-			})
-			if err != nil {
-				push = pushables[0]
-			} else {
-				push = strconv.Itoa(len(pushables))
-			}
-			pullables, err := RevList(e, RevListOptions{
-				Ref1: "HEAD",
-				Ref2: "@{u}",
-			})
-			if err != nil {
-				pull = pullables[0]
-			} else {
-				pull = strconv.Itoa(len(pullables))
-			}
-			clean := e.isClean()
-			branch := &Branch{
-				Name:      b.Name().Short(),
-				Reference: b,
-				Pushables: push,
-				Pullables: pull,
-				Clean:     clean,
-			}
-			if b.Name() == headRef.Name() {
-				e.Branch = branch
-				branchFound = true
-			}
-			lbs = append(lbs, branch)
+		if b.Type() != plumbing.HashReference {
+			return nil
 		}
+
+		var push, pull string
+		pushables, err := RevList(e, RevListOptions{
+			Ref1: "@{u}",
+			Ref2: "HEAD",
+		})
+		if err != nil {
+			push = pushables[0]
+		} else {
+			push = strconv.Itoa(len(pushables))
+		}
+		pullables, err := RevList(e, RevListOptions{
+			Ref1: "HEAD",
+			Ref2: "@{u}",
+		})
+		if err != nil {
+			pull = pullables[0]
+		} else {
+			pull = strconv.Itoa(len(pullables))
+		}
+		clean := e.isClean()
+		branch := &Branch{
+			Name:      b.Name().Short(),
+			Reference: b,
+			Pushables: push,
+			Pullables: pull,
+			Clean:     clean,
+		}
+		if b.Name() == headRef.Name() {
+			e.Branch = branch
+			branchFound = true
+		}
+		lbs = append(lbs, branch)
+
 		return nil
 	})
 	if !branchFound {
@@ -112,8 +115,8 @@ func (e *RepoEntity) currentBranchIndex() int {
 
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
-func (e *RepoEntity) Checkout(branch *Branch) error {
-	if branch.Name == e.Branch.Name {
+func (e *RepoEntity) Checkout(b *Branch) error {
+	if b.Name == e.Branch.Name {
 		return nil
 	}
 
@@ -123,7 +126,7 @@ func (e *RepoEntity) Checkout(branch *Branch) error {
 		return err
 	}
 	if err = w.Checkout(&git.CheckoutOptions{
-		Branch: branch.Reference.Name(),
+		Branch: b.Reference.Name(),
 	}); err != nil {
 		log.Warn("Cannot checkout " + err.Error())
 		return err
@@ -131,7 +134,7 @@ func (e *RepoEntity) Checkout(branch *Branch) error {
 
 	// make this conditional on global scale
 	// we don't care if this function returns an error
-	e.Remote.SyncBranches(branch.Name)
+	e.Remote.SyncBranches(b.Name)
 
 	return e.Refresh()
 }
