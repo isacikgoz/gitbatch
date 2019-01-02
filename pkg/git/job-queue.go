@@ -2,6 +2,7 @@ package git
 
 import (
 	"errors"
+	"sync"
 )
 
 // JobQueue holds the slice of Jobs
@@ -66,13 +67,34 @@ func (jq *JobQueue) RemoveFromQueue(entity *RepoEntity) error {
 // IsInTheQueue function; since the job and entity is not tied with its own
 // struct, this function returns true if that entity is in the queue along with
 // the jobs type
-func (jq *JobQueue) IsInTheQueue(entity *RepoEntity) (inTheQueue bool, jt JobType) {
+func (jq *JobQueue) IsInTheQueue(entity *RepoEntity) (inTheQueue bool, j *Job) {
 	inTheQueue = false
 	for _, job := range jq.series {
 		if job.Entity.RepoID == entity.RepoID {
 			inTheQueue = true
-			jt = job.JobType
+			j = job
 		}
 	}
-	return inTheQueue, jt
+	return inTheQueue, j
+}
+
+// StartJobsAsync start he jobs in the queue asynchronously
+func (jq *JobQueue) StartJobsAsync() map[*Job]error {
+	fails := make(map[*Job]error)
+	var wg sync.WaitGroup
+	var mx sync.Mutex
+	for range jq.series {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			j, _, err := jq.StartNext()
+			if err != nil {
+				mx.Lock()
+				fails[j] = err
+				mx.Unlock()
+			}
+		}()
+	}
+	wg.Wait()
+	return fails
 }

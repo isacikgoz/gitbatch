@@ -21,10 +21,11 @@ type Gui struct {
 // guiState struct holds the repositories, directiories, mode and queue of the
 // gui object. These values are not static
 type guiState struct {
-	Repositories []*git.RepoEntity
-	Directories  []string
-	Mode         mode
-	Queue        *git.JobQueue
+	Repositories  []*git.RepoEntity
+	Directories   []string
+	Mode          mode
+	Queue         *git.JobQueue
+	FailoverQueue *git.JobQueue
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
@@ -77,9 +78,10 @@ var (
 // NewGui creates a Gui opject and fill it's state related entites
 func NewGui(mode string, directoies []string) (*Gui, error) {
 	initialState := guiState{
-		Directories: directoies,
-		Mode:        fetchMode,
-		Queue:       git.CreateJobQueue(),
+		Directories:   directoies,
+		Mode:          fetchMode,
+		Queue:         git.CreateJobQueue(),
+		FailoverQueue: git.CreateJobQueue(),
 	}
 	gui := &Gui{
 		State: initialState,

@@ -231,29 +231,33 @@ func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
 // this function starts the queue and updates the gui with the result of an
 // operation
 func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
-	go func(gui_go *Gui, g_go *gocui.Gui) {
-		for {
-			job, finished, err := gui_go.State.Queue.StartNext()
-
-			if err != nil {
-				if err == git.ErrAuthenticationRequired {
-					// pause the job, so it will be indicated to being blocking
-					job.Entity.SetState(git.Paused)
-					err := gui_go.openAuthenticationView(g, gui_go.State.Queue, job, v.Name())
-					if err != nil {
-						log.Warn(err.Error())
-						return
-					}
-				}
-				return
-				// with not returning here, we simply ignore and continue
-			}
-			// if queue is finished simply return from this goroutine
-			if finished {
-				return
+	go func(gui_go *Gui) {
+		fails := gui_go.State.Queue.StartJobsAsync()
+		gui_go.State.Queue = git.CreateJobQueue()
+		for j, err := range fails {
+			if err == git.ErrAuthenticationRequired {
+				j.Entity.SetState(git.Paused)
+				gui_go.State.FailoverQueue.AddJob(j)
 			}
 		}
-	}(gui, g)
+	}(gui)
+	return nil
+}
+
+func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
+	if is, j := gui.State.FailoverQueue.IsInTheQueue(gui.getSelectedRepository()); is {
+		if j.Entity.State() == git.Paused {
+			gui.State.FailoverQueue.RemoveFromQueue(j.Entity)
+			err := gui.openAuthenticationView(g, gui.State.Queue, j, v.Name())
+			if err != nil {
+				log.Warn(err.Error())
+				return err
+			}
+			if isnt, _ := gui.State.Queue.IsInTheQueue(j.Entity); !isnt {
+				gui.State.FailoverQueue.AddJob(j)
+			}
+		}
+	}
 	return nil
 }
 

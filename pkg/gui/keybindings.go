@@ -310,6 +310,14 @@ func (gui *Gui) generateKeybindings() error {
 		// Main view controls
 		{
 			View:        mainViewFeature.Name,
+			Key:         'u',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.submitCredentials,
+			Display:     "u",
+			Description: "Submit Credentials",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         gocui.KeyArrowUp,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorUp,

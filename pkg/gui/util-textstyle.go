@@ -84,8 +84,8 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 	var suffix string
 	// rendering the satus according to repository's state
 	if e.State() == git.Queued {
-		if inQueue, ty := gui.State.Queue.IsInTheQueue(e); inQueue {
-			switch mode := ty; mode {
+		if inQueue, j := gui.State.Queue.IsInTheQueue(e); inQueue {
+			switch mode := j.JobType; mode {
 			case git.FetchJob:
 				suffix = blue.Sprint(queuedSymbol)
 			case git.PullJob:
@@ -103,12 +103,11 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 	} else if e.State() == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
 	} else if e.State() == git.Paused {
-		return prefix + repoName + ws + yellow.Sprint(pauseSymbol)
+		return prefix + repoName + ws + yellow.Sprint("auth required (u)")
 	} else if e.State() == git.Fail {
 		return prefix + repoName + ws + red.Sprint(failSymbol)
-	} else {
-		return prefix + repoName
 	}
+	return prefix + repoName
 }
 
 func commitLabel(c *git.Commit) string {

@@ -125,16 +125,7 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	if err := gui.closeAuthenticationView(g, v); err != nil {
-		return err // should return??
-	}
-
-	vReturn, err := g.View(authenticationReturnView)
-	if err != nil {
-		return err // should return??
-	}
-
-	return gui.startQueue(g, vReturn)
+	return gui.closeAuthenticationView(g, v)
 }
 
 // open an error view to inform user with a message and a useful note
