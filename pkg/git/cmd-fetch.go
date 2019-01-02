@@ -152,7 +152,7 @@ func fetchWithGoGit(e *RepoEntity, options FetchOptions, refspec string) (err er
 			return ErrAuthenticationRequired
 		} else {
 			log.Warn(err.Error())
-			return err
+			return fetchWithGit(e, options)
 		}
 	}
 

@@ -9,6 +9,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 var (
@@ -109,9 +110,19 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 
 	if err = w.Pull(opt); err != nil {
 		if err == git.NoErrAlreadyUpToDate {
+			// log.Error("error: " + err.Error())
 			// Already up-to-date
 			log.Warn(err.Error())
 			// TODO: submit a PR for this kind of error, this type of catch is lame
+		} else if err == memory.ErrRefHasChanged && pullTryCount < pullMaxTry {
+			pullTryCount++
+			log.Error("trying to fetch")
+			if err := Fetch(e, FetchOptions{
+				RemoteName: options.RemoteName,
+			}); err != nil {
+				return err
+			}
+			return Pull(e, options)
 		} else if strings.Contains(err.Error(), "SSH_AUTH_SOCK") {
 			// The env variable SSH_AUTH_SOCK is not defined, maybe git can handle this
 			return pullWithGit(e, options)
@@ -120,9 +131,10 @@ func pullWithGoGit(e *RepoEntity, options PullOptions) (err error) {
 			return ErrAuthenticationRequired
 		} else {
 			log.Warn(err.Error())
-			return err
+			return pullWithGit(e, options)
 		}
 	}
+
 	e.SetState(Success)
 	return e.Refresh()
 }
