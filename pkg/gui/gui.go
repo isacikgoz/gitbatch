@@ -113,15 +113,6 @@ func (gui *Gui) Run() error {
 	g.InputEsc = true
 	g.SetManagerFunc(gui.layout)
 
-	gui.g = g
-	g.Highlight = true
-	g.SelFgColor = gocui.ColorGreen
-
-	// If InputEsc is true, when ESC sequence is in the buffer and it doesn't
-	// match any known sequence, ESC means KeyEsc.
-	g.InputEsc = true
-	g.SetManagerFunc(gui.layout)
-
 	// start an async view apart from this loop to show loading screen
 	go func(g_ui *Gui) {
 		maxX, maxY := g.Size()
@@ -138,17 +129,18 @@ func (gui *Gui) Run() error {
 			log.Warn("Loading view cannot be focused.")
 			return
 		}
-		rs, err := git.LoadRepositoryEntities(g_ui.State.Directories)
-		if err != nil {
-			g.Close()
-			log.Fatal(err)
-			return
-		}
-		g_ui.State.Repositories = rs
+		go git.LoadRepositoryEntitiesAsync(g_ui.State.Directories, gui.addRepository)
+		// rs, err := git.LoadRepositoryEntities(g_ui.State.Directories)
+		// if err != nil {
+		// 	g.Close()
+		// 	log.Fatal(err)
+		// 	return
+		// }
+		// g_ui.State.Repositories = rs
 		// add gui's repositoryUpdated func as an observer to repositories
-		for _, repo := range rs {
-			repo.On(git.RepositoryUpdated, gui.repositoryUpdated)
-		}
+		// for _, repo := range rs {
+		// 	repo.On(git.RepositoryUpdated, gui.repositoryUpdated)
+		// }
 		gui.fillMain(g)
 	}(gui)
 
@@ -165,6 +157,12 @@ func (gui *Gui) Run() error {
 		return err
 	}
 	return nil
+}
+
+func (gui *Gui) addRepository(e *git.RepoEntity) {
+	gui.State.Repositories = append(gui.State.Repositories, e)
+	e.On(git.RepositoryUpdated, gui.repositoryUpdated)
+	e.Refresh()
 }
 
 // set the layout and create views with their default size, name etc. values
