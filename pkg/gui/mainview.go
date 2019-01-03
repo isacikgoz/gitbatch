@@ -9,30 +9,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// this is the initial function for filling the values for the main view. the
-// function waits a separate routine to fill the gui's repository slice
-func (gui *Gui) fillMain(g *gocui.Gui) error {
-	g.Update(func(g *gocui.Gui) error {
-		v, err := g.View(mainViewFeature.Name)
-		if err != nil {
-			return err
-		}
-
-		// if there is still a loading screen we better get rid of it
-		if err := g.DeleteView(loadingViewFeature.Name); err != nil {
-			return err
-		}
-		if _, err := gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
-			return err
-		}
-
-		// Sort by name is default behavior as expected, so it handles initial
-		// rendering of the main view
-		return gui.sortByName(g, v)
-	})
-	return nil
-}
-
 // refresh the main view and re-render the repository representations
 func (gui *Gui) renderMain() error {
 	gui.mutex.Lock()

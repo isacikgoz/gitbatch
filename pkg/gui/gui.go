@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/isacikgoz/gitbatch/pkg/git"
@@ -113,36 +112,7 @@ func (gui *Gui) Run() error {
 	g.InputEsc = true
 	g.SetManagerFunc(gui.layout)
 
-	// start an async view apart from this loop to show loading screen
-	go func(g_ui *Gui) {
-		maxX, maxY := g.Size()
-		// TODO: view size can be handled in a more smart way
-		v, err := g.SetView(loadingViewFeature.Name, maxX/2-10, maxY/2-1, maxX/2+10, maxY/2+1)
-		if err != nil {
-			if err != gocui.ErrUnknownView {
-				log.Warn("Loading view cannot be created.")
-				return
-			}
-			fmt.Fprintln(v, "Loading...")
-		}
-		if _, err := g.SetCurrentView(loadingViewFeature.Name); err != nil {
-			log.Warn("Loading view cannot be focused.")
-			return
-		}
-		go git.LoadRepositoryEntitiesAsync(g_ui.State.Directories, gui.addRepository)
-		// rs, err := git.LoadRepositoryEntities(g_ui.State.Directories)
-		// if err != nil {
-		// 	g.Close()
-		// 	log.Fatal(err)
-		// 	return
-		// }
-		// g_ui.State.Repositories = rs
-		// add gui's repositoryUpdated func as an observer to repositories
-		// for _, repo := range rs {
-		// 	repo.On(git.RepositoryUpdated, gui.repositoryUpdated)
-		// }
-		gui.fillMain(g)
-	}(gui)
+	go git.LoadRepositoryEntitiesAsync(gui.State.Directories, gui.addRepository)
 
 	if err := gui.generateKeybindings(); err != nil {
 		log.Error("Keybindings could not be created.")
@@ -162,7 +132,7 @@ func (gui *Gui) Run() error {
 func (gui *Gui) addRepository(e *git.RepoEntity) {
 	gui.State.Repositories = append(gui.State.Repositories, e)
 	e.On(git.RepositoryUpdated, gui.repositoryUpdated)
-	e.Refresh()
+	gui.repositoryUpdated(nil)
 }
 
 // set the layout and create views with their default size, name etc. values
@@ -175,6 +145,9 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		}
 		v.Title = mainViewFeature.Title
 		v.Overwrite = true
+		if _, err := gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
+			return err
+		}
 	}
 	if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.10*float32(maxY))); err != nil {
 		if err != gocui.ErrUnknownView {
