@@ -29,7 +29,7 @@ func RevList(e *RepoEntity, options RevListOptions) ([]string, error) {
 	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
 	if err != nil {
 		log.Warn("Error while rev-list command")
-		return []string{out}, err
+		return []string{"?"}, err
 	}
 	hashes := strings.Split(out, "\n")
 	for _, hash := range hashes {

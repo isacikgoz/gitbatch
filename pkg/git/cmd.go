@@ -15,7 +15,7 @@ func RunCommandWithOutput(dir string, command string, args []string) (string, er
 	if dir != "" {
 		cmd.Dir = dir
 	}
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	return string(output), err
 }
 
@@ -73,7 +73,7 @@ func GenericGitCommand(repoPath string, args []string) error {
 func GenericGitCommandWithOutput(repoPath string, args []string) (string, error) {
 	out, err := RunCommandWithOutput(repoPath, "git", args)
 	if err != nil {
-		return "?", err
+		return out, err
 	}
 	return TrimTrailingNewline(out), nil
 }

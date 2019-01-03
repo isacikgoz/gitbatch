@@ -103,9 +103,9 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 	} else if e.State() == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
 	} else if e.State() == git.Paused {
-		return prefix + repoName + ws + yellow.Sprint("auth required (u)")
+		return prefix + repoName + ws + yellow.Sprint("authentication required (u)")
 	} else if e.State() == git.Fail {
-		return prefix + repoName + ws + red.Sprint(failSymbol)
+		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(e.Message)
 	}
 	return prefix + repoName
 }

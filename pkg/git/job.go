@@ -41,6 +41,7 @@ func (j *Job) start() error {
 		}
 		if err := Fetch(j.Entity, opts); err != nil {
 			j.Entity.SetState(Fail)
+			j.Entity.SetStateMessage(err.Error())
 			return err
 		}
 	case PullJob:
@@ -54,6 +55,7 @@ func (j *Job) start() error {
 		}
 		if err := Pull(j.Entity, opts); err != nil {
 			j.Entity.SetState(Fail)
+			j.Entity.SetStateMessage(err.Error())
 			return err
 		}
 	case MergeJob:
@@ -61,6 +63,7 @@ func (j *Job) start() error {
 			BranchName: j.Entity.Remote.Branch.Name,
 		}); err != nil {
 			j.Entity.SetState(Fail)
+			j.Entity.SetStateMessage(err.Error())
 			return nil
 		}
 	default:

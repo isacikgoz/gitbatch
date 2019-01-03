@@ -1,8 +1,13 @@
 package git
 
 import (
+	"context"
 	"errors"
+	"runtime"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 )
 
 // JobQueue holds the slice of Jobs
@@ -80,13 +85,26 @@ func (jq *JobQueue) IsInTheQueue(entity *RepoEntity) (inTheQueue bool, j *Job) {
 
 // StartJobsAsync start he jobs in the queue asynchronously
 func (jq *JobQueue) StartJobsAsync() map[*Job]error {
-	fails := make(map[*Job]error)
-	var wg sync.WaitGroup
+
+	ctx := context.TODO()
+
+	var (
+		maxWorkers = runtime.GOMAXPROCS(0)
+		sem        = semaphore.NewWeighted(int64(maxWorkers))
+		fails      = make(map[*Job]error)
+	)
+
 	var mx sync.Mutex
 	for range jq.series {
-		wg.Add(1)
+
+		if err := sem.Acquire(ctx, 1); err != nil {
+			log.Errorf("Failed to acquire semaphore: %v", err)
+			break
+		}
+
 		go func() {
-			defer wg.Done()
+
+			defer sem.Release(1)
 			j, _, err := jq.StartNext()
 			if err != nil {
 				mx.Lock()
@@ -95,6 +113,14 @@ func (jq *JobQueue) StartJobsAsync() map[*Job]error {
 			}
 		}()
 	}
-	wg.Wait()
+
+	// Acquire all of the tokens to wait for any remaining workers to finish.
+	//
+	// If you are already waiting for the workers by some other means (such as an
+	// errgroup.Group), you can omit this final Acquire call.
+	if err := sem.Acquire(ctx, int64(maxWorkers)); err != nil {
+		log.Errorf("Failed to acquire semaphore: %v", err)
+	}
+
 	return fails
 }

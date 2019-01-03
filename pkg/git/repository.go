@@ -28,6 +28,9 @@ type RepoEntity struct {
 	Stasheds   []*StashedItem
 	state      RepoState
 
+	// TODO: move this into state
+	Message string
+
 	mutex     *sync.RWMutex
 	listeners map[string][]RepositoryListener
 }
@@ -208,5 +211,12 @@ func (e *RepoEntity) SetState(state RepoState) {
 	// we could send an event data but we don't need for this topic
 	if err := e.Publish(RepositoryUpdated, nil); err != nil {
 		log.Warnf("Cannot publish on %s topic.\n", RepositoryUpdated)
+	}
+}
+
+// SetMessage sets the message of status, it is used if state is Fail
+func (e *RepoEntity) SetStateMessage(msg string) {
+	if e.State() == Fail {
+		e.Message = msg
 	}
 }

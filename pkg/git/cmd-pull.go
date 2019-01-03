@@ -67,9 +67,8 @@ func pullWithGit(e *RepoEntity, options PullOptions) (err error) {
 	if options.Force {
 		args = append(args, "-f")
 	}
-	if err := GenericGitCommand(e.AbsPath, args); err != nil {
-		log.Warn("Error at git command (pull)")
-		return err
+	if out, err := GenericGitCommandWithOutput(e.AbsPath, args); err != nil {
+		return parseGitError(out, err)
 	}
 	e.SetState(Success)
 	return e.Refresh()
