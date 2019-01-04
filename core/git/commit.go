@@ -35,19 +35,19 @@ const (
 // NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
 func (r *Repository) NextCommit() {
-	r.Commit = r.Commits[(r.currentCommitIndex()+1)%len(r.Commits)]
+	r.State.Commit = r.Commits[(r.currentCommitIndex()+1)%len(r.Commits)]
 }
 
 // PreviousCommit iterates to opposite direction
 func (r *Repository) PreviousCommit() {
-	r.Commit = r.Commits[(len(r.Commits)+r.currentCommitIndex()-1)%len(r.Commits)]
+	r.State.Commit = r.Commits[(len(r.Commits)+r.currentCommitIndex()-1)%len(r.Commits)]
 }
 
 // returns the active commit index
 func (r *Repository) currentCommitIndex() int {
 	cix := 0
 	for i, c := range r.Commits {
-		if c.Hash == r.Commit.Hash {
+		if c.Hash == r.State.Commit.Hash {
 			cix = i
 		}
 	}
@@ -116,6 +116,9 @@ func (r *Repository) pullDiffsToUpstream() ([]*Commit, error) {
 	} else {
 		re := regexp.MustCompile(`\r?\n`)
 		for _, s := range pullables {
+			if len(s) < hashLength {
+				continue
+			}
 			commit := &Commit{
 				Hash:       s,
 				Author:     gitShowEmail(r.AbsPath, s),
@@ -149,7 +152,7 @@ func gitShowEmail(repoPath, hash string) string {
 	cmd.Dir = repoPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "?"
+		return ""
 	}
 	return string(out)
 }
@@ -161,7 +164,7 @@ func gitShowBody(repoPath, hash string) string {
 	cmd.Dir = repoPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "?"
+		return ""
 	}
 	return string(out)
 }
@@ -173,7 +176,7 @@ func gitShowDate(repoPath, hash string) string {
 	cmd.Dir = repoPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "?"
+		return ""
 	}
 	return string(out)
 }

@@ -41,7 +41,7 @@ func (gui *Gui) openAuthenticationView(g *gocui.Gui, jobQueue *job.JobQueue, job
 		return err
 	}
 	jobRequiresAuth = job
-	if job.Repository.State() != git.Fail {
+	if job.Repository.WorkStatus() != git.Fail {
 		if err := jobQueue.RemoveFromQueue(job.Repository); err != nil {
 			log.Fatal(err.Error())
 			return err
@@ -53,7 +53,7 @@ func (gui *Gui) openAuthenticationView(g *gocui.Gui, jobQueue *job.JobQueue, job
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, keySymbol+selectionIndicator+red.Sprint(jobRequiresAuth.Repository.Remote.URL[0]))
+		fmt.Fprintln(v, keySymbol+selectionIndicator+red.Sprint(jobRequiresAuth.Repository.State.Remote.URL[0]))
 	}
 	g.Cursor = true
 	if err := gui.openUserView(g); err != nil {
@@ -104,7 +104,7 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 	switch mode := jobRequiresAuth.JobType; mode {
 	case job.FetchJob:
 		jobRequiresAuth.Options = command.FetchOptions{
-			RemoteName: jobRequiresAuth.Repository.Remote.Name,
+			RemoteName: jobRequiresAuth.Repository.State.Remote.Name,
 			Credentials: git.Credentials{
 				User:     creduser,
 				Password: credpswd,
@@ -113,14 +113,14 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 	case job.PullJob:
 		// we handle pull as fetch&merge so same rule applies
 		jobRequiresAuth.Options = command.PullOptions{
-			RemoteName: jobRequiresAuth.Repository.Remote.Name,
+			RemoteName: jobRequiresAuth.Repository.State.Remote.Name,
 			Credentials: git.Credentials{
 				User:     creduser,
 				Password: credpswd,
 			},
 		}
 	}
-	jobRequiresAuth.Repository.SetState(git.Queued)
+	jobRequiresAuth.Repository.SetWorkStatus(git.Queued)
 
 	// add this job to the last of the queue
 	if err := gui.State.Queue.AddJob(jobRequiresAuth); err != nil {

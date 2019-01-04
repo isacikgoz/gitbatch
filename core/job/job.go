@@ -31,7 +31,7 @@ const (
 
 // starts the job
 func (j *Job) start() error {
-	j.Repository.SetState(git.Working)
+	j.Repository.SetWorkStatus(git.Working)
 	// TODO: Handle errors?
 	// TOOD: Better implementation required
 	switch mode := j.JobType; mode {
@@ -41,12 +41,12 @@ func (j *Job) start() error {
 			opts = j.Options.(command.FetchOptions)
 		} else {
 			opts = command.FetchOptions{
-				RemoteName: j.Repository.Remote.Name,
+				RemoteName: j.Repository.State.Remote.Name,
 			}
 		}
 		if err := command.Fetch(j.Repository, opts); err != nil {
-			j.Repository.SetState(git.Fail)
-			j.Repository.SetStateMessage(err.Error())
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = err.Error()
 			return err
 		}
 	case PullJob:
@@ -55,24 +55,24 @@ func (j *Job) start() error {
 			opts = j.Options.(command.PullOptions)
 		} else {
 			opts = command.PullOptions{
-				RemoteName: j.Repository.Remote.Name,
+				RemoteName: j.Repository.State.Remote.Name,
 			}
 		}
 		if err := command.Pull(j.Repository, opts); err != nil {
-			j.Repository.SetState(git.Fail)
-			j.Repository.SetStateMessage(err.Error())
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = err.Error()
 			return err
 		}
 	case MergeJob:
 		if err := command.Merge(j.Repository, command.MergeOptions{
-			BranchName: j.Repository.Remote.Branch.Name,
+			BranchName: j.Repository.State.Remote.Branch.Name,
 		}); err != nil {
-			j.Repository.SetState(git.Fail)
-			j.Repository.SetStateMessage(err.Error())
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = err.Error()
 			return nil
 		}
 	default:
-		j.Repository.SetState(git.Available)
+		j.Repository.SetWorkStatus(git.Available)
 		return nil
 	}
 	return nil

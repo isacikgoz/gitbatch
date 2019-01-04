@@ -192,7 +192,7 @@ func (gui *Gui) addToQueue(r *git.Repository) error {
 	if err != nil {
 		return err
 	}
-	r.SetState(git.Queued)
+	r.SetWorkStatus(git.Queued)
 	return nil
 }
 
@@ -202,7 +202,7 @@ func (gui *Gui) removeFromQueue(r *git.Repository) error {
 	if err != nil {
 		return err
 	}
-	r.SetState(git.Available)
+	r.SetWorkStatus(git.Available)
 	return nil
 }
 
@@ -214,7 +214,7 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 		gui_go.State.Queue = job.CreateJobQueue()
 		for j, err := range fails {
 			if err == gerr.ErrAuthenticationRequired {
-				j.Repository.SetState(git.Paused)
+				j.Repository.SetWorkStatus(git.Paused)
 				gui_go.State.FailoverQueue.AddJob(j)
 			}
 		}
@@ -224,7 +224,7 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 	if is, j := gui.State.FailoverQueue.IsInTheQueue(gui.getSelectedRepository()); is {
-		if j.Repository.State() == git.Paused {
+		if j.Repository.WorkStatus() == git.Paused {
 			gui.State.FailoverQueue.RemoveFromQueue(j.Repository)
 			err := gui.openAuthenticationView(g, gui.State.Queue, j, v.Name())
 			if err != nil {
@@ -244,11 +244,11 @@ func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	// maybe, failed entities may be added to queue again
-	if r.State().Ready {
+	if r.WorkStatus().Ready {
 		if err := gui.addToQueue(r); err != nil {
 			return err
 		}
-	} else if r.State() == git.Queued {
+	} else if r.WorkStatus() == git.Queued {
 		if err := gui.removeFromQueue(r); err != nil {
 			return err
 		}
@@ -260,7 +260,7 @@ func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 // current state into account before adding it
 func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
-		if r.State().Ready {
+		if r.WorkStatus().Ready {
 			if err := gui.addToQueue(r); err != nil {
 				return err
 			}
@@ -275,7 +275,7 @@ func (gui *Gui) markAllRepositories(g *gocui.Gui, v *gocui.View) error {
 // current state into account before removing it
 func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 	for _, r := range gui.State.Repositories {
-		if r.State() == git.Queued {
+		if r.WorkStatus() == git.Queued {
 			if err := gui.removeFromQueue(r); err != nil {
 				return err
 			}

@@ -17,15 +17,15 @@ type Remote struct {
 
 // NextRemote iterates over next branch of a remote
 func (r *Repository) NextRemote() error {
-	r.Remote = r.Remotes[(r.currentRemoteIndex()+1)%len(r.Remotes)]
-	r.Remote.SyncBranches(r.Branch.Name)
+	r.State.Remote = r.Remotes[(r.currentRemoteIndex()+1)%len(r.Remotes)]
+	r.State.Remote.SyncBranches(r.State.Branch.Name)
 	return r.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemote iterates over previous branch of a remote
 func (r *Repository) PreviousRemote() error {
-	r.Remote = r.Remotes[(len(r.Remotes)+r.currentRemoteIndex()-1)%len(r.Remotes)]
-	r.Remote.SyncBranches(r.Branch.Name)
+	r.State.Remote = r.Remotes[(len(r.Remotes)+r.currentRemoteIndex()-1)%len(r.Remotes)]
+	r.State.Remote.SyncBranches(r.State.Branch.Name)
 	return r.Publish(RepositoryUpdated, nil)
 }
 
@@ -33,7 +33,7 @@ func (r *Repository) PreviousRemote() error {
 func (r *Repository) currentRemoteIndex() int {
 	cix := 0
 	for i, remote := range r.Remotes {
-		if remote.Name == r.Remote.Name {
+		if remote.Name == r.State.Remote.Name {
 			cix = i
 		}
 	}

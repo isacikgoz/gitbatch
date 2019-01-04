@@ -48,7 +48,7 @@ func diffWithGoGit(r *git.Repository, hash string) (diff string, err error) {
 
 	// maybe we dont need to log the repo again?
 	commits, err := r.Repo.Log(&gogit.LogOptions{
-		From:  plumbing.NewHash(r.Commit.Hash),
+		From:  plumbing.NewHash(r.State.Commit.Hash),
 		Order: gogit.LogOrderCommitterTime,
 	})
 	if err != nil {

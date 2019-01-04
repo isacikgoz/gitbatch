@@ -72,7 +72,7 @@ func pullWithGit(r *git.Repository, options PullOptions) (err error) {
 	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
-	r.SetState(git.Success)
+	r.SetWorkStatus(git.Success)
 	return r.Refresh()
 }
 
@@ -88,7 +88,7 @@ func pullWithGoGit(r *git.Repository, options PullOptions) (err error) {
 	}
 	// if any credential is given, let's add it to the git.PullOptions
 	if len(options.Credentials.User) > 0 {
-		protocol, err := git.AuthProtocol(r.Remote)
+		protocol, err := git.AuthProtocol(r.State.Remote)
 		if err != nil {
 			return err
 		}
@@ -136,6 +136,6 @@ func pullWithGoGit(r *git.Repository, options PullOptions) (err error) {
 		}
 	}
 
-	r.SetState(git.Success)
+	r.SetWorkStatus(git.Success)
 	return r.Refresh()
 }

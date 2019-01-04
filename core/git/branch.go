@@ -54,7 +54,7 @@ func (r *Repository) loadLocalBranches() error {
 			Ref2: "HEAD",
 		})
 		if err != nil {
-			push = pushables[0]
+			push = "?"
 		} else {
 			push = strconv.Itoa(len(pushables))
 		}
@@ -63,7 +63,7 @@ func (r *Repository) loadLocalBranches() error {
 			Ref2: "@{u}",
 		})
 		if err != nil {
-			pull = pullables[0]
+			pull = "?"
 		} else {
 			pull = strconv.Itoa(len(pullables))
 		}
@@ -76,7 +76,7 @@ func (r *Repository) loadLocalBranches() error {
 			Clean:     clean,
 		}
 		if b.Name() == headRef.Name() {
-			r.Branch = branch
+			r.State.Branch = branch
 			branchFound = true
 		}
 		lbs = append(lbs, branch)
@@ -92,7 +92,7 @@ func (r *Repository) loadLocalBranches() error {
 			Clean:     r.isClean(),
 		}
 		lbs = append(lbs, branch)
-		r.Branch = branch
+		r.State.Branch = branch
 	}
 	r.Branches = lbs
 	return err
@@ -112,7 +112,7 @@ func (r *Repository) PreviousBranch() *Branch {
 func (r *Repository) currentBranchIndex() int {
 	bix := 0
 	for i, lbs := range r.Branches {
-		if lbs.Name == r.Branch.Name {
+		if lbs.Name == r.State.Branch.Name {
 			bix = i
 		}
 	}
@@ -122,7 +122,7 @@ func (r *Repository) currentBranchIndex() int {
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (r *Repository) Checkout(b *Branch) error {
-	if b.Name == r.Branch.Name {
+	if b.Name == r.State.Branch.Name {
 		return nil
 	}
 
@@ -140,7 +140,7 @@ func (r *Repository) Checkout(b *Branch) error {
 
 	// make this conditional on global scale
 	// we don't care if this function returns an error
-	r.Remote.SyncBranches(b.Name)
+	r.State.Remote.SyncBranches(b.Name)
 
 	return r.Refresh()
 }
@@ -194,7 +194,7 @@ func RevList(r *Repository, options RevListOptions) ([]string, error) {
 	cmd.Dir = r.AbsPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return []string{"?"}, err
+		return nil, err
 	}
 	s := string(out)
 

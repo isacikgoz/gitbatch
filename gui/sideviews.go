@@ -47,7 +47,7 @@ func (gui *Gui) renderRemotes(r *git.Repository) error {
 	if totalRemotes > 0 {
 		for i, rm := range r.Remotes {
 			_, shortURL := trimRemoteURL(rm.URL[0])
-			if rm.Name == r.Remote.Name {
+			if rm.Name == r.State.Remote.Name {
 				currentindex = i
 				fmt.Fprintln(out, selectionIndicator+rm.Name+": "+shortURL)
 				continue
@@ -70,10 +70,10 @@ func (gui *Gui) renderRemoteBranches(r *git.Repository) error {
 	}
 	out.Clear()
 	currentindex := 0
-	trb := len(r.Remote.Branches)
+	trb := len(r.State.Remote.Branches)
 	if trb > 0 {
-		for i, rm := range r.Remote.Branches {
-			if rm.Name == r.Remote.Branch.Name {
+		for i, rm := range r.State.Remote.Branches {
+			if rm.Name == r.State.Remote.Branch.Name {
 				currentindex = i
 				fmt.Fprintln(out, selectionIndicator+rm.Name)
 				continue
@@ -98,7 +98,7 @@ func (gui *Gui) renderBranch(r *git.Repository) error {
 	currentindex := 0
 	totalbranches := len(r.Branches)
 	for i, b := range r.Branches {
-		if b.Name == r.Branch.Name {
+		if b.Name == r.State.Branch.Name {
 			currentindex = i
 			fmt.Fprintln(out, selectionIndicator+b.Name)
 			continue
@@ -120,7 +120,7 @@ func (gui *Gui) renderCommits(r *git.Repository) error {
 	currentindex := 0
 	totalcommits := len(r.Commits)
 	for i, c := range r.Commits {
-		if c.Hash == r.Commit.Hash {
+		if c.Hash == r.State.Commit.Hash {
 			currentindex = i
 			fmt.Fprintln(out, selectionIndicator+commitLabel(c))
 			continue
@@ -136,7 +136,7 @@ func (gui *Gui) sideViewsNextItem(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	switch viewName := v.Name(); viewName {
 	case remoteBranchViewFeature.Name:
-		return r.Remote.NextRemoteBranch(r)
+		return r.State.Remote.NextRemoteBranch(r)
 	case remoteViewFeature.Name:
 		return r.NextRemote()
 	case branchViewFeature.Name:
@@ -159,7 +159,7 @@ func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	switch viewName := v.Name(); viewName {
 	case remoteBranchViewFeature.Name:
-		return r.Remote.PreviousRemoteBranch(r)
+		return r.State.Remote.PreviousRemoteBranch(r)
 	case remoteViewFeature.Name:
 		return r.PreviousRemote()
 	case branchViewFeature.Name:
@@ -180,7 +180,7 @@ func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	return command.Fetch(r, command.FetchOptions{
-		RemoteName: r.Remote.Name,
+		RemoteName: r.State.Remote.Name,
 		Prune:      true,
 	})
 }
@@ -195,8 +195,8 @@ func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, "branch."+r.Branch.Name+"."+"remote"+"="+r.Remote.Name)
-		fmt.Fprintln(v, "branch."+r.Branch.Name+"."+"merge"+"="+r.Branch.Reference.Name().String())
+		fmt.Fprintln(v, "branch."+r.State.Branch.Name+"."+"remote"+"="+r.State.Remote.Name)
+		fmt.Fprintln(v, "branch."+r.State.Branch.Name+"."+"merge"+"="+r.State.Branch.Reference.Name().String())
 	}
 	return gui.focusToView(confirmationViewFeature.Name)
 }
@@ -206,17 +206,17 @@ func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	r := gui.getSelectedRepository()
 	if err = command.AddConfig(r, command.ConfigOptions{
-		Section: "branch." + r.Branch.Name,
+		Section: "branch." + r.State.Branch.Name,
 		Option:  "remote",
 		Site:    command.ConfigSiteLocal,
-	}, r.Remote.Name); err != nil {
+	}, r.State.Remote.Name); err != nil {
 		return err
 	}
 	if err = command.AddConfig(r, command.ConfigOptions{
-		Section: "branch." + r.Branch.Name,
+		Section: "branch." + r.State.Branch.Name,
 		Option:  "merge",
 		Site:    command.ConfigSiteLocal,
-	}, r.Branch.Reference.Name().String()); err != nil {
+	}, r.State.Branch.Reference.Name().String()); err != nil {
 		return err
 	}
 	r.Refresh()

@@ -61,10 +61,10 @@ func Fetch(r *git.Repository, options FetchOptions) (err error) {
 		// this should be the refspec as default, let's give it a try
 		// TODO: Fix for quick mode, maybe better read config file
 		var refspec string
-		if r.Branch == nil {
+		if r.State.Branch == nil {
 			refspec = "+refs/heads/*:refs/remotes/origin/*"
 		} else {
-			refspec = "+" + "refs/heads/" + r.Branch.Name + ":" + "/refs/remotes/" + r.Remote.Branch.Name
+			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Branch.Name
 		}
 		err = fetchWithGoGit(r, options, refspec)
 		return err
@@ -94,7 +94,7 @@ func fetchWithGit(r *git.Repository, options FetchOptions) (err error) {
 	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
-	r.SetState(git.Success)
+	r.SetWorkStatus(git.Success)
 	// till this step everything should be ok
 	return r.Refresh()
 }
@@ -113,7 +113,7 @@ func fetchWithGoGit(r *git.Repository, options FetchOptions, refspec string) (er
 	}
 	// if any credential is given, let's add it to the git.FetchOptions
 	if len(options.Credentials.User) > 0 {
-		protocol, err := git.AuthProtocol(r.Remote)
+		protocol, err := git.AuthProtocol(r.State.Remote)
 		if err != nil {
 			return err
 		}
@@ -137,7 +137,7 @@ func fetchWithGoGit(r *git.Repository, options FetchOptions, refspec string) (er
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
 			// we dont have remote ref, so lets pull other things.. maybe it'd be useful
-			rp := r.Remote.RefSpecs[0]
+			rp := r.State.Remote.RefSpecs[0]
 			if fetchTryCount < fetchMaxTry {
 				fetchTryCount++
 				fetchWithGoGit(r, options, rp)
@@ -157,7 +157,7 @@ func fetchWithGoGit(r *git.Repository, options FetchOptions, refspec string) (er
 		}
 	}
 
-	r.SetState(git.Success)
+	r.SetWorkStatus(git.Success)
 	// till this step everything should be ok
 	return r.Refresh()
 }

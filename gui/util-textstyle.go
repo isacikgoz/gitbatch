@@ -54,12 +54,13 @@ var (
 func (gui *Gui) repositoryLabel(r *git.Repository) string {
 
 	var prefix string
-	if r.Branch.Pushables != "?" {
-		prefix = prefix + pushable + ws + r.Branch.Pushables +
-			ws + pullable + ws + r.Branch.Pullables
+	b := r.State.Branch
+	if b.Pushables != "?" {
+		prefix = prefix + pushable + ws + b.Pushables +
+			ws + pullable + ws + b.Pullables
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(r.Branch.Pushables) +
-			ws + pullable + ws + yellow.Sprint(r.Branch.Pullables)
+		prefix = prefix + pushable + ws + yellow.Sprint(b.Pushables) +
+			ws + pullable + ws + yellow.Sprint(b.Pullables)
 	}
 
 	var repoName string
@@ -73,10 +74,10 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	}
 	// some branch names can be really long, in that times I hope the first
 	// characters are important and meaningful
-	branch := adjustTextLength(r.Branch.Name, maxBranchLength)
+	branch := adjustTextLength(b.Name, maxBranchLength)
 	prefix = prefix + string(cyan.Sprint(branch))
 
-	if !r.Branch.Clean {
+	if !b.Clean {
 		prefix = prefix + ws + dirty + ws
 	} else {
 		prefix = prefix + ws
@@ -84,7 +85,7 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 
 	var suffix string
 	// rendering the satus according to repository's state
-	if r.State() == git.Queued {
+	if r.WorkStatus() == git.Queued {
 		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
 			switch mode := j.JobType; mode {
 			case job.FetchJob:
@@ -98,15 +99,15 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 			}
 		}
 		return prefix + repoName + ws + suffix
-	} else if r.State() == git.Working {
+	} else if r.WorkStatus() == git.Working {
 		// TODO: maybe the type of the job can be written while its working?
 		return prefix + repoName + ws + green.Sprint(workingSymbol)
-	} else if r.State() == git.Success {
+	} else if r.WorkStatus() == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
-	} else if r.State() == git.Paused {
+	} else if r.WorkStatus() == git.Paused {
 		return prefix + repoName + ws + yellow.Sprint("authentication required (u)")
-	} else if r.State() == git.Fail {
-		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(r.Message)
+	} else if r.WorkStatus() == git.Fail {
+		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(r.State.Message)
 	}
 	return prefix + repoName
 }
@@ -119,7 +120,11 @@ func commitLabel(c *git.Commit) string {
 	case git.LocalCommit:
 		body = blue.Sprint(c.Hash[:hashLength]) + " " + c.Message
 	case git.RemoteCommit:
-		body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		if len(c.Hash) > hashLength {
+			body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		} else {
+			body = yellow.Sprint(c.Hash[:len(c.Hash)]) + " " + c.Message
+		}
 	default:
 		body = c.Hash[:hashLength] + " " + c.Message
 	}
