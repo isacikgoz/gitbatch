@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/isacikgoz/gitbatch/pkg/app"
+	"github.com/isacikgoz/gitbatch/app"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
