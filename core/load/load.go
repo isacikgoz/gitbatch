@@ -15,10 +15,10 @@ import (
 // AsyncAdd is interface to caller
 type AsyncAdd func(r *git.Repository)
 
-// RepositoryEntities initializes the go-git's repository obejcts with given
+// SyncLoad initializes the go-git's repository obejcts with given
 // slice of paths. since this job is done parallel, the order of the directories
 // is not kept
-func RepositoryEntities(directories []string) (entities []*git.Repository, err error) {
+func SyncLoad(directories []string) (entities []*git.Repository, err error) {
 	entities = make([]*git.Repository, 0)
 
 	var wg sync.WaitGroup
@@ -55,8 +55,8 @@ func RepositoryEntities(directories []string) (entities []*git.Repository, err e
 	return entities, nil
 }
 
-// AddRepositoryEntitiesAsync asynchronously adds to caller
-func AddRepositoryEntitiesAsync(directories []string, add AsyncAdd) error {
+// AsyncLoad asynchronously adds to AsyncAdd function
+func AsyncLoad(directories []string, add AsyncAdd, d chan bool) error {
 	ctx := context.TODO()
 
 	var (
@@ -65,6 +65,8 @@ func AddRepositoryEntitiesAsync(directories []string, add AsyncAdd) error {
 	)
 
 	var mx sync.Mutex
+
+	// Compute the output using up to maxWorkers goroutines at a time.
 	for _, dir := range directories {
 		if err := sem.Acquire(ctx, 1); err != nil {
 			log.Errorf("Failed to acquire semaphore: %v", err)
@@ -88,5 +90,11 @@ func AddRepositoryEntitiesAsync(directories []string, add AsyncAdd) error {
 			mx.Unlock()
 		}(dir)
 	}
+	// Acquire all of the tokens to wait for any remaining workers to finish.
+	if err := sem.Acquire(ctx, int64(maxWorkers)); err != nil {
+		return err
+	}
+	d <- true
+	sem = nil
 	return nil
 }

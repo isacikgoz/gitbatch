@@ -1,8 +1,9 @@
 package gui
 
 import (
-	"sync"
+	"fmt"
 	"sort"
+	"sync"
 
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
@@ -75,6 +76,8 @@ var (
 
 	mainViews = []viewFeature{mainViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
 	modes     = []mode{fetchMode, pullMode, mergeMode}
+
+	loaded = make(chan bool)
 )
 
 // NewGui creates a Gui opject and fill it's state related entites
@@ -110,12 +113,11 @@ func (gui *Gui) Run() error {
 	g.Highlight = true
 	g.SelFgColor = gocui.ColorGreen
 
-	// If InputEsc is true, when ESC sequence is in the buffer and it doesn't
-	// match any known sequence, ESC means KeyEsc.
 	g.InputEsc = true
 	g.SetManagerFunc(gui.layout)
 
-	go load.AddRepositoryEntitiesAsync(gui.State.Directories, gui.appendRepo)
+	// load repositories in background asynchronously
+	go load.AsyncLoad(gui.State.Directories, gui.loadRepository, loaded)
 
 	if err := gui.generateKeybindings(); err != nil {
 		log.Error("Keybindings could not be created.")
@@ -132,10 +134,8 @@ func (gui *Gui) Run() error {
 	return nil
 }
 
-func (gui *Gui) appendRepo(r *git.Repository){
+func (gui *Gui) loadRepository(r *git.Repository) {
 	rs := gui.State.Repositories
-	// lock mutex to avoid multithreading ambigouty
-	gui.mutex.Lock()
 
 	// insertion sort implementation
 	index := sort.Search(len(rs), func(i int) bool { return git.Less(r, rs[i]) })
@@ -146,10 +146,29 @@ func (gui *Gui) appendRepo(r *git.Repository){
 	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
 	// update gui
 	gui.repositoryUpdated(nil)
-	gui.mutex.Unlock()
-	
+	gui.renderTitle()
 	// take pointer back
 	gui.State.Repositories = rs
+	go func() {
+		if <-loaded {
+			v, err := gui.g.View(mainViewFeature.Name)
+			if err != nil {
+				log.Warn(err.Error())
+				return
+			}
+			v.Title = mainViewFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
+		}
+	}()
+}
+
+func (gui *Gui) renderTitle() error {
+	v, err := gui.g.View(mainViewFeature.Name)
+	if err != nil {
+		log.Warn(err.Error())
+		return err
+	}
+	v.Title = mainViewFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
+	return nil
 }
 
 // set the layout and create views with their default size, name etc. values
