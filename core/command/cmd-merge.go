@@ -19,7 +19,7 @@ type MergeOptions struct {
 
 // Merge incorporates changes from the named commits or branches into the
 // current branch
-func Merge(e *git.RepoEntity, options MergeOptions) error {
+func Merge(r *git.Repository, options MergeOptions) error {
 	args := make([]string, 0)
 	args = append(args, mergeCommand)
 	if len(options.BranchName) > 0 {
@@ -31,9 +31,9 @@ func Merge(e *git.RepoEntity, options MergeOptions) error {
 	if options.NoStat {
 		args = append(args, "-n")
 	}
-	if out, err := GenericGitCommandWithOutput(e.AbsPath, args); err != nil {
+	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
-	e.SetState(git.Success)
-	return e.Refresh()
+	r.SetState(git.Success)
+	return r.Refresh()
 }

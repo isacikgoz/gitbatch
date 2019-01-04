@@ -9,8 +9,8 @@ import (
 type Job struct {
 	// JobType is to select operation type that will be applied to repository
 	JobType JobType
-	// Entity points to the repository that will be used for operation
-	Entity *git.RepoEntity
+	// Repository points to the repository that will be used for operation
+	Repository *git.Repository
 	// Options is a placeholder for operation options
 	Options interface{}
 }
@@ -31,7 +31,7 @@ const (
 
 // starts the job
 func (j *Job) start() error {
-	j.Entity.SetState(git.Working)
+	j.Repository.SetState(git.Working)
 	// TODO: Handle errors?
 	// TOOD: Better implementation required
 	switch mode := j.JobType; mode {
@@ -41,12 +41,12 @@ func (j *Job) start() error {
 			opts = j.Options.(command.FetchOptions)
 		} else {
 			opts = command.FetchOptions{
-				RemoteName: j.Entity.Remote.Name,
+				RemoteName: j.Repository.Remote.Name,
 			}
 		}
-		if err := command.Fetch(j.Entity, opts); err != nil {
-			j.Entity.SetState(git.Fail)
-			j.Entity.SetStateMessage(err.Error())
+		if err := command.Fetch(j.Repository, opts); err != nil {
+			j.Repository.SetState(git.Fail)
+			j.Repository.SetStateMessage(err.Error())
 			return err
 		}
 	case PullJob:
@@ -55,24 +55,24 @@ func (j *Job) start() error {
 			opts = j.Options.(command.PullOptions)
 		} else {
 			opts = command.PullOptions{
-				RemoteName: j.Entity.Remote.Name,
+				RemoteName: j.Repository.Remote.Name,
 			}
 		}
-		if err := command.Pull(j.Entity, opts); err != nil {
-			j.Entity.SetState(git.Fail)
-			j.Entity.SetStateMessage(err.Error())
+		if err := command.Pull(j.Repository, opts); err != nil {
+			j.Repository.SetState(git.Fail)
+			j.Repository.SetStateMessage(err.Error())
 			return err
 		}
 	case MergeJob:
-		if err := command.Merge(j.Entity, command.MergeOptions{
-			BranchName: j.Entity.Remote.Branch.Name,
+		if err := command.Merge(j.Repository, command.MergeOptions{
+			BranchName: j.Repository.Remote.Branch.Name,
 		}); err != nil {
-			j.Entity.SetState(git.Fail)
-			j.Entity.SetStateMessage(err.Error())
+			j.Repository.SetState(git.Fail)
+			j.Repository.SetStateMessage(err.Error())
 			return nil
 		}
 	default:
-		j.Entity.SetState(git.Available)
+		j.Repository.SetState(git.Available)
 		return nil
 	}
 	return nil

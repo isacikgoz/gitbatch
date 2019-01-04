@@ -4,9 +4,9 @@ import (
 	"unicode"
 )
 
-// Alphabetical slice is the re-ordered *RepoEntity slice that sorted according
+// Alphabetical slice is the re-ordered *Repository slice that sorted according
 // to alphabetical order (A-Z)
-type Alphabetical []*RepoEntity
+type Alphabetical []*Repository
 
 // Len is the interface implementation for Alphabetical sorting function
 func (s Alphabetical) Len() int { return len(s) }
@@ -43,9 +43,9 @@ func (s Alphabetical) Less(i, j int) bool {
 	return false
 }
 
-// LastModified slice is the re-ordered *RepoEntity slice that sorted according
+// LastModified slice is the re-ordered *Repository slice that sorted according
 // to last modified date of the repository directory
-type LastModified []*RepoEntity
+type LastModified []*Repository
 
 // Len is the interface implementation for LastModified sorting function
 func (s LastModified) Len() int { return len(s) }

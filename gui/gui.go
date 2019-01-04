@@ -22,7 +22,7 @@ type Gui struct {
 // guiState struct holds the repositories, directiories, mode and queue of the
 // gui object. These values are not static
 type guiState struct {
-	Repositories  []*git.RepoEntity
+	Repositories  []*git.Repository
 	Directories   []string
 	Mode          mode
 	Queue         *job.JobQueue
@@ -131,9 +131,9 @@ func (gui *Gui) Run() error {
 	return nil
 }
 
-func (gui *Gui) addRepository(e *git.RepoEntity) {
-	gui.State.Repositories = append(gui.State.Repositories, e)
-	e.On(git.RepositoryUpdated, gui.repositoryUpdated)
+func (gui *Gui) addRepository(r *git.Repository) {
+	gui.State.Repositories = append(gui.State.Repositories, r)
+	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
 	gui.repositoryUpdated(nil)
 }
 

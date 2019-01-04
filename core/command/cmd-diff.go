@@ -19,36 +19,36 @@ var (
 // Diff is a wrapper function for "git diff" command
 // Diff function returns the diff to previous commit detail of the given has
 // of a specific commit
-func Diff(e *git.RepoEntity, hash string) (diff string, err error) {
+func Diff(r *git.Repository, hash string) (diff string, err error) {
 	diffCmdMode = diffCmdModeNative
 
 	switch diffCmdMode {
 	case diffCmdModeLegacy:
-		return diffWithGit(e, hash)
+		return diffWithGit(r, hash)
 	case diffCmdModeNative:
-		return diffWithGoGit(e, hash)
+		return diffWithGoGit(r, hash)
 	}
 	return diff, errors.New("Unhandled diff operation")
 }
 
-func diffWithGit(e *git.RepoEntity, hash string) (diff string, err error) {
+func diffWithGit(r *git.Repository, hash string) (diff string, err error) {
 	return diff, nil
 }
 
-func diffWithGoGit(e *git.RepoEntity, hash string) (diff string, err error) {
+func diffWithGoGit(r *git.Repository, hash string) (diff string, err error) {
 	currentCommitIndex := 0
-	for i, cs := range e.Commits {
+	for i, cs := range r.Commits {
 		if cs.Hash == hash {
 			currentCommitIndex = i
 		}
 	}
-	if len(e.Commits)-currentCommitIndex <= 1 {
+	if len(r.Commits)-currentCommitIndex <= 1 {
 		return "there is no diff", nil
 	}
 
 	// maybe we dont need to log the repo again?
-	commits, err := e.Repository.Log(&gogit.LogOptions{
-		From:  plumbing.NewHash(e.Commit.Hash),
+	commits, err := r.Repo.Log(&gogit.LogOptions{
+		From:  plumbing.NewHash(r.Commit.Hash),
 		Order: gogit.LogOrderCommitterTime,
 	})
 	if err != nil {

@@ -51,32 +51,32 @@ var (
 
 // this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
-func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
+func (gui *Gui) repositoryLabel(r *git.Repository) string {
 
 	var prefix string
-	if e.Branch.Pushables != "?" {
-		prefix = prefix + pushable + ws + e.Branch.Pushables +
-			ws + pullable + ws + e.Branch.Pullables
+	if r.Branch.Pushables != "?" {
+		prefix = prefix + pushable + ws + r.Branch.Pushables +
+			ws + pullable + ws + r.Branch.Pullables
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(e.Branch.Pushables) +
-			ws + pullable + ws + yellow.Sprint(e.Branch.Pullables)
+		prefix = prefix + pushable + ws + yellow.Sprint(r.Branch.Pushables) +
+			ws + pullable + ws + yellow.Sprint(r.Branch.Pullables)
 	}
 
 	var repoName string
-	se := gui.getSelectedRepository()
-	if se == e {
+	sr := gui.getSelectedRepository()
+	if sr == r {
 		prefix = prefix + selectionIndicator
-		repoName = green.Sprint(e.Name)
+		repoName = green.Sprint(r.Name)
 	} else {
 		prefix = prefix + ws
-		repoName = e.Name
+		repoName = r.Name
 	}
 	// some branch names can be really long, in that times I hope the first
 	// characters are important and meaningful
-	branch := adjustTextLength(e.Branch.Name, maxBranchLength)
+	branch := adjustTextLength(r.Branch.Name, maxBranchLength)
 	prefix = prefix + string(cyan.Sprint(branch))
 
-	if !e.Branch.Clean {
+	if !r.Branch.Clean {
 		prefix = prefix + ws + dirty + ws
 	} else {
 		prefix = prefix + ws
@@ -84,8 +84,8 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 
 	var suffix string
 	// rendering the satus according to repository's state
-	if e.State() == git.Queued {
-		if inQueue, j := gui.State.Queue.IsInTheQueue(e); inQueue {
+	if r.State() == git.Queued {
+		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
 			switch mode := j.JobType; mode {
 			case job.FetchJob:
 				suffix = blue.Sprint(queuedSymbol)
@@ -98,15 +98,15 @@ func (gui *Gui) repositoryLabel(e *git.RepoEntity) string {
 			}
 		}
 		return prefix + repoName + ws + suffix
-	} else if e.State() == git.Working {
+	} else if r.State() == git.Working {
 		// TODO: maybe the type of the job can be written while its working?
 		return prefix + repoName + ws + green.Sprint(workingSymbol)
-	} else if e.State() == git.Success {
+	} else if r.State() == git.Success {
 		return prefix + repoName + ws + green.Sprint(successSymbol)
-	} else if e.State() == git.Paused {
+	} else if r.State() == git.Paused {
 		return prefix + repoName + ws + yellow.Sprint("authentication required (u)")
-	} else if e.State() == git.Fail {
-		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(e.Message)
+	} else if r.State() == git.Fail {
+		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(r.Message)
 	}
 	return prefix + repoName
 }

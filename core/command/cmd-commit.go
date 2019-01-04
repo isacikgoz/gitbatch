@@ -29,22 +29,22 @@ type CommitOptions struct {
 }
 
 // CommitCommand defines which commit command to use.
-func CommitCommand(e *git.RepoEntity, options CommitOptions) (err error) {
+func CommitCommand(r *git.Repository, options CommitOptions) (err error) {
 	// here we configure commit operation
 	// default mode is go-git (this may be configured)
 	commitCmdMode = commitCmdModeNative
 
 	switch commitCmdMode {
 	case commitCmdModeLegacy:
-		return commitWithGit(e, options)
+		return commitWithGit(r, options)
 	case commitCmdModeNative:
-		return commitWithGoGit(e, options)
+		return commitWithGoGit(r, options)
 	}
 	return errors.New("Unhandled commit operation")
 }
 
 // commitWithGit is simply a bare git commit -m <msg> command which is flexible
-func commitWithGit(e *git.RepoEntity, options CommitOptions) (err error) {
+func commitWithGit(r *git.Repository, options CommitOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, commitCommand)
 	args = append(args, "-m")
@@ -52,18 +52,18 @@ func commitWithGit(e *git.RepoEntity, options CommitOptions) (err error) {
 	if len(options.CommitMsg) > 0 {
 		args = append(args, options.CommitMsg)
 	}
-	if err := GenericGitCommand(e.AbsPath, args); err != nil {
+	if err := GenericGitCommand(r.AbsPath, args); err != nil {
 		log.Warn("Error at git command (commit)")
-		e.Refresh()
+		r.Refresh()
 		return err
 	}
 	// till this step everything should be ok
-	return e.Refresh()
+	return r.Refresh()
 }
 
 // commitWithGoGit is the primary commit method
-func commitWithGoGit(e *git.RepoEntity, options CommitOptions) (err error) {
-	config, err := e.Repository.Config()
+func commitWithGoGit(r *git.Repository, options CommitOptions) (err error) {
+	config, err := r.Repo.Config()
 	if err != nil {
 		return err
 	}
@@ -77,16 +77,16 @@ func commitWithGoGit(e *git.RepoEntity, options CommitOptions) (err error) {
 		},
 	}
 
-	w, err := e.Repository.Worktree()
+	w, err := r.Repo.Worktree()
 	if err != nil {
 		return err
 	}
 
 	_, err = w.Commit(options.CommitMsg, opt)
 	if err != nil {
-		e.Refresh()
+		r.Refresh()
 		return err
 	}
 	// till this step everything should be ok
-	return e.Refresh()
+	return r.Refresh()
 }

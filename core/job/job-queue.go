@@ -28,7 +28,7 @@ func CreateJobQueue() (jq *JobQueue) {
 // AddJob adds a job to the queue
 func (jq *JobQueue) AddJob(j *Job) error {
 	for _, job := range jq.series {
-		if job.Entity.RepoID == j.Entity.RepoID && job.JobType == j.JobType {
+		if job.Repository.RepoID == j.Repository.RepoID && job.JobType == j.JobType {
 			return errors.New("Same job already is in the queue")
 		}
 	}
@@ -56,10 +56,10 @@ func (jq *JobQueue) StartNext() (j *Job, finished bool, err error) {
 
 // RemoveFromQueue deletes the given entity and its job from the queue
 // TODO: it is not safe if the job has been started
-func (jq *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
+func (jq *JobQueue) RemoveFromQueue(r *git.Repository) error {
 	removed := false
 	for i, job := range jq.series {
-		if job.Entity.RepoID == entity.RepoID {
+		if job.Repository.RepoID == r.RepoID {
 			jq.series = append(jq.series[:i], jq.series[i+1:]...)
 			removed = true
 		}
@@ -73,10 +73,10 @@ func (jq *JobQueue) RemoveFromQueue(entity *git.RepoEntity) error {
 // IsInTheQueue function; since the job and entity is not tied with its own
 // struct, this function returns true if that entity is in the queue along with
 // the jobs type
-func (jq *JobQueue) IsInTheQueue(entity *git.RepoEntity) (inTheQueue bool, j *Job) {
+func (jq *JobQueue) IsInTheQueue(r *git.Repository) (inTheQueue bool, j *Job) {
 	inTheQueue = false
 	for _, job := range jq.series {
-		if job.Entity.RepoID == entity.RepoID {
+		if job.Repository.RepoID == r.RepoID {
 			inTheQueue = true
 			j = job
 		}

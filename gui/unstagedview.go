@@ -23,27 +23,27 @@ func (gui *Gui) openUnStagedView(g *gocui.Gui) error {
 }
 
 func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
-	e := gui.getSelectedRepository()
+	r := gui.getSelectedRepository()
 
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
 	if len(unstagedFiles) <= 0 || len(unstagedFiles) < cy+oy {
 		return nil
 	}
-	if err := command.Add(e, unstagedFiles[cy+oy], command.AddOptions{}); err != nil {
+	if err := command.Add(r, unstagedFiles[cy+oy], command.AddOptions{}); err != nil {
 		return err
 	}
 
-	return refreshAllStatusView(g, e, true)
+	return refreshAllStatusView(g, r, true)
 }
 
 func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
-	e := gui.getSelectedRepository()
-	if err := command.AddAll(e, command.AddOptions{}); err != nil {
+	r := gui.getSelectedRepository()
+	if err := command.AddAll(r, command.AddOptions{}); err != nil {
 		return err
 	}
 
-	return refreshAllStatusView(g, e, true)
+	return refreshAllStatusView(g, r, true)
 }
 
 // refresh the main view and re-render the repository representations

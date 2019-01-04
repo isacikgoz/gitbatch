@@ -25,32 +25,32 @@ func (gui *Gui) openStageView(g *gocui.Gui) error {
 }
 
 func (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {
-	e := gui.getSelectedRepository()
+	r := gui.getSelectedRepository()
 
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
 	if len(stagedFiles) <= 0 || len(stagedFiles) <= cy+oy {
 		return nil
 	}
-	if err := command.Reset(e, stagedFiles[cy+oy], command.ResetOptions{}); err != nil {
+	if err := command.Reset(r, stagedFiles[cy+oy], command.ResetOptions{}); err != nil {
 		return err
 	}
-	return refreshAllStatusView(g, e, true)
+	return refreshAllStatusView(g, r, true)
 }
 
 func (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
-	e := gui.getSelectedRepository()
-	ref, err := e.Repository.Head()
+	r := gui.getSelectedRepository()
+	ref, err := r.Repo.Head()
 	if err != nil {
 		return err
 	}
-	if err := command.ResetAll(e, command.ResetOptions{
+	if err := command.ResetAll(r, command.ResetOptions{
 		Hash:  ref.Hash().String(),
 		Rtype: command.ResetMixed,
 	}); err != nil {
 		return err
 	}
-	return refreshAllStatusView(g, e, true)
+	return refreshAllStatusView(g, r, true)
 }
 
 // refresh the main view and re-render the repository representations

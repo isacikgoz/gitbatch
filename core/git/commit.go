@@ -34,20 +34,20 @@ const (
 
 // NextCommit iterates over next commit of a branch
 // TODO: the commits entites can tied to branch instead ot the repository
-func (e *RepoEntity) NextCommit() {
-	e.Commit = e.Commits[(e.currentCommitIndex()+1)%len(e.Commits)]
+func (r *Repository) NextCommit() {
+	r.Commit = r.Commits[(r.currentCommitIndex()+1)%len(r.Commits)]
 }
 
 // PreviousCommit iterates to opposite direction
-func (e *RepoEntity) PreviousCommit() {
-	e.Commit = e.Commits[(len(e.Commits)+e.currentCommitIndex()-1)%len(e.Commits)]
+func (r *Repository) PreviousCommit() {
+	r.Commit = r.Commits[(len(r.Commits)+r.currentCommitIndex()-1)%len(r.Commits)]
 }
 
 // returns the active commit index
-func (e *RepoEntity) currentCommitIndex() int {
+func (r *Repository) currentCommitIndex() int {
 	cix := 0
-	for i, c := range e.Commits {
-		if c.Hash == e.Commit.Hash {
+	for i, c := range r.Commits {
+		if c.Hash == r.Commit.Hash {
 			cix = i
 		}
 	}
@@ -56,16 +56,16 @@ func (e *RepoEntity) currentCommitIndex() int {
 
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
-func (e *RepoEntity) loadCommits() error {
-	r := e.Repository
-	e.Commits = make([]*Commit, 0)
-	ref, err := r.Head()
+func (r *Repository) loadCommits() error {
+	rp := r.Repo
+	r.Commits = make([]*Commit, 0)
+	ref, err := rp.Head()
 	if err != nil {
 		log.Trace("Cannot get HEAD " + err.Error())
 		return err
 	}
 	// git log first
-	cIter, err := r.Log(&git.LogOptions{
+	cIter, err := rp.Log(&git.LogOptions{
 		From:  ref.Hash(),
 		Order: git.LogOrderCommitterTime,
 	})
@@ -75,11 +75,11 @@ func (e *RepoEntity) loadCommits() error {
 	}
 	defer cIter.Close()
 	// find commits that fetched from upstream but not merged commits
-	rmcs, _ := e.pullDiffsToUpstream()
-	e.Commits = append(e.Commits, rmcs...)
+	rmcs, _ := r.pullDiffsToUpstream()
+	r.Commits = append(r.Commits, rmcs...)
 
 	// find commits that not pushed to upstream
-	lcs, _ := e.pushDiffsToUpstream()
+	lcs, _ := r.pushDiffsToUpstream()
 
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
@@ -97,7 +97,7 @@ func (e *RepoEntity) loadCommits() error {
 			Time:       c.Author.When.String(),
 			CommitType: cmType,
 		}
-		e.Commits = append(e.Commits, commit)
+		r.Commits = append(r.Commits, commit)
 		return nil
 	})
 	return err
@@ -105,9 +105,9 @@ func (e *RepoEntity) loadCommits() error {
 
 // this function creates the commit entities according to active branchs diffs
 // to *its* configured upstream
-func (e *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
+func (r *Repository) pullDiffsToUpstream() ([]*Commit, error) {
 	remoteCommits := make([]*Commit, 0)
-	pullables, err := RevList(e, RevListOptions{
+	pullables, err := RevList(r, RevListOptions{
 		Ref1: "HEAD",
 		Ref2: "@{u}",
 	})
@@ -118,9 +118,9 @@ func (e *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 		for _, s := range pullables {
 			commit := &Commit{
 				Hash:       s,
-				Author:     gitShowEmail(e.AbsPath, s),
-				Message:    re.ReplaceAllString(gitShowBody(e.AbsPath, s), " "),
-				Time:       gitShowDate(e.AbsPath, s),
+				Author:     gitShowEmail(r.AbsPath, s),
+				Message:    re.ReplaceAllString(gitShowBody(r.AbsPath, s), " "),
+				Time:       gitShowDate(r.AbsPath, s),
 				CommitType: RemoteCommit,
 			}
 			remoteCommits = append(remoteCommits, commit)
@@ -131,8 +131,8 @@ func (e *RepoEntity) pullDiffsToUpstream() ([]*Commit, error) {
 
 // this function returns the hashes of the commits that are not pushed to the
 // upstream of the specific branch
-func (e *RepoEntity) pushDiffsToUpstream() ([]string, error) {
-	pushables, err := RevList(e, RevListOptions{
+func (r *Repository) pushDiffsToUpstream() ([]string, error) {
+	pushables, err := RevList(r, RevListOptions{
 		Ref1: "@{u}",
 		Ref2: "HEAD",
 	})

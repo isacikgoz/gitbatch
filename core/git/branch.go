@@ -30,15 +30,15 @@ var (
 // search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
 // git cammand and its output
-func (e *RepoEntity) loadLocalBranches() error {
+func (r *Repository) loadLocalBranches() error {
 	lbs := make([]*Branch, 0)
-	bs, err := e.Repository.Branches()
+	bs, err := r.Repo.Branches()
 	if err != nil {
 		log.Warn("Cannot load branches " + err.Error())
 		return err
 	}
 	defer bs.Close()
-	headRef, err := e.Repository.Head()
+	headRef, err := r.Repo.Head()
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (e *RepoEntity) loadLocalBranches() error {
 		}
 
 		var push, pull string
-		pushables, err := RevList(e, RevListOptions{
+		pushables, err := RevList(r, RevListOptions{
 			Ref1: "@{u}",
 			Ref2: "HEAD",
 		})
@@ -58,7 +58,7 @@ func (e *RepoEntity) loadLocalBranches() error {
 		} else {
 			push = strconv.Itoa(len(pushables))
 		}
-		pullables, err := RevList(e, RevListOptions{
+		pullables, err := RevList(r, RevListOptions{
 			Ref1: "HEAD",
 			Ref2: "@{u}",
 		})
@@ -67,7 +67,7 @@ func (e *RepoEntity) loadLocalBranches() error {
 		} else {
 			pull = strconv.Itoa(len(pullables))
 		}
-		clean := e.isClean()
+		clean := r.isClean()
 		branch := &Branch{
 			Name:      b.Name().Short(),
 			Reference: b,
@@ -76,7 +76,7 @@ func (e *RepoEntity) loadLocalBranches() error {
 			Clean:     clean,
 		}
 		if b.Name() == headRef.Name() {
-			e.Branch = branch
+			r.Branch = branch
 			branchFound = true
 		}
 		lbs = append(lbs, branch)
@@ -89,30 +89,30 @@ func (e *RepoEntity) loadLocalBranches() error {
 			Reference: headRef,
 			Pushables: "?",
 			Pullables: "?",
-			Clean:     e.isClean(),
+			Clean:     r.isClean(),
 		}
 		lbs = append(lbs, branch)
-		e.Branch = branch
+		r.Branch = branch
 	}
-	e.Branches = lbs
+	r.Branches = lbs
 	return err
 }
 
 // NextBranch checkouts the next branch
-func (e *RepoEntity) NextBranch() *Branch {
-	return e.Branches[(e.currentBranchIndex()+1)%len(e.Branches)]
+func (r *Repository) NextBranch() *Branch {
+	return r.Branches[(r.currentBranchIndex()+1)%len(r.Branches)]
 }
 
 // PreviousBranch checkouts the previous branch
-func (e *RepoEntity) PreviousBranch() *Branch {
-	return e.Branches[(len(e.Branches)+e.currentBranchIndex()-1)%len(e.Branches)]
+func (r *Repository) PreviousBranch() *Branch {
+	return r.Branches[(len(r.Branches)+r.currentBranchIndex()-1)%len(r.Branches)]
 }
 
 // returns the active branch index
-func (e *RepoEntity) currentBranchIndex() int {
+func (r *Repository) currentBranchIndex() int {
 	bix := 0
-	for i, lbs := range e.Branches {
-		if lbs.Name == e.Branch.Name {
+	for i, lbs := range r.Branches {
+		if lbs.Name == r.Branch.Name {
 			bix = i
 		}
 	}
@@ -121,12 +121,12 @@ func (e *RepoEntity) currentBranchIndex() int {
 
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
-func (e *RepoEntity) Checkout(b *Branch) error {
-	if b.Name == e.Branch.Name {
+func (r *Repository) Checkout(b *Branch) error {
+	if b.Name == r.Branch.Name {
 		return nil
 	}
 
-	w, err := e.Repository.Worktree()
+	w, err := r.Repo.Worktree()
 	if err != nil {
 		log.Warn("Cannot get work tree " + err.Error())
 		return err
@@ -140,18 +140,18 @@ func (e *RepoEntity) Checkout(b *Branch) error {
 
 	// make this conditional on global scale
 	// we don't care if this function returns an error
-	e.Remote.SyncBranches(b.Name)
+	r.Remote.SyncBranches(b.Name)
 
-	return e.Refresh()
+	return r.Refresh()
 }
 
 // checking the branch if it has any changes from its head revision. Initially
 // I implemented this with go-git but it was incredibly slow and there is also
 // an issue about it: https://github.com/src-d/go-git/issues/844
-func (e *RepoEntity) isClean() bool {
+func (r *Repository) isClean() bool {
 	args := []string{"status"}
 	cmd := exec.Command("git", args...)
-	cmd.Dir = e.AbsPath
+	cmd.Dir = r.AbsPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return false
@@ -183,7 +183,7 @@ type RevListOptions struct {
 
 // RevList returns the commit hashes that are links from the given commit(s).
 // The output is given in reverse chronological order by default.
-func RevList(e *RepoEntity, options RevListOptions) ([]string, error) {
+func RevList(r *Repository, options RevListOptions) ([]string, error) {
 	args := make([]string, 0)
 	args = append(args, revlistCommand)
 	if len(options.Ref1) > 0 && len(options.Ref2) > 0 {
@@ -191,7 +191,7 @@ func RevList(e *RepoEntity, options RevListOptions) ([]string, error) {
 		args = append(args, arg1)
 	}
 	cmd := exec.Command("git", args...)
-	cmd.Dir = e.AbsPath
+	cmd.Dir = r.AbsPath
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return []string{"?"}, err

@@ -44,7 +44,7 @@ type FetchOptions struct {
 
 // Fetch branches refs from one or more other repositories, along with the
 // objects necessary to complete their histories
-func Fetch(e *git.RepoEntity, options FetchOptions) (err error) {
+func Fetch(r *git.Repository, options FetchOptions) (err error) {
 	// here we configure fetch operation
 	// default mode is go-git (this may be configured)
 	fetchCmdMode = fetchCmdModeNative
@@ -55,18 +55,18 @@ func Fetch(e *git.RepoEntity, options FetchOptions) (err error) {
 	}
 	switch fetchCmdMode {
 	case fetchCmdModeLegacy:
-		err = fetchWithGit(e, options)
+		err = fetchWithGit(r, options)
 		return err
 	case fetchCmdModeNative:
 		// this should be the refspec as default, let's give it a try
 		// TODO: Fix for quick mode, maybe better read config file
 		var refspec string
-		if e.Branch == nil {
+		if r.Branch == nil {
 			refspec = "+refs/heads/*:refs/remotes/origin/*"
 		} else {
-			refspec = "+" + "refs/heads/" + e.Branch.Name + ":" + "/refs/remotes/" + e.Remote.Branch.Name
+			refspec = "+" + "refs/heads/" + r.Branch.Name + ":" + "/refs/remotes/" + r.Remote.Branch.Name
 		}
-		err = fetchWithGoGit(e, options, refspec)
+		err = fetchWithGoGit(r, options, refspec)
 		return err
 	}
 	return nil
@@ -75,7 +75,7 @@ func Fetch(e *git.RepoEntity, options FetchOptions) (err error) {
 // fetchWithGit is simply a bare git fetch <remote> command which is flexible
 // for complex operations, but on the other hand, it ties the app to another
 // tool. To avoid that, using native implementation is preferred.
-func fetchWithGit(e *git.RepoEntity, options FetchOptions) (err error) {
+func fetchWithGit(r *git.Repository, options FetchOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, fetchCommand)
 	// parse options to command line arguments
@@ -91,12 +91,12 @@ func fetchWithGit(e *git.RepoEntity, options FetchOptions) (err error) {
 	if options.DryRun {
 		args = append(args, "--dry-run")
 	}
-	if out, err := GenericGitCommandWithOutput(e.AbsPath, args); err != nil {
+	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
-	e.SetState(git.Success)
+	r.SetState(git.Success)
 	// till this step everything should be ok
-	return e.Refresh()
+	return r.Refresh()
 }
 
 // fetchWithGoGit is the primary fetch method and refspec is the main feature.
@@ -105,7 +105,7 @@ func fetchWithGit(e *git.RepoEntity, options FetchOptions) (err error) {
 // pattern for references on the remote side and <dst> is where those references
 // will be written locally. The + tells Git to update the reference even if it
 // isn’t a fast-forward.
-func fetchWithGoGit(e *git.RepoEntity, options FetchOptions, refspec string) (err error) {
+func fetchWithGoGit(r *git.Repository, options FetchOptions, refspec string) (err error) {
 	opt := &gogit.FetchOptions{
 		RemoteName: options.RemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
@@ -113,7 +113,7 @@ func fetchWithGoGit(e *git.RepoEntity, options FetchOptions, refspec string) (er
 	}
 	// if any credential is given, let's add it to the git.FetchOptions
 	if len(options.Credentials.User) > 0 {
-		protocol, err := git.AuthProtocol(e.Remote)
+		protocol, err := git.AuthProtocol(r.Remote)
 		if err != nil {
 			return err
 		}
@@ -130,34 +130,34 @@ func fetchWithGoGit(e *git.RepoEntity, options FetchOptions, refspec string) (er
 		opt.Progress = os.Stdout
 	}
 
-	if err := e.Repository.Fetch(opt); err != nil {
+	if err := r.Repo.Fetch(opt); err != nil {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
 			// we dont have remote ref, so lets pull other things.. maybe it'd be useful
-			rp := e.Remote.RefSpecs[0]
+			rp := r.Remote.RefSpecs[0]
 			if fetchTryCount < fetchMaxTry {
 				fetchTryCount++
-				fetchWithGoGit(e, options, rp)
+				fetchWithGoGit(r, options, rp)
 			} else {
 				return err
 			}
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "SSH_AUTH_SOCK") {
 			// The env variable SSH_AUTH_SOCK is not defined, maybe git can handle this
-			return fetchWithGit(e, options)
+			return fetchWithGit(r, options)
 		} else if err == transport.ErrAuthenticationRequired {
 			log.Warn(err.Error())
 			return gerr.ErrAuthenticationRequired
 		} else {
 			log.Warn(err.Error())
-			return fetchWithGit(e, options)
+			return fetchWithGit(r, options)
 		}
 	}
 
-	e.SetState(git.Success)
+	r.SetState(git.Success)
 	// till this step everything should be ok
-	return e.Refresh()
+	return r.Refresh()
 }

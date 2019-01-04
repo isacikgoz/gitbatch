@@ -13,13 +13,13 @@ import (
 )
 
 // AsyncAdd is interface to caller
-type AsyncAdd func(e *git.RepoEntity)
+type AsyncAdd func(r *git.Repository)
 
 // RepositoryEntities initializes the go-git's repository obejcts with given
 // slice of paths. since this job is done parallel, the order of the directories
 // is not kept
-func RepositoryEntities(directories []string) (entities []*git.RepoEntity, err error) {
-	entities = make([]*git.RepoEntity, 0)
+func RepositoryEntities(directories []string) (entities []*git.Repository, err error) {
+	entities = make([]*git.Repository, 0)
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex

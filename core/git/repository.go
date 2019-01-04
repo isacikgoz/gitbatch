@@ -10,23 +10,23 @@ import (
 	git "gopkg.in/src-d/go-git.v4"
 )
 
-// RepoEntity is the main entity of the application. The repository name is
+// Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
 // repository entity along with critic entites such as remote/branches and commits
-type RepoEntity struct {
-	RepoID     string
-	Name       string
-	AbsPath    string
-	ModTime    time.Time
-	Repository git.Repository
-	Branch     *Branch
-	Branches   []*Branch
-	Remote     *Remote
-	Remotes    []*Remote
-	Commit     *Commit
-	Commits    []*Commit
-	Stasheds   []*StashedItem
-	state      RepoState
+type Repository struct {
+	RepoID   string
+	Name     string
+	AbsPath  string
+	ModTime  time.Time
+	Repo     git.Repository
+	Branch   *Branch
+	Branches []*Branch
+	Remote   *Remote
+	Remotes  []*Remote
+	Commit   *Commit
+	Commits  []*Commit
+	Stasheds []*StashedItem
+	state    RepoState
 
 	// TODO: move this into state
 	Message string
@@ -71,69 +71,69 @@ const (
 	RepositoryUpdated = "repository.updated"
 )
 
-// FastInitializeRepo initializes a RepoEntity struct without its belongings.
-func FastInitializeRepo(dir string) (e *RepoEntity, err error) {
+// FastInitializeRepo initializes a Repository struct without its belongings.
+func FastInitializeRepo(dir string) (r *Repository, err error) {
 	f, err := os.Open(dir)
 	if err != nil {
 		return nil, err
 	}
 	// get status of the file
 	fstat, _ := f.Stat()
-	r, err := git.PlainOpen(dir)
+	rp, err := git.PlainOpen(dir)
 	if err != nil {
 		return nil, err
 	}
-	// initialize RepoEntity with minimum viable fields
-	e = &RepoEntity{RepoID: RandomString(8),
-		Name:       fstat.Name(),
-		AbsPath:    dir,
-		ModTime:    fstat.ModTime(),
-		Repository: *r,
-		state:      Available,
-		mutex:      &sync.RWMutex{},
-		listeners:  make(map[string][]RepositoryListener),
+	// initialize Repository with minimum viable fields
+	r = &Repository{RepoID: RandomString(8),
+		Name:      fstat.Name(),
+		AbsPath:   dir,
+		ModTime:   fstat.ModTime(),
+		Repo:      *rp,
+		state:     Available,
+		mutex:     &sync.RWMutex{},
+		listeners: make(map[string][]RepositoryListener),
 	}
-	return e, nil
+	return r, nil
 }
 
-// InitializeRepo initializes a RepoEntity struct with its belongings.
-func InitializeRepo(dir string) (e *RepoEntity, err error) {
-	e, err = FastInitializeRepo(dir)
+// InitializeRepo initializes a Repository struct with its belongings.
+func InitializeRepo(dir string) (r *Repository, err error) {
+	r, err = FastInitializeRepo(dir)
 	if err != nil {
 		return nil, err
 	}
 	// need nothing extra but loading additional components
-	return e, e.loadComponents(true)
+	return r, r.loadComponents(true)
 }
 
 // loadComponents initializes the fields of a repository such as branches,
 // remotes, commits etc. If reset, reload commit, remote pointers too
-func (e *RepoEntity) loadComponents(reset bool) error {
-	if err := e.loadLocalBranches(); err != nil {
+func (r *Repository) loadComponents(reset bool) error {
+	if err := r.loadLocalBranches(); err != nil {
 		return err
 	}
-	if err := e.loadCommits(); err != nil {
+	if err := r.loadCommits(); err != nil {
 		return err
 	}
-	if err := e.loadRemotes(); err != nil {
+	if err := r.loadRemotes(); err != nil {
 		return err
 	}
-	if err := e.loadStashedItems(); err != nil {
+	if err := r.loadStashedItems(); err != nil {
 		log.Warn("Cannot load stashes")
 	}
 	if reset {
 		// handle if there is no commit, maybe?
 		// set commit pointer for repository
-		if len(e.Commits) > 0 {
+		if len(r.Commits) > 0 {
 			// select first commit
-			e.Commit = e.Commits[0]
+			r.Commit = r.Commits[0]
 		}
 		// set remote pointer for repository
-		if len(e.Remotes) > 0 {
+		if len(r.Remotes) > 0 {
 			// TODO: tend to take origin/master as default
-			e.Remote = e.Remotes[0]
+			r.Remote = r.Remotes[0]
 			// if couldn't find, its ok.
-			e.Remote.SyncBranches(e.Branch.Name)
+			r.Remote.SyncBranches(r.Branch.Name)
 		} else {
 			// if there is no remote, this project is totally useless actually
 			return errors.New("There is no remote for this repository")
@@ -144,46 +144,46 @@ func (e *RepoEntity) loadComponents(reset bool) error {
 
 // Refresh the belongings of a repositoriy, this function is called right after
 // fetch/pull/merge operations
-func (e *RepoEntity) Refresh() error {
+func (r *Repository) Refresh() error {
 	var err error
 	// error can be ignored since the file already exists when app is loading
-	// if the RepoEntity is only fast initialized, no need to refresh because
+	// if the Repository is only fast initialized, no need to refresh because
 	// it won't contain its belongings
-	if e.Branch == nil {
+	if r.Branch == nil {
 		return nil
 	}
-	file, _ := os.Open(e.AbsPath)
+	file, _ := os.Open(r.AbsPath)
 	fstat, _ := file.Stat()
 	// re-initialize the go-git repository struct after supposed update
-	r, err := git.PlainOpen(e.AbsPath)
+	rp, err := git.PlainOpen(r.AbsPath)
 	if err != nil {
 		return err
 	}
-	e.Repository = *r
+	r.Repo = *rp
 	// modification date may be changed
-	e.ModTime = fstat.ModTime()
-	if err := e.loadComponents(false); err != nil {
+	r.ModTime = fstat.ModTime()
+	if err := r.loadComponents(false); err != nil {
 		return err
 	}
 	// we could send an event data but we don't need for this topic
-	return e.Publish(RepositoryUpdated, nil)
+	return r.Publish(RepositoryUpdated, nil)
 }
 
 // On adds new listener.
 // listener is a callback function that will be called when event emits
-func (e *RepoEntity) On(event string, listener RepositoryListener) {
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
+func (r *Repository) On(event string, listener RepositoryListener) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	// add listener to the specific event topic
-	e.listeners[event] = append(e.listeners[event], listener)
+	r.listeners[event] = append(r.listeners[event], listener)
 }
 
 // Publish publishes the data to a certain event by its name.
-func (e *RepoEntity) Publish(eventName string, data interface{}) error {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
+func (r *Repository) Publish(eventName string, data interface{}) error {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
 	// let's find listeners for this event topic
-	listeners, ok := e.listeners[eventName]
+	listeners, ok := r.listeners[eventName]
 	if !ok {
 		return nil
 	}
@@ -201,22 +201,22 @@ func (e *RepoEntity) Publish(eventName string, data interface{}) error {
 }
 
 // State returns the state of the repository such as queued, failed etc.
-func (e *RepoEntity) State() RepoState {
-	return e.state
+func (r *Repository) State() RepoState {
+	return r.state
 }
 
 // SetState sets the state of repository and sends repository updated event
-func (e *RepoEntity) SetState(state RepoState) {
-	e.state = state
+func (r *Repository) SetState(state RepoState) {
+	r.state = state
 	// we could send an event data but we don't need for this topic
-	if err := e.Publish(RepositoryUpdated, nil); err != nil {
+	if err := r.Publish(RepositoryUpdated, nil); err != nil {
 		log.Warnf("Cannot publish on %s topic.\n", RepositoryUpdated)
 	}
 }
 
 // SetMessage sets the message of status, it is used if state is Fail
-func (e *RepoEntity) SetStateMessage(msg string) {
-	if e.State() == Fail {
-		e.Message = msg
+func (r *Repository) SetStateMessage(msg string) {
+	if r.State() == Fail {
+		r.Message = msg
 	}
 }

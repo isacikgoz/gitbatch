@@ -64,8 +64,8 @@ func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	e := gui.getSelectedRepository()
-	return refreshStatusView(v.Name(), g, e, false)
+	r := gui.getSelectedRepository()
+	return refreshStatusView(v.Name(), g, r, false)
 }
 
 // moves the cursor upwards for the main view
@@ -81,20 +81,20 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	e := gui.getSelectedRepository()
-	return refreshStatusView(v.Name(), g, e, false)
+	r := gui.getSelectedRepository()
+	return refreshStatusView(v.Name(), g, r, false)
 }
 
 // header og the status layout
 func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
 	maxX, _ := g.Size()
-	e := gui.getSelectedRepository()
+	r := gui.getSelectedRepository()
 	v, err := g.SetView(statusHeaderViewFeature.Name, 6, 2, maxX-6, 4)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, e.AbsPath)
+		fmt.Fprintln(v, r.AbsPath)
 		// v.Frame = false
 		v.Wrap = true
 	}
@@ -118,8 +118,8 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 }
 
 // generate file lists by git status command
-func populateFileLists(e *git.RepoEntity) error {
-	files, err := command.Status(e)
+func populateFileLists(r *git.Repository) error {
+	files, err := command.Status(r)
 	if err != nil {
 		return err
 	}
@@ -136,9 +136,9 @@ func populateFileLists(e *git.RepoEntity) error {
 	return err
 }
 
-func refreshStatusView(viewName string, g *gocui.Gui, e *git.RepoEntity, reload bool) error {
+func refreshStatusView(viewName string, g *gocui.Gui, r *git.Repository, reload bool) error {
 	if reload {
-		populateFileLists(e)
+		populateFileLists(r)
 	}
 	var err error
 	switch viewName {
@@ -147,14 +147,14 @@ func refreshStatusView(viewName string, g *gocui.Gui, e *git.RepoEntity, reload 
 	case unstageViewFeature.Name:
 		err = refreshUnstagedView(g)
 	case stashViewFeature.Name:
-		err = refreshStashView(g, e)
+		err = refreshStashView(g, r)
 	}
 	return err
 }
 
-func refreshAllStatusView(g *gocui.Gui, e *git.RepoEntity, reload bool) error {
+func refreshAllStatusView(g *gocui.Gui, r *git.Repository, reload bool) error {
 	for _, v := range statusViews {
-		if err := refreshStatusView(v.Name, g, e, reload); err != nil {
+		if err := refreshStatusView(v.Name, g, r, reload); err != nil {
 			return err
 		}
 	}

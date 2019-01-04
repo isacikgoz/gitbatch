@@ -16,24 +16,24 @@ type Remote struct {
 }
 
 // NextRemote iterates over next branch of a remote
-func (e *RepoEntity) NextRemote() error {
-	e.Remote = e.Remotes[(e.currentRemoteIndex()+1)%len(e.Remotes)]
-	e.Remote.SyncBranches(e.Branch.Name)
-	return e.Publish(RepositoryUpdated, nil)
+func (r *Repository) NextRemote() error {
+	r.Remote = r.Remotes[(r.currentRemoteIndex()+1)%len(r.Remotes)]
+	r.Remote.SyncBranches(r.Branch.Name)
+	return r.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemote iterates over previous branch of a remote
-func (e *RepoEntity) PreviousRemote() error {
-	e.Remote = e.Remotes[(len(e.Remotes)+e.currentRemoteIndex()-1)%len(e.Remotes)]
-	e.Remote.SyncBranches(e.Branch.Name)
-	return e.Publish(RepositoryUpdated, nil)
+func (r *Repository) PreviousRemote() error {
+	r.Remote = r.Remotes[(len(r.Remotes)+r.currentRemoteIndex()-1)%len(r.Remotes)]
+	r.Remote.SyncBranches(r.Branch.Name)
+	return r.Publish(RepositoryUpdated, nil)
 }
 
 // returns the active remote index
-func (e *RepoEntity) currentRemoteIndex() int {
+func (r *Repository) currentRemoteIndex() int {
 	cix := 0
-	for i, remote := range e.Remotes {
-		if remote.Name == e.Remote.Name {
+	for i, remote := range r.Remotes {
+		if remote.Name == r.Remote.Name {
 			cix = i
 		}
 	}
@@ -42,11 +42,11 @@ func (e *RepoEntity) currentRemoteIndex() int {
 
 // search for remotes in go-git way. It is the short way to get remotes but it
 // does not give any insght about remote branches
-func (e *RepoEntity) loadRemotes() error {
-	r := e.Repository
-	e.Remotes = make([]*Remote, 0)
+func (r *Repository) loadRemotes() error {
+	rp := r.Repo
+	r.Remotes = make([]*Remote, 0)
 
-	rms, err := r.Remotes()
+	rms, err := rp.Remotes()
 	for _, rm := range rms {
 		rfs := make([]string, 0)
 		for _, rf := range rm.Config().Fetch {
@@ -57,11 +57,11 @@ func (e *RepoEntity) loadRemotes() error {
 			URL:      rm.Config().URLs,
 			RefSpecs: rfs,
 		}
-		remote.loadRemoteBranches(e)
+		remote.loadRemoteBranches(r)
 		if len(remote.Branches) > 0 {
 			remote.Branch = remote.Branches[0]
 		}
-		e.Remotes = append(e.Remotes, remote)
+		r.Remotes = append(r.Remotes, remote)
 
 	}
 	if err != nil {

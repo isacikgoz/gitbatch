@@ -162,7 +162,7 @@ func (gui *Gui) pageUp(g *gocui.Gui, v *gocui.View) error {
 // slice of repositories. Since it is not a %100 percent safe methodology it may
 // rrequire a better implementation or the slice's order must be synchronized
 // with the views lines
-func (gui *Gui) getSelectedRepository() *git.RepoEntity {
+func (gui *Gui) getSelectedRepository() *git.Repository {
 	if len(gui.State.Repositories) == 0 {
 		return nil
 	}
@@ -173,7 +173,7 @@ func (gui *Gui) getSelectedRepository() *git.RepoEntity {
 }
 
 // adds given entity to job queue
-func (gui *Gui) addToQueue(entity *git.RepoEntity) error {
+func (gui *Gui) addToQueue(r *git.Repository) error {
 	var jt job.JobType
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
@@ -186,23 +186,23 @@ func (gui *Gui) addToQueue(entity *git.RepoEntity) error {
 		return nil
 	}
 	err := gui.State.Queue.AddJob(&job.Job{
-		JobType: jt,
-		Entity:  entity,
+		JobType:    jt,
+		Repository: r,
 	})
 	if err != nil {
 		return err
 	}
-	entity.SetState(git.Queued)
+	r.SetState(git.Queued)
 	return nil
 }
 
 // removes given entity from job queue
-func (gui *Gui) removeFromQueue(entity *git.RepoEntity) error {
-	err := gui.State.Queue.RemoveFromQueue(entity)
+func (gui *Gui) removeFromQueue(r *git.Repository) error {
+	err := gui.State.Queue.RemoveFromQueue(r)
 	if err != nil {
 		return err
 	}
-	entity.SetState(git.Available)
+	r.SetState(git.Available)
 	return nil
 }
 
@@ -214,7 +214,7 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 		gui_go.State.Queue = job.CreateJobQueue()
 		for j, err := range fails {
 			if err == gerr.ErrAuthenticationRequired {
-				j.Entity.SetState(git.Paused)
+				j.Repository.SetState(git.Paused)
 				gui_go.State.FailoverQueue.AddJob(j)
 			}
 		}
@@ -224,14 +224,14 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 	if is, j := gui.State.FailoverQueue.IsInTheQueue(gui.getSelectedRepository()); is {
-		if j.Entity.State() == git.Paused {
-			gui.State.FailoverQueue.RemoveFromQueue(j.Entity)
+		if j.Repository.State() == git.Paused {
+			gui.State.FailoverQueue.RemoveFromQueue(j.Repository)
 			err := gui.openAuthenticationView(g, gui.State.Queue, j, v.Name())
 			if err != nil {
 				log.Warn(err.Error())
 				return err
 			}
-			if isnt, _ := gui.State.Queue.IsInTheQueue(j.Entity); !isnt {
+			if isnt, _ := gui.State.Queue.IsInTheQueue(j.Repository); !isnt {
 				gui.State.FailoverQueue.AddJob(j)
 			}
 		}

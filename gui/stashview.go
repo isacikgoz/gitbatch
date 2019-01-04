@@ -18,15 +18,15 @@ func (gui *Gui) openStashView(g *gocui.Gui) error {
 		}
 		v.Title = stashViewFeature.Title
 	}
-	e := gui.getSelectedRepository()
-	err = refreshStashView(g, e)
+	r := gui.getSelectedRepository()
+	err = refreshStashView(g, r)
 	return err
 }
 
 //
 func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
-	e := gui.getSelectedRepository()
-	output, err := e.Stash()
+	r := gui.getSelectedRepository()
+	output, err := r.Stash()
 	if err != nil {
 		if err = gui.openErrorView(g, output,
 			"You should manually resolve this issue",
@@ -34,19 +34,19 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	err = refreshAllStatusView(g, e, true)
+	err = refreshAllStatusView(g, r, true)
 	return err
 }
 
 //
 func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
-	e := gui.getSelectedRepository()
+	r := gui.getSelectedRepository()
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
-	if len(e.Stasheds) <= 0 {
+	if len(r.Stasheds) <= 0 {
 		return nil
 	}
-	stashedItem := e.Stasheds[oy+cy]
+	stashedItem := r.Stasheds[oy+cy]
 	output, err := stashedItem.Pop()
 	if err != nil {
 		if err = gui.openErrorView(g, output,
@@ -56,15 +56,15 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 	// since the pop is a func of stashed item, we need to refresh entity here
-	if err := e.Refresh(); err != nil {
+	if err := r.Refresh(); err != nil {
 		return err
 	}
 
-	return refreshAllStatusView(g, e, true)
+	return refreshAllStatusView(g, r, true)
 }
 
 // refresh the main view and re-render the repository representations
-func refreshStashView(g *gocui.Gui, e *git.RepoEntity) error {
+func refreshStashView(g *gocui.Gui, r *git.Repository) error {
 	stashView, err := g.View(stashViewFeature.Name)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func refreshStashView(g *gocui.Gui, e *git.RepoEntity) error {
 	stashView.Clear()
 	_, cy := stashView.Cursor()
 	_, oy := stashView.Origin()
-	stashedItems := e.Stasheds
+	stashedItems := r.Stasheds
 	for i, stashedItem := range stashedItems {
 		var prefix string
 		if i == cy+oy {

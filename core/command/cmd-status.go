@@ -19,12 +19,12 @@ var (
 	statusCmdModeNative = "go-git"
 )
 
-func shortStatus(e *git.RepoEntity, option string) string {
+func shortStatus(r *git.Repository, option string) string {
 	args := make([]string, 0)
 	args = append(args, statusCommand)
 	args = append(args, option)
 	args = append(args, "--short")
-	out, err := GenericGitCommandWithOutput(e.AbsPath, args)
+	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
 	if err != nil {
 		log.Warn("Error while status command")
 		return "?"
@@ -33,23 +33,23 @@ func shortStatus(e *git.RepoEntity, option string) string {
 }
 
 // Status returns the dirty files
-func Status(e *git.RepoEntity) ([]*File, error) {
+func Status(r *git.Repository) ([]*File, error) {
 	statusCmdMode = statusCmdModeNative
 
 	switch statusCmdMode {
 	case statusCmdModeLegacy:
-		return statusWithGit(e)
+		return statusWithGit(r)
 	case statusCmdModeNative:
-		return statusWithGoGit(e)
+		return statusWithGoGit(r)
 	}
 	return nil, errors.New("Unhandled status operation")
 }
 
 // LoadFiles function simply commands a git status and collects output in a
 // structured way
-func statusWithGit(e *git.RepoEntity) ([]*File, error) {
+func statusWithGit(r *git.Repository) ([]*File, error) {
 	files := make([]*File, 0)
-	output := shortStatus(e, "--untracked-files=all")
+	output := shortStatus(r, "--untracked-files=all")
 	if len(output) == 0 {
 		return files, nil
 	}
@@ -62,7 +62,7 @@ func statusWithGit(e *git.RepoEntity) ([]*File, error) {
 
 		files = append(files, &File{
 			Name:    path,
-			AbsPath: e.AbsPath + string(os.PathSeparator) + path,
+			AbsPath: r.AbsPath + string(os.PathSeparator) + path,
 			X:       FileStatus(x),
 			Y:       FileStatus(y),
 		})
@@ -71,9 +71,9 @@ func statusWithGit(e *git.RepoEntity) ([]*File, error) {
 	return files, nil
 }
 
-func statusWithGoGit(e *git.RepoEntity) ([]*File, error) {
+func statusWithGoGit(r *git.Repository) ([]*File, error) {
 	files := make([]*File, 0)
-	w, err := e.Repository.Worktree()
+	w, err := r.Repo.Worktree()
 	if err != nil {
 		return files, err
 	}
@@ -84,7 +84,7 @@ func statusWithGoGit(e *git.RepoEntity) ([]*File, error) {
 	for k, v := range s {
 		files = append(files, &File{
 			Name:    k,
-			AbsPath: e.AbsPath + string(os.PathSeparator) + k,
+			AbsPath: r.AbsPath + string(os.PathSeparator) + k,
 			X:       FileStatus(v.Staging),
 			Y:       FileStatus(v.Worktree),
 		})
