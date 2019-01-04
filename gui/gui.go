@@ -2,6 +2,7 @@ package gui
 
 import (
 	"sync"
+	"unicode"
 
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
@@ -132,9 +133,53 @@ func (gui *Gui) Run() error {
 }
 
 func (gui *Gui) addRepository(r *git.Repository) {
-	gui.State.Repositories = append(gui.State.Repositories, r)
+	gui.mutex.Lock()
+	gui.State.Repositories = gui.appendAlphabetically(r)
+	gui.mutex.Unlock()
 	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
+
 	gui.repositoryUpdated(nil)
+}
+
+func (gui *Gui) appendAlphabetically(r *git.Repository) []*git.Repository {
+	rs := gui.State.Repositories
+	i := len(rs) - 1
+	if i >= 0 && rs[i] != nil && !less(rs[i], r) {
+		rs = append(rs, nil)
+		copy(rs[i+1:], rs[i:])
+		rs[i] = r
+	} else {
+		rs = append(rs, r)
+	}
+	return rs
+}
+
+func less(ri, rj *git.Repository) bool {
+	iRunes := []rune(ri.Name)
+	jRunes := []rune(rj.Name)
+
+	max := len(iRunes)
+	if max > len(jRunes) {
+		max = len(jRunes)
+	}
+
+	for idx := 0; idx < max; idx++ {
+		ir := iRunes[idx]
+		jr := jRunes[idx]
+
+		lir := unicode.ToLower(ir)
+		ljr := unicode.ToLower(jr)
+
+		if lir != ljr {
+			return lir < ljr
+		}
+
+		// the lowercase runes are the same, so compare the original
+		if ir != jr {
+			return ir < jr
+		}
+	}
+	return false
 }
 
 // set the layout and create views with their default size, name etc. values

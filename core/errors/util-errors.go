@@ -37,6 +37,8 @@ var (
 	ErrConflictAfterMerge = errors.New("conflict while merging")
 	// ErrUnmergedFiles possibly occurs after a conflict
 	ErrUnmergedFiles = errors.New("unmerged files detected")
+	// ErrReferenceBroken thrown when unable to resolve reference
+	ErrReferenceBroken = errors.New("unable to resolve reference")
 	// ErrUnclassified is unconsidered error type
 	ErrUnclassified = errors.New("unclassified error")
 )
@@ -54,6 +56,8 @@ func ParseGitError(out string, err error) error {
 		return ErrConflictAfterMerge
 	} else if strings.Contains(out, "error: Pulling is not possible because you have unmerged files.") {
 		return ErrUnmergedFiles
+	} else if strings.Contains(out, "unable to resolve reference") {
+		return ErrReferenceBroken
 	}
 	return ErrUnclassified
 }
