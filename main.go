@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/isacikgoz/gitbatch/pkg/app"
+	"os"
+
+	"github.com/isacikgoz/gitbatch/app"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
@@ -15,10 +17,19 @@ var (
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.2.1")
+	kingpin.Version("gitbatch version 0.3.0")
 	// parse the command line flag and options
 	kingpin.Parse()
 
+	if err := run(); err != nil {
+		log.WithFields(log.Fields{
+			"error": err.Error(),
+		}).Error("Application quitted with an unhandled error.")
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	// set the app
 	app, err := app.Setup(&app.SetupConfig{
 		Directories: *dirs,
@@ -28,15 +39,12 @@ func main() {
 		Mode:        *mode,
 	})
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	// execute the app and wait its routine
-	err = app.Gui.Run()
-	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// good citizens always clean up their mess
 	defer app.Close()
+
+	// execute the app and wait its routine
+	return app.Gui.Run()
 }
