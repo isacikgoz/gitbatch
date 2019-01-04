@@ -57,3 +57,32 @@ func (s LastModified) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 func (s LastModified) Less(i, j int) bool {
 	return s[i].ModTime.Unix() > s[j].ModTime.Unix()
 }
+
+
+func Less(ri, rj *Repository) bool {
+	iRunes := []rune(ri.Name)
+	jRunes := []rune(rj.Name)
+
+	max := len(iRunes)
+	if max > len(jRunes) {
+		max = len(jRunes)
+	}
+
+	for idx := 0; idx < max; idx++ {
+		ir := iRunes[idx]
+		jr := jRunes[idx]
+
+		lir := unicode.ToLower(ir)
+		ljr := unicode.ToLower(jr)
+
+		if lir != ljr {
+			return lir < ljr
+		}
+
+		// the lowercase runes are the same, so compare the original
+		if ir != jr {
+			return ir < jr
+		}
+	}
+	return false
+}

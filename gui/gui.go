@@ -2,7 +2,7 @@ package gui
 
 import (
 	"sync"
-	"unicode"
+	"sort"
 
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
@@ -115,7 +115,7 @@ func (gui *Gui) Run() error {
 	g.InputEsc = true
 	g.SetManagerFunc(gui.layout)
 
-	go load.AddRepositoryEntitiesAsync(gui.State.Directories, gui.addRepository)
+	go load.AddRepositoryEntitiesAsync(gui.State.Directories, gui.appendRepo)
 
 	if err := gui.generateKeybindings(); err != nil {
 		log.Error("Keybindings could not be created.")
@@ -132,54 +132,24 @@ func (gui *Gui) Run() error {
 	return nil
 }
 
-func (gui *Gui) addRepository(r *git.Repository) {
-	gui.mutex.Lock()
-	gui.State.Repositories = gui.appendAlphabetically(r)
-	gui.mutex.Unlock()
-	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
-
-	gui.repositoryUpdated(nil)
-}
-
-func (gui *Gui) appendAlphabetically(r *git.Repository) []*git.Repository {
+func (gui *Gui) appendRepo(r *git.Repository){
 	rs := gui.State.Repositories
-	i := len(rs) - 1
-	if i >= 0 && rs[i] != nil && !less(rs[i], r) {
-		rs = append(rs, nil)
-		copy(rs[i+1:], rs[i:])
-		rs[i] = r
-	} else {
-		rs = append(rs, r)
-	}
-	return rs
-}
+	// lock mutex to avoid multithreading ambigouty
+	gui.mutex.Lock()
 
-func less(ri, rj *git.Repository) bool {
-	iRunes := []rune(ri.Name)
-	jRunes := []rune(rj.Name)
-
-	max := len(iRunes)
-	if max > len(jRunes) {
-		max = len(jRunes)
-	}
-
-	for idx := 0; idx < max; idx++ {
-		ir := iRunes[idx]
-		jr := jRunes[idx]
-
-		lir := unicode.ToLower(ir)
-		ljr := unicode.ToLower(jr)
-
-		if lir != ljr {
-			return lir < ljr
-		}
-
-		// the lowercase runes are the same, so compare the original
-		if ir != jr {
-			return ir < jr
-		}
-	}
-	return false
+	// insertion sort implementation
+	index := sort.Search(len(rs), func(i int) bool { return git.Less(r, rs[i]) })
+	rs = append(rs, &git.Repository{})
+	copy(rs[index+1:], rs[index:])
+	rs[index] = r
+	// add listener
+	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
+	// update gui
+	gui.repositoryUpdated(nil)
+	gui.mutex.Unlock()
+	
+	// take pointer back
+	gui.State.Repositories = rs
 }
 
 // set the layout and create views with their default size, name etc. values
