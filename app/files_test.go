@@ -17,9 +17,9 @@ func TestGenerateDirectories(t *testing.T) {
 		inp2     int
 		expected []string
 	}{
-		{[]string{"../test"}, 0, []string{}},
-		{[]string{"../test/repos"}, 0, []string{d + "/test/repos/basic-repo"}},
-		{[]string{"../test/repos"}, 1, []string{d + "/test/repos/basic-repo", d + "/test/repos/non-repo/basic-repo"}},
+		{[]string{"../test"}, 0, []string{d + "/test/test-data"}},
+		{[]string{"../test/test-data"}, 0, []string{d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo"}},
+		{[]string{"../test/test-data"}, 2, []string{d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo", d + "/test/test-data/non-repo/basic-repo"}},
 	}
 	for _, test := range tests {
 		if output := generateDirectories(test.inp1, test.inp2); !testEq(output, test.expected) {
@@ -35,7 +35,12 @@ func TestWalkRecursive(t *testing.T) {
 		exp1 []string
 		exp2 []string
 	}{
-		{[]string{"../test/repos"}, []string{""}, []string{d + "/test/repos/non-repo"}, []string{"", d + "/test/repos/basic-repo"}},
+		{
+			[]string{"../test/test-data"},
+			[]string{""},
+			[]string{d + "/test/test-data/.git", d + "/test/test-data/.gitmodules", d + "/test/test-data/non-repo"},
+			[]string{"", d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo"},
+		},
 	}
 	for _, test := range tests {
 		if out1, out2 := walkRecursive(test.inp1, test.inp2); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) {
@@ -50,8 +55,16 @@ func TestSeperateDirectories(t *testing.T) {
 		exp1  []string
 		exp2  []string
 	}{
-		{"", nil, nil},
-		{"../test/repos", []string{d + "/test/repos/non-repo"}, []string{d + "/test/repos/basic-repo"}},
+		{
+			"",
+			nil,
+			nil,
+		},
+		{
+			"../test/test-data",
+			[]string{d + "/test/test-data/.git", d + "/test/test-data/.gitmodules", d + "/test/test-data/non-repo"},
+			[]string{d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo"},
+		},
 	}
 	for _, test := range tests {
 		if out1, out2, err := seperateDirectories(test.input); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) || err != nil {

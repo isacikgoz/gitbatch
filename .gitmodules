@@ -1,0 +1,3 @@
+[submodule "test/test-data"]
+	path = test/test-data
+	url = https://gitlab.com/isacikgoz/test-data.git
