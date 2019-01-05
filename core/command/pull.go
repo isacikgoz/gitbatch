@@ -69,7 +69,7 @@ func pullWithGit(r *git.Repository, options PullOptions) (err error) {
 	if options.Force {
 		args = append(args, "-f")
 	}
-	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
+	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
 	r.SetWorkStatus(git.Success)

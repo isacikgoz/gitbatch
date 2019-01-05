@@ -53,7 +53,7 @@ const (
 )
 
 // Reset is the wrapper of "git reset" command
-func Reset(r *git.Repository, file *File, option ResetOptions) error {
+func Reset(r *git.Repository, file *git.File, option ResetOptions) error {
 	resetCmdMode = resetCmdModeLegacy
 
 	switch resetCmdMode {
@@ -66,7 +66,7 @@ func Reset(r *git.Repository, file *File, option ResetOptions) error {
 	return errors.New("Unhandled reset operation")
 }
 
-func resetWithGit(r *git.Repository, file *File, option ResetOptions) error {
+func resetWithGit(r *git.Repository, file *git.File, option ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, resetCommand)
 
@@ -75,7 +75,7 @@ func resetWithGit(r *git.Repository, file *File, option ResetOptions) error {
 	if len(option.Rtype) > 0 {
 		args = append(args, "--"+string(option.Rtype))
 	}
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn("Error while reset command")
 		return errors.New(out + "\n" + err.Error())
@@ -104,7 +104,7 @@ func resetAllWithGit(r *git.Repository, option ResetOptions) error {
 	if len(option.Rtype) > 0 {
 		args = append(args, "--"+string(option.Rtype))
 	}
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn("Error while add command")
 		return errors.New(out + "\n" + err.Error())

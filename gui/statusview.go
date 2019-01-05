@@ -17,8 +17,8 @@ var (
 	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
 
 	commitMesageReturnView string
-	stagedFiles            []*command.File
-	unstagedFiles          []*command.File
+	stagedFiles            []*git.File
+	unstagedFiles          []*git.File
 )
 
 // open the status layout
@@ -111,8 +111,8 @@ func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
 	if err := g.DeleteView(statusHeaderViewFeature.Name); err != nil {
 		return err
 	}
-	stagedFiles = make([]*command.File, 0)
-	unstagedFiles = make([]*command.File, 0)
+	stagedFiles = make([]*git.File, 0)
+	unstagedFiles = make([]*git.File, 0)
 
 	return gui.closeViewCleanup(mainViewFeature.Name)
 }
@@ -123,13 +123,13 @@ func populateFileLists(r *git.Repository) error {
 	if err != nil {
 		return err
 	}
-	stagedFiles = make([]*command.File, 0)
-	unstagedFiles = make([]*command.File, 0)
+	stagedFiles = make([]*git.File, 0)
+	unstagedFiles = make([]*git.File, 0)
 	for _, file := range files {
-		if file.X != command.StatusNotupdated && file.X != command.StatusUntracked && file.X != command.StatusIgnored && file.X != command.StatusUpdated {
+		if file.X != git.StatusNotupdated && file.X != git.StatusUntracked && file.X != git.StatusIgnored && file.X != git.StatusUpdated {
 			stagedFiles = append(stagedFiles, file)
 		}
-		if file.Y != command.StatusNotupdated {
+		if file.Y != git.StatusNotupdated {
 			unstagedFiles = append(unstagedFiles, file)
 		}
 	}

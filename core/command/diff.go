@@ -2,8 +2,10 @@ package command
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/isacikgoz/gitbatch/core/git"
+	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
@@ -29,6 +31,19 @@ func Diff(r *git.Repository, hash string) (diff string, err error) {
 		return diffWithGoGit(r, hash)
 	}
 	return diff, errors.New("Unhandled diff operation")
+}
+
+// DiffFile is a wrapper of "git diff" command for a file to compare with HEAD rev
+func DiffFile(f *git.File) (output string, err error) {
+	args := make([]string, 0)
+	args = append(args, "diff")
+	args = append(args, "HEAD")
+	args = append(args, f.Name)
+	output, err = Run(strings.TrimSuffix(f.AbsPath, f.Name), "git", args)
+	if err != nil {
+		log.Warn(err)
+	}
+	return output, err
 }
 
 func diffWithGit(r *git.Repository, hash string) (diff string, err error) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/core/command"
+	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/jroimartin/gocui"
 )
 
@@ -59,7 +60,7 @@ func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 
 	_, cy := v.Cursor()
 	_, oy := v.Origin()
-	var files []*command.File
+	var files []*git.File
 	switch v.Name() {
 	case unstageViewFeature.Name:
 		files = unstagedFiles
@@ -70,7 +71,7 @@ func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 	if len(files) <= 0 {
 		return nil
 	}
-	output, err := files[cy+oy].Diff()
+	output, err := command.DiffFile(files[cy+oy])
 	if err != nil || len(output) <= 0 {
 		return nil
 	}

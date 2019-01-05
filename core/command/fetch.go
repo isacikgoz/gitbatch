@@ -91,7 +91,7 @@ func fetchWithGit(r *git.Repository, options FetchOptions) (err error) {
 	if options.DryRun {
 		args = append(args, "--dry-run")
 	}
-	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
+	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
 	r.SetWorkStatus(git.Success)

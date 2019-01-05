@@ -31,7 +31,7 @@ func Merge(r *git.Repository, options MergeOptions) error {
 	if options.NoStat {
 		args = append(args, "-n")
 	}
-	if out, err := GenericGitCommandWithOutput(r.AbsPath, args); err != nil {
+	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
 	r.SetWorkStatus(git.Success)

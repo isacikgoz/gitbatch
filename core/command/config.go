@@ -61,7 +61,7 @@ func configWithGit(r *git.Repository, options ConfigOptions) (value string, err 
 	args = append(args, "--get")
 	args = append(args, options.Section+"."+options.Option)
 	// parse options to command line arguments
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		return out, err
 	}
@@ -97,7 +97,7 @@ func addConfigWithGit(r *git.Repository, options ConfigOptions, value string) (e
 	if len(value) > 0 {
 		args = append(args, value)
 	}
-	if err := GenericGitCommand(r.AbsPath, args); err != nil {
+	if _, err := Run(r.AbsPath, "git", args); err != nil {
 		log.Warn("Error at git command (config)")
 		return err
 	}

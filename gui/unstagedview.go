@@ -30,7 +30,7 @@ func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 	if len(unstagedFiles) <= 0 || len(unstagedFiles) < cy+oy {
 		return nil
 	}
-	if err := command.Add(r, unstagedFiles[cy+oy], command.AddOptions{}); err != nil {
+	if err := command.Add(r, unstagedFiles[cy+oy], &command.AddOptions{}); err != nil {
 		return err
 	}
 
@@ -39,7 +39,7 @@ func (gui *Gui) addChanges(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) addAllChanges(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
-	if err := command.AddAll(r, command.AddOptions{}); err != nil {
+	if err := command.AddAll(r, &command.AddOptions{}); err != nil {
 		return err
 	}
 

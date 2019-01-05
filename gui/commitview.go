@@ -151,7 +151,7 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 		return errors.New("User email needs to be provided")
 	}
 
-	err = command.CommitCommand(r, command.CommitOptions{
+	err = command.Commit(r, &command.CommitOptions{
 		CommitMsg: msg,
 		User:      name,
 		Email:     email,

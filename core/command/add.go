@@ -26,31 +26,31 @@ type AddOptions struct {
 }
 
 // Add is a wrapper function for "git add" command
-func Add(r *git.Repository, file *File, option AddOptions) error {
+func Add(r *git.Repository, f *git.File, o *AddOptions) error {
 	addCmdMode = addCmdModeNative
-	if option.Update || option.Force || option.DryRun {
+	if o.Update || o.Force || o.DryRun {
 		addCmdMode = addCmdModeLegacy
 	}
 	switch addCmdMode {
 	case addCmdModeLegacy:
-		err := addWithGit(r, file, option)
+		err := addWithGit(r, f, o)
 		return err
 	case addCmdModeNative:
-		err := addWithGoGit(r, file)
+		err := addWithGoGit(r, f)
 		return err
 	}
 	return errors.New("Unhandled add operation")
 }
 
 // AddAll function is the wrapper of "git add ." command
-func AddAll(r *git.Repository, option AddOptions) error {
+func AddAll(r *git.Repository, o *AddOptions) error {
 	args := make([]string, 0)
 	args = append(args, addCommand)
-	if option.DryRun {
+	if o.DryRun {
 		args = append(args, "--dry-run")
 	}
 	args = append(args, ".")
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn("Error while add command")
 		return errors.New(out + "\n" + err.Error())
@@ -58,20 +58,20 @@ func AddAll(r *git.Repository, option AddOptions) error {
 	return nil
 }
 
-func addWithGit(r *git.Repository, file *File, option AddOptions) error {
+func addWithGit(r *git.Repository, f *git.File, o *AddOptions) error {
 	args := make([]string, 0)
 	args = append(args, addCommand)
-	args = append(args, file.Name)
-	if option.Update {
+	args = append(args, f.Name)
+	if o.Update {
 		args = append(args, "--update")
 	}
-	if option.Force {
+	if o.Force {
 		args = append(args, "--force")
 	}
-	if option.DryRun {
+	if o.DryRun {
 		args = append(args, "--dry-run")
 	}
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn("Error while add command")
 		return errors.New(out + "\n" + err.Error())
@@ -79,11 +79,11 @@ func addWithGit(r *git.Repository, file *File, option AddOptions) error {
 	return nil
 }
 
-func addWithGoGit(r *git.Repository, file *File) error {
+func addWithGoGit(r *git.Repository, f *git.File) error {
 	w, err := r.Repo.Worktree()
 	if err != nil {
 		return err
 	}
-	_, err = w.Add(file.Name)
-	return nil
+	_, err = w.Add(f.Name)
+	return err
 }
