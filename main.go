@@ -21,27 +21,30 @@ func main() {
 	// parse the command line flag and options
 	kingpin.Parse()
 
-	if err := run(); err != nil {
+	if err := run(*dirs, *logLevel, *recurseDepth, *quick, *mode); err != nil {
 		log.WithFields(log.Fields{
 			"error": err.Error(),
-		}).Error("Application quitted with an unhandled error.")
+		}).Error("application quitted with an unhandled error.")
 		os.Exit(1)
 	}
 }
 
-func run() error {
+func run(dirs []string, log string, depth int, quick bool, mode string) error {
 	// set the app
-	app, err := app.Setup(&app.SetupConfig{
-		Directories: *dirs,
-		LogLevel:    *logLevel,
-		Depth:       *recurseDepth,
-		QuickMode:   *quick,
-		Mode:        *mode,
+	app, err := app.Setup(&app.Config{
+		Directories: dirs,
+		LogLevel:    log,
+		Depth:       depth,
+		QuickMode:   quick,
+		Mode:        mode,
 	})
 	if err != nil {
 		return err
 	}
 
+	if app == nil {
+		return nil
+	}
 	// good citizens always clean up their mess
 	defer app.Close()
 

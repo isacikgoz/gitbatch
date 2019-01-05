@@ -8,7 +8,16 @@ import (
 
 var (
 	wd, _ = os.Getwd()
-	d     = strings.TrimSuffix(wd, string(os.PathSeparator)+"app")
+	sp    = string(os.PathSeparator)
+	d     = strings.TrimSuffix(wd, sp+"app")
+
+	relparent = ".." + sp + "test"
+	parent    = d + sp + "test"
+	data      = parent + sp + "test-data"
+	basic     = data + sp + "basic-repo"
+	dirty     = data + sp + "dirty-repo"
+	non       = data + sp + "non-repo"
+	subbasic  = non + sp + "basic-repo"
 )
 
 func TestGenerateDirectories(t *testing.T) {
@@ -17,9 +26,9 @@ func TestGenerateDirectories(t *testing.T) {
 		inp2     int
 		expected []string
 	}{
-		{[]string{"../test"}, 0, []string{d + "/test/test-data"}},
-		{[]string{"../test/test-data"}, 0, []string{d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo"}},
-		{[]string{"../test/test-data"}, 2, []string{d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo", d + "/test/test-data/non-repo/basic-repo"}},
+		{[]string{relparent}, 0, []string{data}},
+		{[]string{data}, 0, []string{basic, dirty}},
+		{[]string{data}, 2, []string{basic, dirty, subbasic}},
 	}
 	for _, test := range tests {
 		if output := generateDirectories(test.inp1, test.inp2); !testEq(output, test.expected) {
@@ -36,10 +45,10 @@ func TestWalkRecursive(t *testing.T) {
 		exp2 []string
 	}{
 		{
-			[]string{"../test/test-data"},
+			[]string{data},
 			[]string{""},
-			[]string{d + "/test/test-data/.git", d + "/test/test-data/.gitmodules", d + "/test/test-data/non-repo"},
-			[]string{"", d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo"},
+			[]string{data + sp + ".git", data + sp + ".gitmodules", non},
+			[]string{"", basic, dirty},
 		},
 	}
 	for _, test := range tests {
@@ -61,9 +70,9 @@ func TestSeperateDirectories(t *testing.T) {
 			nil,
 		},
 		{
-			"../test/test-data",
-			[]string{d + "/test/test-data/.git", d + "/test/test-data/.gitmodules", d + "/test/test-data/non-repo"},
-			[]string{d + "/test/test-data/basic-repo", d + "/test/test-data/dirty-repo"},
+			data,
+			[]string{data + sp + ".git", data + sp + ".gitmodules", non},
+			[]string{basic, dirty},
 		},
 	}
 	for _, test := range tests {

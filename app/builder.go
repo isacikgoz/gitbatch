@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"os"
 
 	"github.com/isacikgoz/gitbatch/gui"
@@ -11,11 +12,11 @@ import (
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
 	Gui    *gui.Gui
-	Config *SetupConfig
+	Config *Config
 }
 
-// SetupConfig is an assembler data to initiate a setup
-type SetupConfig struct {
+// Config is an assembler data to initiate a setup
+type Config struct {
 	Directories []string
 	LogLevel    string
 	Depth       int
@@ -25,41 +26,40 @@ type SetupConfig struct {
 
 // Setup will handle pre-required operations. It is designed to be a wrapper for
 // main method right now.
-func Setup(setupConfig *SetupConfig) (*App, error) {
+func Setup(argConfig *Config) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
-	if len(setupConfig.Directories) <= 0 {
+	if len(argConfig.Directories) <= 0 {
 		d, _ := os.Getwd()
-		setupConfig.Directories = []string{d}
+		argConfig.Directories = []string{d}
 	}
-
-	appConfig, err := overrideDefaults(setupConfig)
+	presetConfig, err := LoadConfiguration()
 	if err != nil {
 		return nil, err
 	}
+	appConfig := overrideConfig(presetConfig, argConfig)
 
 	setLogLevel(appConfig.LogLevel)
-	directories := generateDirectories(appConfig.Directories, appConfig.Depth)
+
+	// hopefull everything went smooth as butter
+	log.Trace("App configuration completed")
+
+	dirs := generateDirectories(appConfig.Directories, appConfig.Depth)
 
 	if appConfig.QuickMode {
-		x := appConfig.Mode == "fetch"
-		y := appConfig.Mode == "pull"
-		if x == y {
-			log.Error("Unrecognized quick mode: " + appConfig.Mode)
-			os.Exit(1)
+		if err := execQuickMode(dirs, appConfig); err != nil {
+			return nil, err
 		}
-		quick(directories, appConfig.Depth, appConfig.Mode)
-		os.Exit(0)
+		// we are done here and no need for an app to be configured
+		return nil, nil
 	}
 
 	// create a gui.Gui struct and set it as App's gui
-	app.Gui, err = gui.NewGui(appConfig.Mode, directories)
+	app.Gui, err = gui.NewGui(appConfig.Mode, dirs)
 	if err != nil {
 		// the error types and handling is not considered yet
 		return nil, err
 	}
-	// hopefull everything went smooth as butter
-	log.Trace("App configuration completed")
 	return app, nil
 }
 
@@ -90,8 +90,7 @@ func setLogLevel(logLevel string) {
 	}).Trace("logging level has been set")
 }
 
-func overrideDefaults(setupConfig *SetupConfig) (appConfig *SetupConfig, err error) {
-	appConfig, err = LoadConfiguration()
+func overrideConfig(appConfig, setupConfig *Config) *Config {
 	if len(setupConfig.Directories) > 0 {
 		appConfig.Directories = setupConfig.Directories
 	}
@@ -107,5 +106,15 @@ func overrideDefaults(setupConfig *SetupConfig) (appConfig *SetupConfig, err err
 	if len(setupConfig.Mode) > 0 {
 		appConfig.Mode = setupConfig.Mode
 	}
-	return appConfig, err
+	return appConfig
+}
+
+func execQuickMode(dirs []string, cfg *Config) error {
+	x := cfg.Mode == "fetch"
+	y := cfg.Mode == "pull"
+	if x == y {
+		return errors.New("unrecognized quick mode: " + cfg.Mode)
+	}
+	quick(dirs, cfg.Mode)
+	return nil
 }

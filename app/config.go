@@ -16,7 +16,7 @@ var (
 	configType     = "yaml"
 	appName        = "gitbatch"
 
-	configurationDirectory = filepath.Join(osConfigDirectory(), appName)
+	configurationDirectory = filepath.Join(osConfigDirectory(runtime.GOOS), appName)
 	configFileAbsPath      = filepath.Join(configurationDirectory, configFileName)
 )
 
@@ -35,7 +35,7 @@ var (
 )
 
 // LoadConfiguration returns a Config struct is filled
-func LoadConfiguration() (*SetupConfig, error) {
+func LoadConfiguration() (*Config, error) {
 	if err := initializeConfigurationManager(); err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func LoadConfiguration() (*SetupConfig, error) {
 	} else {
 		directories = viper.GetStringSlice(pathsKey)
 	}
-	config := &SetupConfig{
+	config := &Config{
 		Directories: directories,
 		LogLevel:    viper.GetString(logLevelKey),
 		Depth:       viper.GetInt(recursionKey),
@@ -108,8 +108,8 @@ func initializeConfigurationManager() error {
 }
 
 // returns OS dependent config directory
-func osConfigDirectory() (osConfigDirectory string) {
-	switch osname := runtime.GOOS; osname {
+func osConfigDirectory(osname string) (osConfigDirectory string) {
+	switch osname {
 	case "windows":
 		osConfigDirectory = os.Getenv("APPDATA")
 	case "darwin":

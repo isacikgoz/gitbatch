@@ -9,7 +9,7 @@ import (
 	"github.com/isacikgoz/gitbatch/core/git"
 )
 
-func quick(directories []string, depth int, mode string) {
+func quick(directories []string, mode string) {
 	var wg sync.WaitGroup
 	start := time.Now()
 	for _, dir := range directories {
