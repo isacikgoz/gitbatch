@@ -179,7 +179,7 @@ func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
 // basically does fetch --prune
 func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
-	return command.Fetch(r, command.FetchOptions{
+	return command.Fetch(r, &command.FetchOptions{
 		RemoteName: r.State.Remote.Name,
 		Prune:      true,
 	})
@@ -205,14 +205,14 @@ func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	r := gui.getSelectedRepository()
-	if err = command.AddConfig(r, command.ConfigOptions{
+	if err = command.AddConfig(r, &command.ConfigOptions{
 		Section: "branch." + r.State.Branch.Name,
 		Option:  "remote",
 		Site:    command.ConfigSiteLocal,
 	}, r.State.Remote.Name); err != nil {
 		return err
 	}
-	if err = command.AddConfig(r, command.ConfigOptions{
+	if err = command.AddConfig(r, &command.ConfigOptions{
 		Section: "branch." + r.State.Branch.Name,
 		Option:  "merge",
 		Site:    command.ConfigSiteLocal,

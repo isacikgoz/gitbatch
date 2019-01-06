@@ -74,12 +74,13 @@ func (gui *Gui) openCommitUserNameView(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		name, err := command.Config(r, command.ConfigOptions{
+		name, err := command.Config(r, &command.ConfigOptions{
 			Section: "user",
 			Option:  "name",
 		})
 		if err != nil {
-			return err
+			// possibly could not get the user name
+			name = ""
 		}
 		fmt.Fprintln(v, name)
 		v.Editable = true
@@ -107,12 +108,13 @@ func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		email, err := command.Config(r, command.ConfigOptions{
+		email, err := command.Config(r, &command.ConfigOptions{
 			Section: "user",
 			Option:  "email",
 		})
 		if err != nil {
-			return err
+			// possibly could not get the user email
+			email = ""
 		}
 		fmt.Fprintln(v, email)
 		v.Editable = true

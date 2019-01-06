@@ -103,18 +103,18 @@ func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 	// since the git ops require different types of options we better switch
 	switch mode := jobRequiresAuth.JobType; mode {
 	case job.FetchJob:
-		jobRequiresAuth.Options = command.FetchOptions{
+		jobRequiresAuth.Options = &command.FetchOptions{
 			RemoteName: jobRequiresAuth.Repository.State.Remote.Name,
-			Credentials: git.Credentials{
+			Credentials: &git.Credentials{
 				User:     creduser,
 				Password: credpswd,
 			},
 		}
 	case job.PullJob:
 		// we handle pull as fetch&merge so same rule applies
-		jobRequiresAuth.Options = command.PullOptions{
+		jobRequiresAuth.Options = &command.PullOptions{
 			RemoteName: jobRequiresAuth.Repository.State.Remote.Name,
-			Credentials: git.Credentials{
+			Credentials: &git.Credentials{
 				User:     creduser,
 				Password: credpswd,
 			},

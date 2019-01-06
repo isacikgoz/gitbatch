@@ -19,7 +19,7 @@ type MergeOptions struct {
 
 // Merge incorporates changes from the named commits or branches into the
 // current branch
-func Merge(r *git.Repository, options MergeOptions) error {
+func Merge(r *git.Repository, options *MergeOptions) error {
 	args := make([]string, 0)
 	args = append(args, mergeCommand)
 	if len(options.BranchName) > 0 {

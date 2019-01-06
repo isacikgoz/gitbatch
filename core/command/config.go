@@ -37,7 +37,7 @@ const (
 )
 
 // Config adds or reads config of a repository
-func Config(r *git.Repository, options ConfigOptions) (value string, err error) {
+func Config(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	// here we configure config operation
 	// default mode is go-git (this may be configured)
 	configCmdMode = configCmdModeLegacy
@@ -51,8 +51,8 @@ func Config(r *git.Repository, options ConfigOptions) (value string, err error) 
 	return value, errors.New("Unhandled config operation")
 }
 
-// configWithGit is simply a bare git commit -m <msg> command which is flexible
-func configWithGit(r *git.Repository, options ConfigOptions) (value string, err error) {
+// configWithGit is simply a bare git config --site <option>.<section> command which is flexible
+func configWithGit(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	args := make([]string, 0)
 	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
@@ -70,7 +70,7 @@ func configWithGit(r *git.Repository, options ConfigOptions) (value string, err 
 }
 
 // commitWithGoGit is the primary commit method
-func configWithGoGit(r *git.Repository, options ConfigOptions) (value string, err error) {
+func configWithGoGit(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	// TODO: add global search
 	config, err := r.Repo.Config()
 	if err != nil {
@@ -80,13 +80,13 @@ func configWithGoGit(r *git.Repository, options ConfigOptions) (value string, er
 }
 
 // AddConfig adds an entry on the ConfigOptions field.
-func AddConfig(r *git.Repository, options ConfigOptions, value string) (err error) {
+func AddConfig(r *git.Repository, options *ConfigOptions, value string) (err error) {
 	return addConfigWithGit(r, options, value)
 
 }
 
 // addConfigWithGit is simply a bare git config --add <option> command which is flexible
-func addConfigWithGit(r *git.Repository, options ConfigOptions, value string) (err error) {
+func addConfigWithGit(r *git.Repository, options *ConfigOptions, value string) (err error) {
 	args := make([]string, 0)
 	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {

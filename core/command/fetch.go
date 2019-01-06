@@ -28,7 +28,7 @@ type FetchOptions struct {
 	// Name of the remote to fetch from. Defaults to origin.
 	RemoteName string
 	// Credentials holds the user and pswd information
-	Credentials git.Credentials
+	Credentials *git.Credentials
 	// Before fetching, remove any remote-tracking references that no longer
 	// exist on the remote.
 	Prune bool
@@ -44,7 +44,7 @@ type FetchOptions struct {
 
 // Fetch branches refs from one or more other repositories, along with the
 // objects necessary to complete their histories
-func Fetch(r *git.Repository, options FetchOptions) (err error) {
+func Fetch(r *git.Repository, options *FetchOptions) (err error) {
 	// here we configure fetch operation
 	// default mode is go-git (this may be configured)
 	fetchCmdMode = fetchCmdModeNative
@@ -75,7 +75,7 @@ func Fetch(r *git.Repository, options FetchOptions) (err error) {
 // fetchWithGit is simply a bare git fetch <remote> command which is flexible
 // for complex operations, but on the other hand, it ties the app to another
 // tool. To avoid that, using native implementation is preferred.
-func fetchWithGit(r *git.Repository, options FetchOptions) (err error) {
+func fetchWithGit(r *git.Repository, options *FetchOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, fetchCommand)
 	// parse options to command line arguments
@@ -105,14 +105,14 @@ func fetchWithGit(r *git.Repository, options FetchOptions) (err error) {
 // pattern for references on the remote side and <dst> is where those references
 // will be written locally. The + tells Git to update the reference even if it
 // isn’t a fast-forward.
-func fetchWithGoGit(r *git.Repository, options FetchOptions, refspec string) (err error) {
+func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (err error) {
 	opt := &gogit.FetchOptions{
 		RemoteName: options.RemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
 		Force:      options.Force,
 	}
 	// if any credential is given, let's add it to the git.FetchOptions
-	if len(options.Credentials.User) > 0 {
+	if options.Credentials != nil {
 		protocol, err := git.AuthProtocol(r.State.Remote)
 		if err != nil {
 			return err

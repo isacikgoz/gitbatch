@@ -32,7 +32,7 @@ func (gui *Gui) resetChanges(g *gocui.Gui, v *gocui.View) error {
 	if len(stagedFiles) <= 0 || len(stagedFiles) <= cy+oy {
 		return nil
 	}
-	if err := command.Reset(r, stagedFiles[cy+oy], command.ResetOptions{}); err != nil {
+	if err := command.Reset(r, stagedFiles[cy+oy], &command.ResetOptions{}); err != nil {
 		return err
 	}
 	return refreshAllStatusView(g, r, true)
@@ -44,7 +44,7 @@ func (gui *Gui) resetAllChanges(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
-	if err := command.ResetAll(r, command.ResetOptions{
+	if err := command.ResetAll(r, &command.ResetOptions{
 		Hash:  ref.Hash().String(),
 		Rtype: command.ResetMixed,
 	}); err != nil {

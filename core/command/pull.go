@@ -33,7 +33,7 @@ type PullOptions struct {
 	// Fetch only ReferenceName if true.
 	SingleBranch bool
 	// Credentials holds the user and pswd information
-	Credentials git.Credentials
+	Credentials *git.Credentials
 	// Process logs the output to stdout
 	Progress bool
 	// Force allows the pull to update a local branch even when the remote
@@ -42,7 +42,7 @@ type PullOptions struct {
 }
 
 // Pull ncorporates changes from a remote repository into the current branch.
-func Pull(r *git.Repository, options PullOptions) (err error) {
+func Pull(r *git.Repository, options *PullOptions) (err error) {
 	// here we configure pull operation
 	// default mode is go-git (this may be configured)
 	pullCmdMode = pullCmdModeNative
@@ -59,7 +59,7 @@ func Pull(r *git.Repository, options PullOptions) (err error) {
 	return nil
 }
 
-func pullWithGit(r *git.Repository, options PullOptions) (err error) {
+func pullWithGit(r *git.Repository, options *PullOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, pullCommand)
 	// parse options to command line arguments
@@ -76,7 +76,7 @@ func pullWithGit(r *git.Repository, options PullOptions) (err error) {
 	return r.Refresh()
 }
 
-func pullWithGoGit(r *git.Repository, options PullOptions) (err error) {
+func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 	opt := &gogit.PullOptions{
 		RemoteName:   options.RemoteName,
 		SingleBranch: options.SingleBranch,
@@ -87,7 +87,7 @@ func pullWithGoGit(r *git.Repository, options PullOptions) (err error) {
 		opt.ReferenceName = ref
 	}
 	// if any credential is given, let's add it to the git.PullOptions
-	if len(options.Credentials.User) > 0 {
+	if options.Credentials != nil {
 		protocol, err := git.AuthProtocol(r.State.Remote)
 		if err != nil {
 			return err
@@ -118,7 +118,7 @@ func pullWithGoGit(r *git.Repository, options PullOptions) (err error) {
 		} else if err == memory.ErrRefHasChanged && pullTryCount < pullMaxTry {
 			pullTryCount++
 			log.Error("trying to fetch")
-			if err := Fetch(r, FetchOptions{
+			if err := Fetch(r, &FetchOptions{
 				RemoteName: options.RemoteName,
 			}); err != nil {
 				return err

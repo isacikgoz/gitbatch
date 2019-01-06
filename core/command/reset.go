@@ -53,7 +53,7 @@ const (
 )
 
 // Reset is the wrapper of "git reset" command
-func Reset(r *git.Repository, file *git.File, option ResetOptions) error {
+func Reset(r *git.Repository, file *git.File, option *ResetOptions) error {
 	resetCmdMode = resetCmdModeLegacy
 
 	switch resetCmdMode {
@@ -66,7 +66,7 @@ func Reset(r *git.Repository, file *git.File, option ResetOptions) error {
 	return errors.New("Unhandled reset operation")
 }
 
-func resetWithGit(r *git.Repository, file *git.File, option ResetOptions) error {
+func resetWithGit(r *git.Repository, file *git.File, option *ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, resetCommand)
 
@@ -84,7 +84,7 @@ func resetWithGit(r *git.Repository, file *git.File, option ResetOptions) error 
 }
 
 // ResetAll resets the changes in a repository, should be used wise
-func ResetAll(r *git.Repository, option ResetOptions) error {
+func ResetAll(r *git.Repository, option *ResetOptions) error {
 	resetCmdMode = addCmdModeNative
 
 	switch resetCmdMode {
@@ -98,7 +98,7 @@ func ResetAll(r *git.Repository, option ResetOptions) error {
 	return errors.New("Unhandled reset operation")
 }
 
-func resetAllWithGit(r *git.Repository, option ResetOptions) error {
+func resetAllWithGit(r *git.Repository, option *ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, resetCommand)
 	if len(option.Rtype) > 0 {
@@ -112,7 +112,7 @@ func resetAllWithGit(r *git.Repository, option ResetOptions) error {
 	return nil
 }
 
-func resetAllWithGoGit(r *git.Repository, option ResetOptions) error {
+func resetAllWithGoGit(r *git.Repository, option *ResetOptions) error {
 	w, err := r.Repo.Worktree()
 	if err != nil {
 		return err

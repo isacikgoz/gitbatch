@@ -36,11 +36,11 @@ func (j *Job) start() error {
 	// TOOD: Better implementation required
 	switch mode := j.JobType; mode {
 	case FetchJob:
-		var opts command.FetchOptions
+		var opts *command.FetchOptions
 		if j.Options != nil {
-			opts = j.Options.(command.FetchOptions)
+			opts = j.Options.(*command.FetchOptions)
 		} else {
-			opts = command.FetchOptions{
+			opts = &command.FetchOptions{
 				RemoteName: j.Repository.State.Remote.Name,
 			}
 		}
@@ -50,11 +50,11 @@ func (j *Job) start() error {
 			return err
 		}
 	case PullJob:
-		var opts command.PullOptions
+		var opts *command.PullOptions
 		if j.Options != nil {
-			opts = j.Options.(command.PullOptions)
+			opts = j.Options.(*command.PullOptions)
 		} else {
-			opts = command.PullOptions{
+			opts = &command.PullOptions{
 				RemoteName: j.Repository.State.Remote.Name,
 			}
 		}
@@ -64,7 +64,7 @@ func (j *Job) start() error {
 			return err
 		}
 	case MergeJob:
-		if err := command.Merge(j.Repository, command.MergeOptions{
+		if err := command.Merge(j.Repository, &command.MergeOptions{
 			BranchName: j.Repository.State.Remote.Branch.Name,
 		}); err != nil {
 			j.Repository.SetWorkStatus(git.Fail)
