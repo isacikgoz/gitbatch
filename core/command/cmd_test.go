@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/isacikgoz/gitbatch/core/git"
 	ggit "gopkg.in/src-d/go-git.v4"
@@ -74,6 +75,7 @@ func testRepo() (*git.Repository, error) {
 		URL:               testRepoURL,
 		RecurseSubmodules: ggit.DefaultSubmoduleRecursionDepth,
 	})
+	time.Sleep(time.Second)
 	if err != nil && err != ggit.NoErrAlreadyUpToDate {
 		return nil, err
 	}
