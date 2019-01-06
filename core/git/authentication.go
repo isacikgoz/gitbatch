@@ -2,6 +2,7 @@ package git
 
 import (
 	"net/url"
+	"strings"
 )
 
 // Credentials holds user credentials to authenticate and authorize while
@@ -22,7 +23,11 @@ const (
 // AuthProtocol returns the type of protocol for given remote's URL
 // various auth protocols require different kind of authentication
 func AuthProtocol(r *Remote) (p string, err error) {
-	u, err := url.Parse(r.URL[0])
+	ur := r.URL[0]
+	if strings.HasPrefix(ur, "git@") {
+		return "ssh", nil
+	}
+	u, err := url.Parse(ur)
 	if err != nil {
 		return p, err
 	}
