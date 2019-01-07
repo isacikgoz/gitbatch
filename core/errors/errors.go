@@ -39,6 +39,9 @@ var (
 	ErrUnmergedFiles = errors.New("unmerged files detected")
 	// ErrReferenceBroken thrown when unable to resolve reference
 	ErrReferenceBroken = errors.New("unable to resolve reference")
+	// ErrUserEmailNotSet is thrown if there is no configured user email while
+	// commit command
+	ErrUserEmailNotSet = errors.New("user email not configured")
 	// ErrUnclassified is unconsidered error type
 	ErrUnclassified = errors.New("unclassified error")
 )
@@ -58,6 +61,8 @@ func ParseGitError(out string, err error) error {
 		return ErrUnmergedFiles
 	} else if strings.Contains(out, "unable to resolve reference") {
 		return ErrReferenceBroken
+	} else if strings.Contains(out, "git config --global add user.email") {
+		return ErrUserEmailNotSet
 	}
 	return ErrUnclassified
 }

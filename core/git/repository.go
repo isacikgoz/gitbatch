@@ -10,6 +10,38 @@ import (
 	git "gopkg.in/src-d/go-git.v4"
 )
 
+// RepositoryInterface is interface to repositorty
+type RepositoryInterface interface {
+	loadComponents(bool) error
+	Refresh() error
+	On(string, RepositoryListener)
+	Publish(string, interface{}) error
+	WorkStatus() WorkStatus
+	SetWorkStatus(WorkStatus)
+
+	loadLocalBranches() error
+	NextBranch() *Branch
+	PreviousBranch() *Branch
+	currentBranchIndex() int
+	Checkout(*Branch) error
+	isClean() bool
+
+	NextCommit()
+	PreviousCommit()
+	currentCommitIndex()
+	loadCommits() error
+	pullDiffsToUpstream() ([]*Commit, error)
+	pushDiffsToUpstream() ([]string, error)
+
+	NextRemote() error
+	PreviousRemote() error
+	currentRemoteIndex() int
+	loadRemotes() error
+
+	loadStashedItems() error
+	Stash() (string, error)
+}
+
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
 // repository entity along with critic entites such as remote/branches and commits
@@ -206,12 +238,12 @@ func (r *Repository) Publish(eventName string, data interface{}) error {
 	return nil
 }
 
-// State returns the state of the repository such as queued, failed etc.
+// WorkStatus returns the state of the repository such as queued, failed etc.
 func (r *Repository) WorkStatus() WorkStatus {
 	return r.State.workStatus
 }
 
-// SetState sets the state of repository and sends repository updated event
+// SetWorkStatus sets the state of repository and sends repository updated event
 func (r *Repository) SetWorkStatus(ws WorkStatus) {
 	r.State.workStatus = ws
 	// we could send an event data but we don't need for this topic

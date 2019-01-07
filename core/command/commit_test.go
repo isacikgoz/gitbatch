@@ -3,6 +3,7 @@ package command
 import (
 	"testing"
 
+	giterr "github.com/isacikgoz/gitbatch/core/errors"
 	"github.com/isacikgoz/gitbatch/core/git"
 )
 
@@ -34,7 +35,7 @@ func TestCommitWithGit(t *testing.T) {
 		{r, testCommitopt1},
 	}
 	for _, test := range tests {
-		if err := commitWithGit(test.inp1, test.inp2); err != nil {
+		if err := commitWithGit(test.inp1, test.inp2); err != nil && err == giterr.ErrUserEmailNotSet {
 			t.Errorf("Test Failed.")
 		}
 	}

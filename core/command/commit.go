@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	giterr "github.com/isacikgoz/gitbatch/core/errors"
 	"github.com/isacikgoz/gitbatch/core/git"
 	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
@@ -52,10 +53,10 @@ func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 	if len(opt.CommitMsg) > 0 {
 		args = append(args, opt.CommitMsg)
 	}
-	if _, err := Run(r.AbsPath, "git", args); err != nil {
+	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		log.Warn("Error at git command (commit)")
 		r.Refresh()
-		return err
+		return giterr.ParseGitError(out, err)
 	}
 	// till this step everything should be ok
 	return r.Refresh()
