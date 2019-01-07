@@ -18,8 +18,8 @@ func TestCheckout(t *testing.T) {
 }
 
 func TestRevlistNew(t *testing.T) {
-	// defer cleanRepo()
-	r, err := testRevRepo()
+	defer cleanRepo()
+	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
