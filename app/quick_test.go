@@ -13,7 +13,7 @@ func TestQuick(t *testing.T) {
 			[]string{dirty},
 			"fetch",
 		}, {
-			[]string{basic},
+			[]string{dirty},
 			"pull",
 		},
 	}
