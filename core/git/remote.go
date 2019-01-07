@@ -42,7 +42,7 @@ func (r *Repository) currentRemoteIndex() int {
 
 // search for remotes in go-git way. It is the short way to get remotes but it
 // does not give any insght about remote branches
-func (r *Repository) loadRemotes() error {
+func (r *Repository) initRemotes() error {
 	rp := r.Repo
 	r.Remotes = make([]*Remote, 0)
 
@@ -68,6 +68,7 @@ func (r *Repository) loadRemotes() error {
 		log.Warn("Cannot find remotes " + err.Error())
 		return err
 	}
+	r.State.Remote = r.Remotes[0]
 	return err
 }
 

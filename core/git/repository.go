@@ -1,7 +1,6 @@
 package git
 
 import (
-	"errors"
 	"os"
 	"sync"
 	"time"
@@ -19,24 +18,17 @@ type RepositoryInterface interface {
 	WorkStatus() WorkStatus
 	SetWorkStatus(WorkStatus)
 
-	loadLocalBranches() error
+	initBranches() error
 	NextBranch() *Branch
 	PreviousBranch() *Branch
 	currentBranchIndex() int
 	Checkout(*Branch) error
 	isClean() bool
 
-	NextCommit()
-	PreviousCommit()
-	currentCommitIndex()
-	loadCommits() error
-	pullDiffsToUpstream() ([]*Commit, error)
-	pushDiffsToUpstream() ([]string, error)
-
 	NextRemote() error
 	PreviousRemote() error
 	currentRemoteIndex() int
-	loadRemotes() error
+	initRemotes() error
 
 	loadStashedItems() error
 	Stash() (string, error)
@@ -59,7 +51,6 @@ type Repository struct {
 	Repo     git.Repository
 	Branches []*Branch
 	Remotes  []*Remote
-	Commits  []*Commit
 	Stasheds []*StashedItem
 	State    *RepositoryState
 
@@ -72,7 +63,6 @@ type RepositoryState struct {
 	workStatus WorkStatus
 	Branch     *Branch
 	Remote     *Remote
-	Commit     *Commit
 	Message    string
 }
 
@@ -153,40 +143,23 @@ func InitializeRepo(dir string) (r *Repository, err error) {
 // loadComponents initializes the fields of a repository such as branches,
 // remotes, commits etc. If reset, reload commit, remote pointers too
 func (r *Repository) loadComponents(reset bool) error {
-	if err := r.loadLocalBranches(); err != nil {
+	if err := r.initRemotes(); err != nil {
 		return err
 	}
-	if err := r.loadCommits(); err != nil {
+
+	if err := r.initBranches(); err != nil {
 		return err
 	}
-	if err := r.loadRemotes(); err != nil {
+
+	r.State.Remote.SyncBranches(r.State.Branch.Name)
+	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
 		return err
 	}
+
 	if err := r.loadStashedItems(); err != nil {
 		log.Warn("Cannot load stashes")
 	}
-	if reset {
-		// handle if there is no commit, maybe?
-		// set commit pointer for repository
-		if len(r.Commits) > 0 {
-			// select first commit
-			r.State.Commit = r.Commits[0]
-		}
-		// set remote pointer for repository
-		if len(r.Remotes) > 0 {
-			// TODO: tend to take origin/master as default
-			r.State.Remote = r.Remotes[0]
-			// if couldn't find, its ok.
-			r.State.Remote.SyncBranches(r.State.Branch.Name)
 
-		} else {
-			// if there is no remote, this project is totally useless actually
-			return errors.New("There is no remote for this repository")
-		}
-	}
-	// if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
-	// 	return err
-	// }
 	return nil
 }
 

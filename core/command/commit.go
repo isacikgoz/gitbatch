@@ -76,6 +76,11 @@ func commitWithGoGit(r *git.Repository, options *CommitOptions) (err error) {
 			Email: email,
 			When:  time.Now(),
 		},
+		Committer: &object.Signature{
+			Name:  name,
+			Email: email,
+			When:  time.Now(),
+		},
 	}
 
 	w, err := r.Repo.Worktree()

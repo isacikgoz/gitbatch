@@ -118,9 +118,9 @@ func (gui *Gui) renderCommits(r *git.Repository) error {
 	}
 	out.Clear()
 	currentindex := 0
-	totalcommits := len(r.Commits)
-	for i, c := range r.Commits {
-		if c.Hash == r.State.Commit.Hash {
+	totalcommits := len(r.State.Branch.Commits)
+	for i, c := range r.State.Branch.Commits {
+		if c.Hash == r.State.Branch.State.Commit.Hash {
 			currentindex = i
 			fmt.Fprintln(out, selectionIndicator+commitLabel(c))
 			continue
@@ -147,7 +147,7 @@ func (gui *Gui) sideViewsNextItem(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	case commitViewFeature.Name:
-		r.NextCommit()
+		r.State.Branch.NextCommit()
 		return gui.renderCommits(r)
 	}
 	return err
@@ -170,7 +170,7 @@ func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	case commitViewFeature.Name:
-		r.PreviousCommit()
+		r.State.Branch.PreviousCommit()
 		return gui.renderCommits(r)
 	}
 	return err

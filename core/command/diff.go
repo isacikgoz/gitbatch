@@ -52,18 +52,18 @@ func diffWithGit(r *git.Repository, hash string) (diff string, err error) {
 
 func diffWithGoGit(r *git.Repository, hash string) (diff string, err error) {
 	currentCommitIndex := 0
-	for i, cs := range r.Commits {
+	for i, cs := range r.State.Branch.Commits {
 		if cs.Hash == hash {
 			currentCommitIndex = i
 		}
 	}
-	if len(r.Commits)-currentCommitIndex <= 1 {
+	if len(r.State.Branch.Commits)-currentCommitIndex <= 1 {
 		return "there is no diff", nil
 	}
 
 	// maybe we dont need to log the repo again?
 	commits, err := r.Repo.Log(&gogit.LogOptions{
-		From:  plumbing.NewHash(r.State.Commit.Hash),
+		From:  plumbing.NewHash(r.State.Branch.State.Commit.Hash),
 		Order: gogit.LogOrderCommitterTime,
 	})
 	if err != nil {

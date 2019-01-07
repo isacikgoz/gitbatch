@@ -2,14 +2,15 @@ package git
 
 import (
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 
-	gerr "github.com/isacikgoz/gitbatch/core/errors"
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -19,9 +20,15 @@ import (
 type Branch struct {
 	Name      string
 	Reference *plumbing.Reference
+	Commits   []*Commit
+	State     *BranchState
 	Pushables string
 	Pullables string
 	Clean     bool
+}
+
+type BranchState struct {
+	Commit *Commit
 }
 
 var (
@@ -32,7 +39,7 @@ var (
 // search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
 // git cammand and its output
-func (r *Repository) loadLocalBranches() error {
+func (r *Repository) initBranches() error {
 	lbs := make([]*Branch, 0)
 	bs, err := r.Repo.Branches()
 	if err != nil {
@@ -50,30 +57,11 @@ func (r *Repository) loadLocalBranches() error {
 		if b.Type() != plumbing.HashReference {
 			return nil
 		}
-		upstream := "@{u}" //r.State.Remote.Branch.Reference.Hash().String()
-		headd := "HEAD"    //headRef.Hash().String()
-		pushables, err := RevList(r, RevListOptions{
-			Ref1: upstream,
-			Ref2: headd,
-		})
-		if err != nil {
-			push = "?"
-		} else {
-			push = strconv.Itoa(len(pushables))
-		}
-		pullables, err := RevList(r, RevListOptions{
-			Ref1: headd,
-			Ref2: upstream,
-		})
-		if err != nil {
-			pull = "?"
-		} else {
-			pull = strconv.Itoa(len(pullables))
-		}
 		clean := r.isClean()
 		branch := &Branch{
 			Name:      b.Name().Short(),
 			Reference: b,
+			State:     &BranchState{},
 			Pushables: push,
 			Pullables: pull,
 			Clean:     clean,
@@ -90,6 +78,7 @@ func (r *Repository) loadLocalBranches() error {
 		branch := &Branch{
 			Name:      headRef.Hash().String(),
 			Reference: headRef,
+			State:     &BranchState{},
 			Pushables: "?",
 			Pullables: "?",
 			Clean:     r.isClean(),
@@ -98,7 +87,7 @@ func (r *Repository) loadLocalBranches() error {
 		r.State.Branch = branch
 	}
 	r.Branches = lbs
-	return err
+	return nil
 }
 
 // NextBranch checkouts the next branch
@@ -184,65 +173,38 @@ type RevListOptions struct {
 	Ref2 string
 }
 
-// RevList returns the commit hashes that are links from the given commit(s).
-// The output is given in reverse chronological order by default.
-func RevList(r *Repository, options RevListOptions) ([]string, error) {
-	args := make([]string, 0)
-	args = append(args, revlistCommand)
-	if len(options.Ref1) > 0 && len(options.Ref2) > 0 {
-		arg1 := options.Ref1 + ".." + options.Ref2
-		args = append(args, arg1)
-	}
-	cmd := exec.Command("git", args...)
-	cmd.Dir = r.AbsPath
-	out, err := cmd.CombinedOutput()
+// RevList is native implemetation of git rev-list command
+func RevList(r *Repository, opts RevListOptions) ([]*object.Commit, error) {
+
+	commits := make([]*object.Commit, 0)
+	ref1hist, err := revlist.Objects(r.Repo.Storer, []plumbing.Hash{plumbing.NewHash(opts.Ref1)}, nil)
 	if err != nil {
 		return nil, err
 	}
-	s := string(out)
-
-	hashes := strings.Split(s, "\n")
-	for _, hash := range hashes {
-		if len(hash) != hashLength {
-			return make([]string, 0), nil
-		}
-		break
+	ref2hist, err := revlist.Objects(r.Repo.Storer, []plumbing.Hash{plumbing.NewHash(opts.Ref2)}, ref1hist)
+	if err != nil {
+		return nil, err
 	}
-	return hashes, nil
-}
 
-// RevListNew is native implemetation of git rev-list command
-func RevListNew(r *Repository, options RevListOptions) ([]string, error) {
-
-	hashes := make([]string, 0)
-
-	cIter, err := r.Repo.Log(&git.LogOptions{
-		From:  plumbing.NewHash(options.Ref1),
-		Order: git.LogOrderCommitterTime,
-	})
-
-	err = cIter.ForEach(func(c *object.Commit) error {
-		h := c.Hash.String()
-		if h == options.Ref2 {
-			return gerr.NoErrIterationHalted
+	for _, h := range ref2hist {
+		c, err := r.Repo.CommitObject(h)
+		if err != nil {
+			continue
 		}
-		hashes = append(hashes, c.Hash.String())
-		return nil
-	})
-	if err == gerr.NoErrIterationHalted {
-		err = nil
+		commits = append(commits, c)
 	}
-	return hashes, err
+	sort.Sort(CommitTime(commits))
+	return commits, err
 }
 
 // SyncRemoteAndBranch is essegin ziki
 func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
-	// headRef, err := r.Repo.Head()
-	// if err != nil {
-	// 	return err
-	// }
-	upstream := "@{u}" //r.State.Remote.Branch.Reference.Hash().String()
-	headd := "HEAD"    //headRef.Hash().String()
+	headRef, err := r.Repo.Head()
+	if err != nil {
+		return err
+	}
+	upstream := r.State.Remote.Branch.Reference.Hash().String()
+	headd := headRef.Hash().String()
 	var push, pull string
 	pushables, err := RevList(r, RevListOptions{
 		Ref1: upstream,
@@ -264,5 +226,5 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	}
 	b.Pullables = pull
 	b.Pushables = push
-	return nil
+	return b.initCommits(r)
 }

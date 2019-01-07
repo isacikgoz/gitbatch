@@ -19,12 +19,20 @@ type RemoteBranch struct {
 // NextRemoteBranch iterates to the next remote branch
 func (rm *Remote) NextRemoteBranch(r *Repository) error {
 	rm.Branch = rm.Branches[(rm.currentRemoteBranchIndex()+1)%len(rm.Branches)]
+
+	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
+		return err
+	}
 	return r.Publish(RepositoryUpdated, nil)
 }
 
 // PreviousRemoteBranch iterates to the previous remote branch
 func (rm *Remote) PreviousRemoteBranch(r *Repository) error {
 	rm.Branch = rm.Branches[(len(rm.Branches)+rm.currentRemoteBranchIndex()-1)%len(rm.Branches)]
+
+	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
+		return err
+	}
 	return r.Publish(RepositoryUpdated, nil)
 }
 
