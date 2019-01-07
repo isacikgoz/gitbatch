@@ -5,9 +5,11 @@ import (
 	"strconv"
 	"strings"
 
+	gerr "github.com/isacikgoz/gitbatch/core/errors"
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -43,15 +45,16 @@ func (r *Repository) loadLocalBranches() error {
 		return err
 	}
 	var branchFound bool
+	var push, pull string
 	bs.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() != plumbing.HashReference {
 			return nil
 		}
-
-		var push, pull string
+		upstream := "@{u}" //r.State.Remote.Branch.Reference.Hash().String()
+		headd := "HEAD"    //headRef.Hash().String()
 		pushables, err := RevList(r, RevListOptions{
-			Ref1: "@{u}",
-			Ref2: "HEAD",
+			Ref1: upstream,
+			Ref2: headd,
 		})
 		if err != nil {
 			push = "?"
@@ -59,8 +62,8 @@ func (r *Repository) loadLocalBranches() error {
 			push = strconv.Itoa(len(pushables))
 		}
 		pullables, err := RevList(r, RevListOptions{
-			Ref1: "HEAD",
-			Ref2: "@{u}",
+			Ref1: headd,
+			Ref2: upstream,
 		})
 		if err != nil {
 			pull = "?"
@@ -206,4 +209,60 @@ func RevList(r *Repository, options RevListOptions) ([]string, error) {
 		break
 	}
 	return hashes, nil
+}
+
+// RevListNew is native implemetation of git rev-list command
+func RevListNew(r *Repository, options RevListOptions) ([]string, error) {
+
+	hashes := make([]string, 0)
+
+	cIter, err := r.Repo.Log(&git.LogOptions{
+		From:  plumbing.NewHash(options.Ref1),
+		Order: git.LogOrderCommitterTime,
+	})
+
+	err = cIter.ForEach(func(c *object.Commit) error {
+		h := c.Hash.String()
+		if h == options.Ref2 {
+			return gerr.NoErrIterationHalted
+		}
+		hashes = append(hashes, c.Hash.String())
+		return nil
+	})
+	if err == gerr.NoErrIterationHalted {
+		err = nil
+	}
+	return hashes, err
+}
+
+// SyncRemoteAndBranch is essegin ziki
+func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
+	// headRef, err := r.Repo.Head()
+	// if err != nil {
+	// 	return err
+	// }
+	upstream := "@{u}" //r.State.Remote.Branch.Reference.Hash().String()
+	headd := "HEAD"    //headRef.Hash().String()
+	var push, pull string
+	pushables, err := RevList(r, RevListOptions{
+		Ref1: upstream,
+		Ref2: headd,
+	})
+	if err != nil {
+		push = "?"
+	} else {
+		push = strconv.Itoa(len(pushables))
+	}
+	pullables, err := RevList(r, RevListOptions{
+		Ref1: headd,
+		Ref2: upstream,
+	})
+	if err != nil {
+		pull = "?"
+	} else {
+		pull = strconv.Itoa(len(pullables))
+	}
+	b.Pullables = pull
+	b.Pushables = push
+	return nil
 }

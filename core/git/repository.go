@@ -42,6 +42,12 @@ type RepositoryInterface interface {
 	Stash() (string, error)
 }
 
+// Reference is the interface for commits, remotes and branches
+type Reference interface {
+	Next() *Reference
+	Previous() *Reference
+}
+
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
 // repository entity along with critic entites such as remote/branches and commits
@@ -172,11 +178,15 @@ func (r *Repository) loadComponents(reset bool) error {
 			r.State.Remote = r.Remotes[0]
 			// if couldn't find, its ok.
 			r.State.Remote.SyncBranches(r.State.Branch.Name)
+
 		} else {
 			// if there is no remote, this project is totally useless actually
 			return errors.New("There is no remote for this repository")
 		}
 	}
+	// if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 

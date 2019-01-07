@@ -44,6 +44,8 @@ var (
 	ErrUserEmailNotSet = errors.New("user email not configured")
 	// ErrUnclassified is unconsidered error type
 	ErrUnclassified = errors.New("unclassified error")
+	// NoErrIterationHalted is thrown for catching stops in interators
+	NoErrIterationHalted = errors.New("iteration halted")
 )
 
 // ParseGitError takes git output as an input and tries to find some meaningful
