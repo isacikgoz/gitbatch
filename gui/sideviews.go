@@ -13,61 +13,6 @@ var (
 	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
 )
 
-// basically does fetch --prune
-func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
-	r := gui.getSelectedRepository()
-	return command.Fetch(r, &command.FetchOptions{
-		RemoteName: r.State.Remote.Name,
-		Prune:      true,
-	})
-}
-
-// opens a confirmation view for setting default merge branch
-func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
-	maxX, maxY := g.Size()
-
-	r := gui.getSelectedRepository()
-	v, err := g.SetView(confirmationViewFeature.Name, maxX/2-30, maxY/2-2, maxX/2+30, maxY/2+2)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		fmt.Fprintln(v, "branch."+r.State.Branch.Name+"."+"remote"+"="+r.State.Remote.Name)
-		fmt.Fprintln(v, "branch."+r.State.Branch.Name+"."+"merge"+"="+r.State.Branch.Reference.Name().String())
-	}
-	return gui.focusToView(confirmationViewFeature.Name)
-}
-
-// add config for upstream merge
-func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
-	var err error
-	r := gui.getSelectedRepository()
-	if err = command.AddConfig(r, &command.ConfigOptions{
-		Section: "branch." + r.State.Branch.Name,
-		Option:  "remote",
-		Site:    command.ConfigSiteLocal,
-	}, r.State.Remote.Name); err != nil {
-		return err
-	}
-	if err = command.AddConfig(r, &command.ConfigOptions{
-		Section: "branch." + r.State.Branch.Name,
-		Option:  "merge",
-		Site:    command.ConfigSiteLocal,
-	}, r.State.Branch.Reference.Name().String()); err != nil {
-		return err
-	}
-	r.Refresh()
-	return gui.closeConfirmationView(g, v)
-}
-
-// close confirmation view
-func (gui *Gui) closeConfirmationView(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView(v.Name()); err != nil {
-		return err
-	}
-	return gui.closeViewCleanup(branchViewFeature.Name)
-}
-
 // moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) sideCursorDown(g *gocui.Gui, v *gocui.View) error {
@@ -99,12 +44,21 @@ func (gui *Gui) sideCursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderSideViews(r *git.Repository) error {
-	gui.resetSideCursors()
-	gui.renderCommits(r)
-	gui.renderBranches(r)
-	gui.renderRemoteBranches(r)
-	gui.renderRemotes(r)
-
+	if err := gui.resetSideCursors(); err != nil {
+		return err
+	}
+	if err := gui.renderCommits(r); err != nil {
+		return err
+	}
+	if err := gui.renderBranches(r); err != nil {
+		return err
+	}
+	if err := gui.renderRemoteBranches(r); err != nil {
+		return err
+	}
+	if err := gui.renderRemotes(r); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -215,6 +169,7 @@ func (gui *Gui) selectSideItem(g *gocui.Gui, v *gocui.View) error {
 		err = gui.renderRemoteBranches(r)
 	} else if v.Name() == remoteViewFeature.Name {
 		r.State.Remote = r.Remotes[ix]
+		r.Refresh()
 		err = gui.renderRemotes(r)
 	}
 	return err
@@ -255,4 +210,59 @@ func (gui *Gui) resetSideCursors() error {
 		v.SetCursor(0, 0)
 	}
 	return nil
+}
+
+// basically does fetch --prune
+func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
+	r := gui.getSelectedRepository()
+	return command.Fetch(r, &command.FetchOptions{
+		RemoteName: r.State.Remote.Name,
+		Prune:      true,
+	})
+}
+
+// opens a confirmation view for setting default merge branch
+func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
+	maxX, maxY := g.Size()
+
+	r := gui.getSelectedRepository()
+	v, err := g.SetView(confirmationViewFeature.Name, maxX/2-30, maxY/2-2, maxX/2+30, maxY/2+2)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		fmt.Fprintln(v, "branch."+r.State.Branch.Name+"."+"remote"+"="+r.State.Remote.Name)
+		fmt.Fprintln(v, "branch."+r.State.Branch.Name+"."+"merge"+"="+r.State.Branch.Reference.Name().String())
+	}
+	return gui.focusToView(confirmationViewFeature.Name)
+}
+
+// add config for upstream merge
+func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	r := gui.getSelectedRepository()
+	if err = command.AddConfig(r, &command.ConfigOptions{
+		Section: "branch." + r.State.Branch.Name,
+		Option:  "remote",
+		Site:    command.ConfigSiteLocal,
+	}, r.State.Remote.Name); err != nil {
+		return err
+	}
+	if err = command.AddConfig(r, &command.ConfigOptions{
+		Section: "branch." + r.State.Branch.Name,
+		Option:  "merge",
+		Site:    command.ConfigSiteLocal,
+	}, r.State.Branch.Reference.Name().String()); err != nil {
+		return err
+	}
+	r.Refresh()
+	return gui.closeConfirmationView(g, v)
+}
+
+// close confirmation view
+func (gui *Gui) closeConfirmationView(g *gocui.Gui, v *gocui.View) error {
+	if err := g.DeleteView(v.Name()); err != nil {
+		return err
+	}
+	return gui.closeViewCleanup(branchViewFeature.Name)
 }
