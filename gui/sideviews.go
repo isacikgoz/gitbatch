@@ -10,7 +10,7 @@ import (
 
 var (
 	confirmationViewFeature = viewFeature{Name: "confirmation", Title: " Confirmation "}
-	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
+	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
 )
 
 // moves the cursor downwards for the main view and if it goes to bottom it
@@ -47,9 +47,9 @@ func (gui *Gui) renderSideViews(r *git.Repository) error {
 	if err := gui.resetSideCursors(); err != nil {
 		return err
 	}
-	if err := gui.renderCommits(r); err != nil {
-		return err
-	}
+	// if err := gui.renderCommits(r); err != nil {
+	// 	return err
+	// }
 	if err := gui.renderBranches(r); err != nil {
 		return err
 	}
@@ -59,29 +59,6 @@ func (gui *Gui) renderSideViews(r *git.Repository) error {
 	if err := gui.renderRemotes(r); err != nil {
 		return err
 	}
-	return nil
-}
-
-// updates the commitsview for given entity
-func (gui *Gui) renderCommits(r *git.Repository) error {
-	v, err := gui.g.View(commitViewFeature.Name)
-	if err != nil {
-		return err
-	}
-	v.Clear()
-	cs := r.State.Branch.Commits
-	bc := r.State.Branch.State.Commit
-	si := 0
-	for i, c := range cs {
-		if c.Hash == bc.Hash {
-			si = i
-			fmt.Fprintln(v, ws+commitLabel(c, true))
-			continue
-		}
-
-		fmt.Fprintln(v, tab+commitLabel(c, false))
-	}
-	adjustAnchor(si, len(cs), v)
 	return nil
 }
 

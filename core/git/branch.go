@@ -205,5 +205,10 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	}
 	b.Pullables = pull
 	b.Pushables = push
+	// return b.initCommits(r)
+	return nil
+}
+
+func (b *Branch) InitializeCommits(r *Repository) error {
 	return b.initCommits(r)
 }

@@ -318,6 +318,14 @@ func (gui *Gui) generateKeybindings() error {
 		// Main view controls
 		{
 			View:        mainViewFeature.Name,
+			Key:         'f',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.focusToRepository,
+			Display:     "f",
+			Description: "Focus",
+			Vital:       true,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         'u',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.submitCredentials,
@@ -476,6 +484,30 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "u",
 			Description: "Set Upstream",
 			Vital:       true,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         'f',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.focusBackToMain,
+			Display:     "f",
+			Description: "Back to Overview",
+			Vital:       true,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         gocui.KeyArrowDown,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitCursorDown,
+			Display:     "↓",
+			Description: "Iterate over branches",
+			Vital:       false,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         gocui.KeyArrowUp,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitCursorUp,
+			Display:     "↑",
+			Description: "Iterate over branches",
+			Vital:       false,
 		}, {
 			View:        commitViewFeature.Name,
 			Key:         'd',
