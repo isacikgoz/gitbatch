@@ -45,7 +45,7 @@ var (
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = ws + string(green.Sprint("→")) + ws
+	selectionIndicator = ws + string(green.Sprint("*")) + ws
 	tab                = ws
 )
 

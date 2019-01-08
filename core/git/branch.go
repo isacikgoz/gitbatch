@@ -129,7 +129,7 @@ func (r *Repository) Checkout(b *Branch) error {
 		log.Warn("Cannot checkout " + err.Error())
 		return err
 	}
-
+	r.State.Branch = b
 	// make this conditional on global scale
 	// we don't care if this function returns an error
 	r.State.Remote.SyncBranches(b.Name)
