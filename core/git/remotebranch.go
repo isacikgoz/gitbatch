@@ -16,37 +16,6 @@ type RemoteBranch struct {
 	Reference *plumbing.Reference
 }
 
-// NextRemoteBranch iterates to the next remote branch
-func (rm *Remote) NextRemoteBranch(r *Repository) error {
-	rm.Branch = rm.Branches[(rm.currentRemoteBranchIndex()+1)%len(rm.Branches)]
-
-	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
-		return err
-	}
-	return r.Publish(RepositoryUpdated, nil)
-}
-
-// PreviousRemoteBranch iterates to the previous remote branch
-func (rm *Remote) PreviousRemoteBranch(r *Repository) error {
-	rm.Branch = rm.Branches[(len(rm.Branches)+rm.currentRemoteBranchIndex()-1)%len(rm.Branches)]
-
-	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
-		return err
-	}
-	return r.Publish(RepositoryUpdated, nil)
-}
-
-// returns the active remote branch index
-func (rm *Remote) currentRemoteBranchIndex() int {
-	cix := 0
-	for i, rb := range rm.Branches {
-		if rb.Reference.Hash() == rm.Branch.Reference.Hash() {
-			cix = i
-		}
-	}
-	return cix
-}
-
 // search for the remote branches of the remote. It takes the go-git's repo
 // pointer in order to get storer struct
 func (rm *Remote) loadRemoteBranches(r *Repository) error {

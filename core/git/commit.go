@@ -31,28 +31,6 @@ const (
 	RemoteCommit CommitType = "remote"
 )
 
-// NextCommit iterates over next commit of a branch
-// TODO: the commits entites can tied to branch instead ot the repository
-func (b *Branch) NextCommit() {
-	b.State.Commit = b.Commits[(b.currentCommitIndex()+1)%len(b.Commits)]
-}
-
-// PreviousCommit iterates to opposite direction
-func (b *Branch) PreviousCommit() {
-	b.State.Commit = b.Commits[(len(b.Commits)+b.currentCommitIndex()-1)%len(b.Commits)]
-}
-
-// returns the active commit index
-func (b *Branch) currentCommitIndex() int {
-	cix := 0
-	for i, c := range b.Commits {
-		if c.Hash == b.State.Commit.Hash {
-			cix = i
-		}
-	}
-	return cix
-}
-
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
 func (b *Branch) initCommits(r *Repository) error {
