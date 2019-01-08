@@ -1,7 +1,9 @@
 package gui
 
 import (
+	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -113,7 +115,8 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 }
 
 func commitLabel(c *git.Commit, sel bool) string {
-	msg := c.Message
+	re := regexp.MustCompile(`\r?\n`)
+	msg := re.ReplaceAllString(c.Message, " ")
 	if sel {
 		msg = green.Sprint(msg)
 	}
@@ -192,4 +195,35 @@ func trimRemoteURL(url string) (urltype string, shorturl string) {
 		urltype = "https"
 	}
 	return urltype, shorturl
+}
+
+func decorateDiffStat(in string) string {
+	dr := regexp.MustCompile(` | `)
+	var d string
+	s := strings.Split(in, "\n")
+	d = strconv.Itoa(len(s)-1) + " file(s) changed." + "\n\n"
+	for _, line := range s {
+		if dr.MatchString(line) {
+			sp := dr.Split(line, 4)
+
+			d = d + cyan.Sprint(sp[1]) + " "
+			d = d + sp[2] + " "
+			if len(sp) <= 3 {
+				fmt.Println("")
+				continue
+			}
+			sr := []rune(sp[3])
+			for _, r := range sr {
+				if r == '+' {
+					d = d + green.Sprint(string(r))
+				} else if r == '-' {
+					d = d + red.Sprint(string(r))
+				} else {
+					d = d + string(r)
+				}
+			}
+			d = d + "\n"
+		}
+	}
+	return d
 }

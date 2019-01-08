@@ -484,7 +484,9 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "u",
 			Description: "Set Upstream",
 			Vital:       true,
-		}, {
+		},
+		// CommitView
+		{
 			View:        commitViewFeature.Name,
 			Key:         'f',
 			Modifier:    gocui.ModNone,
@@ -512,9 +514,43 @@ func (gui *Gui) generateKeybindings() error {
 			View:        commitViewFeature.Name,
 			Key:         'd',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.openCommitDiffView,
+			Handler:     gui.commitDiff,
 			Display:     "d",
 			Description: "Show commit diff",
+			Vital:       true,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         gocui.KeySpace,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.selectCommit,
+			Display:     "space",
+			Description: "select",
+			Vital:       true,
+		},
+		// Detailview
+		{
+			View:        detailViewFeature.Name,
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitDiff,
+			Display:     "d",
+			Description: "diff",
+			Vital:       true,
+		}, {
+			View:        detailViewFeature.Name,
+			Key:         gocui.KeyPgup,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.dpageUp,
+			Display:     "pg up",
+			Description: "Page up",
+			Vital:       true,
+		}, {
+			View:        detailViewFeature.Name,
+			Key:         gocui.KeyPgdn,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.dpageDown,
+			Display:     "pg down",
+			Description: "Page Down",
 			Vital:       true,
 		},
 		// upstream confirmation
