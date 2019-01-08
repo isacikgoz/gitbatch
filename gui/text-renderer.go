@@ -45,7 +45,7 @@ var (
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = ws + string(green.Sprint("*")) + ws
+	selectionIndicator = ws + "→" + ws
 	tab                = ws
 )
 
@@ -112,21 +112,25 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	return prefix + repoName
 }
 
-func commitLabel(c *git.Commit) string {
+func commitLabel(c *git.Commit, sel bool) string {
+	msg := c.Message
+	if sel {
+		msg = green.Sprint(msg)
+	}
 	var body string
 	switch c.CommitType {
 	case git.EvenCommit:
-		body = cyan.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		body = cyan.Sprint(c.Hash[:hashLength]) + " " + msg
 	case git.LocalCommit:
-		body = blue.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		body = blue.Sprint(c.Hash[:hashLength]) + " " + msg
 	case git.RemoteCommit:
 		if len(c.Hash) > hashLength {
-			body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+			body = yellow.Sprint(c.Hash[:hashLength]) + " " + msg
 		} else {
-			body = yellow.Sprint(c.Hash[:len(c.Hash)]) + " " + c.Message
+			body = yellow.Sprint(c.Hash[:len(c.Hash)]) + " " + msg
 		}
 	default:
-		body = c.Hash[:hashLength] + " " + c.Message
+		body = c.Hash[:hashLength] + " " + msg
 	}
 	return body
 }
