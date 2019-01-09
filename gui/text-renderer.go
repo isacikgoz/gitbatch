@@ -253,7 +253,7 @@ func decorateDiffStat(in string) string {
 		if len(stat.FileName) <= 0 {
 			continue
 		}
-		d = d + cyan.Sprint(addWhiteSpace(stat.FileName, rule.MaxNameLength, true)) + yellow.Sprint(" | ") + addWhiteSpace(stat.ChangeCount, rule.MaxChangeCountLength, false) + " "
+		d = d + cyan.Sprint(addWhiteSpace(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + addWhiteSpace(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
 		sr := []rune(stat.Changes)
 		for _, r := range sr {
 			if r == '+' {
@@ -269,8 +269,15 @@ func decorateDiffStat(in string) string {
 	return d
 }
 
-func addWhiteSpace(in string, max int, direction bool) string {
+func addWhiteSpace(in string, max int, direction, trim bool) string {
+	realmax := 50
 	il := len(in)
+	if max > realmax {
+		max = 50
+	}
+	if trim && il > realmax {
+		return " ..." + in[il-46:]
+	}
 	if il < max {
 		if direction {
 			in = in + strings.Repeat(" ", max-il)
@@ -279,4 +286,17 @@ func addWhiteSpace(in string, max int, direction bool) string {
 		}
 	}
 	return in
+}
+
+func decorateCommit(in string) string {
+	var d string
+	lines := strings.Split(in, "\n")
+	d = d + strings.Replace(lines[0], "Hash:", cyan.Sprint("Hash:"), 1) + "\n"
+	d = d + strings.Replace(lines[1], "Author:", cyan.Sprint("Author:"), 1) + "\n"
+	d = d + strings.Replace(lines[2], "Date:", cyan.Sprint("Date:"), 1) + "\n"
+	for _, l := range lines[3:] {
+		d = d + l + "\n"
+	}
+	d = d[:len(d)]
+	return d
 }

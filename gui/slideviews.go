@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/jroimartin/gocui"
@@ -108,17 +109,42 @@ func (gui *Gui) selectCommit(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) commitDetail(ix int) error {
+
 	v, err := gui.g.View(detailViewFeature.Name)
 	if err != nil {
 		return err
 	}
-
+	v.SetOrigin(0, 0)
+	v.SetCursor(0, 0)
 	r := gui.getSelectedRepository()
 	v.Clear()
 	c := r.State.Branch.Commits[ix]
+	done := make(chan bool)
+	var stat string
+	go func() {
+		stat = c.DiffStat(done)
+	}()
+	fmt.Fprintf(v, "%s\n", decorateCommit(c.String()))
+	fmt.Fprintf(v, "%s\n", red.Sprint("loading stats..."))
 
-	fmt.Fprintf(v, "%s\n", c.String())
-	fmt.Fprintf(v, decorateDiffStat(c.DiffStat()))
+	go func(gui *Gui) {
+		if <-done {
+			if !strings.Contains(strings.Join(v.BufferLines(), ""), "loading stats...") {
+				return
+			}
+			v.Clear()
+			fmt.Fprintf(v, "%s\n", decorateCommit(c.String()))
+			gui.g.Update(func(g *gocui.Gui) error {
+				v, err := gui.g.View(detailViewFeature.Name)
+				if err != nil {
+					return err
+				}
+				fmt.Fprintf(v, decorateDiffStat(stat))
+				return nil
+			})
+		}
+	}(gui)
+
 	return nil
 }
 
