@@ -244,10 +244,13 @@ func genDiffStat(in string) (*DiffStatDecorationRules, []*DiffStatItem) {
 	return rules, stats
 }
 
-func decorateDiffStat(in string) string {
+func decorateDiffStat(in string, sum bool) string {
 	var d string
+
 	s := strings.Split(in, "\n")
-	d = strconv.Itoa(len(s)-1) + " file(s) changed." + "\n\n"
+	if sum {
+		d = strconv.Itoa(len(s)-1) + " file(s) changed." + "\n\n"
+	}
 	rule, stats := genDiffStat(in)
 	for _, stat := range stats {
 		if len(stat.FileName) <= 0 {

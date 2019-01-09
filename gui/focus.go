@@ -21,7 +21,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Title = mainViewFeature.Title
 		v.Overwrite = true
 	}
-	if v, err := g.SetView(remoteViewFeature.Name, 0, 0, dx-1, int(0.20*float32(maxY))); err != nil {
+	if v, err := g.SetView(remoteViewFeature.Name, 0, 0, dx-1, int(0.15*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -29,7 +29,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(remoteBranchViewFeature.Name, 0, int(0.20*float32(maxY))+1, dx-1, int(0.60*float32(maxY))); err != nil {
+	if v, err := g.SetView(remoteBranchViewFeature.Name, 0, int(0.15*float32(maxY)), dx-1, int(0.50*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -37,11 +37,19 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Overwrite = false
 	}
-	if v, err := g.SetView(branchViewFeature.Name, 0, int(0.60*float32(maxY))+1, dx-1, maxY-2); err != nil {
+	if v, err := g.SetView(branchViewFeature.Name, 0, int(0.50*float32(maxY)), dx-1, int(0.85*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Title = branchViewFeature.Title
+		v.Wrap = false
+		v.Autoscroll = false
+	}
+	if v, err := g.SetView(stashedViewFeature.Name, 0, int(0.85*float32(maxY)), dx-1, maxY-2); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = stashedViewFeature.Title
 		v.Wrap = false
 		v.Autoscroll = false
 	}

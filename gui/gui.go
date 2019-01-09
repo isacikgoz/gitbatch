@@ -67,7 +67,7 @@ const (
 var (
 	mainViewFeature         = viewFeature{Name: "main", Title: " Matched Repositories "}
 	loadingViewFeature      = viewFeature{Name: "loading", Title: " Loading in Progress "}
-	branchViewFeature       = viewFeature{Name: "branch", Title: " Local Branches "}
+	branchViewFeature       = viewFeature{Name: "branch", Title: " Branches "}
 	remoteViewFeature       = viewFeature{Name: "remotes", Title: " Remotes "}
 	remoteBranchViewFeature = viewFeature{Name: "remotebranches", Title: " Remote Branches "}
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}
@@ -77,6 +77,7 @@ var (
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
 	detailViewFeature       = viewFeature{Name: "details", Title: " Details "}
+	stashedViewFeature      = viewFeature{Name: "stashed", Title: " Stash "}
 
 	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}

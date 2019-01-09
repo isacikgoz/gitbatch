@@ -526,6 +526,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "space",
 			Description: "select",
 			Vital:       true,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.focusStat,
+			Display:     "s",
+			Description: "status",
+			Vital:       true,
 		},
 		// Detailview
 		{

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/isacikgoz/gitbatch/core/command"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/jroimartin/gocui"
 )
@@ -21,7 +22,7 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	r.State.Branch.InitializeCommits(r)
 
 	gui.renderCommits(r)
-
+	gui.repositoryStat(r)
 	gui.g.Update(func(g *gocui.Gui) error {
 		return gui.renderMain()
 	})
@@ -118,18 +119,21 @@ func (gui *Gui) commitDetail(ix int) error {
 	v.SetCursor(0, 0)
 	r := gui.getSelectedRepository()
 	v.Clear()
+	v.Title = detailViewFeature.Title
 	c := r.State.Branch.Commits[ix]
 	done := make(chan bool)
 	var stat string
 	go func() {
 		stat = c.DiffStat(done)
 	}()
+	ld := "loading stats..."
 	fmt.Fprintf(v, "%s\n", decorateCommit(c.String()))
-	fmt.Fprintf(v, "%s\n", red.Sprint("loading stats..."))
+	fmt.Fprintf(v, "%s\n", red.Sprint(ld))
 
 	go func(gui *Gui) {
 		if <-done {
-			if !strings.Contains(strings.Join(v.BufferLines(), ""), "loading stats...") {
+			//TODO: Try with hash
+			if !strings.Contains(strings.Join(v.BufferLines(), ""), ld) {
 				return
 			}
 			v.Clear()
@@ -139,7 +143,7 @@ func (gui *Gui) commitDetail(ix int) error {
 				if err != nil {
 					return err
 				}
-				fmt.Fprintf(v, decorateDiffStat(stat))
+				fmt.Fprintf(v, decorateDiffStat(stat, true))
 				return nil
 			})
 		}
@@ -172,6 +176,39 @@ func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
 		s = s + "\n" + d
 	}
 	fmt.Fprintf(v, s)
+	return nil
+}
+
+func (gui *Gui) repositoryStat(r *git.Repository) error {
+	v, err := gui.g.View(detailViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	stat, err := command.DiffStat(r)
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	v.Title = " Status "
+	s := strings.Split(stat, "\n")
+	var lastline string
+	if len(s) > 1 {
+
+		fmt.Fprintln(v, red.Sprint(" Branch is dirty.")+"\n")
+		lastline = s[len(s)-1]
+		s = s[:len(s)-1]
+	} else {
+		fmt.Fprintf(v, green.Sprint(" Branch is clean.")+"\n")
+		return nil
+	}
+	fmt.Fprintf(v, decorateDiffStat(strings.Join(s, "\n"), false)+"\n")
+	fmt.Fprintf(v, lastline)
+	return nil
+}
+
+func (gui *Gui) focusStat(g *gocui.Gui, v *gocui.View) error {
+	r := gui.getSelectedRepository()
+	gui.repositoryStat(r)
 	return nil
 }
 
@@ -219,6 +256,25 @@ func (gui *Gui) dpageUp(g *gocui.Gui, v *gocui.View) error {
 		if err := v.SetCursor(cx, 0); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func (gui *Gui) initStashedView(r *git.Repository) error {
+	v, err := gui.g.View(stashedViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	_, cy := v.Cursor()
+	_, oy := v.Origin()
+	stashedItems := r.Stasheds
+	for i, stashedItem := range stashedItems {
+		var prefix string
+		if i == cy+oy {
+			prefix = prefix + selectionIndicator
+		}
+		fmt.Fprintf(v, "%s%d %s: %s (%s)\n", prefix, stashedItem.StashID, cyan.Sprint(stashedItem.BranchName), stashedItem.Description, cyan.Sprint(stashedItem.Hash))
 	}
 	return nil
 }
