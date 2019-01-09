@@ -37,7 +37,7 @@ func (gui *Gui) prepareDiffView(g *gocui.Gui, v *gocui.View, display []string) (
 func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 	r := gui.getSelectedRepository()
 	commit := r.State.Branch.State.Commit
-	commitDetail := []string{("Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author +
+	commitDetail := []string{("Hash: " + cyan.Sprint(commit.Hash) + "\n" + "Author: " + commit.Author.Name + "<" + commit.Author.Email + ">" +
 		"\n" + commit.Time + "\n" + "\n" + "\t\t" + commit.Message + "\n")}
 	diff, err := command.Diff(r, r.State.Branch.State.Commit.Hash)
 	if err != nil {

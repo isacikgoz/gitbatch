@@ -19,6 +19,7 @@ type Gui struct {
 	KeyBindings []*KeyBinding
 	State       guiState
 	mutex       *sync.Mutex
+	order       Layout
 }
 
 // guiState struct holds the repositories, directiories, mode and queue of the
@@ -48,6 +49,8 @@ type mode struct {
 // ModeID is the mode indicator for the gui
 type ModeID string
 
+type Layout int
+
 const (
 	// FetchMode puts the gui in fetch state
 	FetchMode ModeID = "fetch"
@@ -55,12 +58,16 @@ const (
 	PullMode ModeID = "pull"
 	// MergeMode puts the gui in merge state
 	MergeMode ModeID = "merge"
+
+	overview Layout = 0
+
+	focus Layout = 1
 )
 
 var (
 	mainViewFeature         = viewFeature{Name: "main", Title: " Matched Repositories "}
 	loadingViewFeature      = viewFeature{Name: "loading", Title: " Loading in Progress "}
-	branchViewFeature       = viewFeature{Name: "branch", Title: " Local Branches "}
+	branchViewFeature       = viewFeature{Name: "branch", Title: " Branches "}
 	remoteViewFeature       = viewFeature{Name: "remotes", Title: " Remotes "}
 	remoteBranchViewFeature = viewFeature{Name: "remotebranches", Title: " Remote Branches "}
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}
@@ -69,15 +76,16 @@ var (
 	diffViewFeature         = viewFeature{Name: "diff", Title: " Diff Detail "}
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
+	detailViewFeature       = viewFeature{Name: "details", Title: " Details "}
+	stashedViewFeature      = viewFeature{Name: "stashed", Title: " Stash "}
 
 	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
-	mainViews = []viewFeature{mainViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
 	modes     = []mode{fetchMode, pullMode, mergeMode}
-
-	loaded = make(chan bool)
+	mainViews = []viewFeature{mainViewFeature, commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
+	loaded    = make(chan bool)
 )
 
 // NewGui creates a Gui opject and fill it's state related entites
@@ -127,6 +135,7 @@ func (gui *Gui) Run() error {
 		log.Error("Keybindings could not be set.")
 		return err
 	}
+	mainViews = overviewViews
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Error("Error in the main loop. " + err.Error())
 		return err
@@ -174,57 +183,10 @@ func (gui *Gui) renderTitle() error {
 // set the layout and create views with their default size, name etc. values
 // TODO: window sizes can be handled better
 func (gui *Gui) layout(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-	if v, err := g.SetView(mainViewFeature.Name, 0, 0, int(0.55*float32(maxX))-1, maxY-2); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = mainViewFeature.Title
-		v.Overwrite = true
-		if _, err := gui.setCurrentViewOnTop(g, mainViewFeature.Name); err != nil {
-			return err
-		}
-	}
-	if v, err := g.SetView(remoteViewFeature.Name, int(0.55*float32(maxX)), 0, maxX-1, int(0.10*float32(maxY))); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = remoteViewFeature.Title
-		v.Wrap = false
-		v.Autoscroll = false
-	}
-	if v, err := g.SetView(remoteBranchViewFeature.Name, int(0.55*float32(maxX)), int(0.10*float32(maxY))+1, maxX-1, int(0.35*float32(maxY))); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = remoteBranchViewFeature.Title
-		v.Wrap = false
-		v.Overwrite = false
-	}
-	if v, err := g.SetView(branchViewFeature.Name, int(0.55*float32(maxX)), int(0.35*float32(maxY))+1, maxX-1, int(0.60*float32(maxY))); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = branchViewFeature.Title
-		v.Wrap = false
-		v.Autoscroll = false
-	}
-	if v, err := g.SetView(commitViewFeature.Name, int(0.55*float32(maxX)), int(0.60*float32(maxY))+1, maxX-1, maxY-2); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = commitViewFeature.Title
-		v.Wrap = false
-		v.Autoscroll = false
-	}
-	if v, err := g.SetView(keybindingsViewFeature.Name, -1, maxY-2, maxX, maxY); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.BgColor = gocui.ColorWhite
-		v.FgColor = gocui.ColorBlack
-		v.Frame = false
-		gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	if gui.order == overview {
+		return gui.overviewLayout(g)
+	} else if gui.order == focus {
+		return gui.focusLayout(g)
 	}
 	return nil
 }

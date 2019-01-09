@@ -90,27 +90,6 @@ func (r *Repository) initBranches() error {
 	return nil
 }
 
-// NextBranch checkouts the next branch
-func (r *Repository) NextBranch() *Branch {
-	return r.Branches[(r.currentBranchIndex()+1)%len(r.Branches)]
-}
-
-// PreviousBranch checkouts the previous branch
-func (r *Repository) PreviousBranch() *Branch {
-	return r.Branches[(len(r.Branches)+r.currentBranchIndex()-1)%len(r.Branches)]
-}
-
-// returns the active branch index
-func (r *Repository) currentBranchIndex() int {
-	bix := 0
-	for i, lbs := range r.Branches {
-		if lbs.Name == r.State.Branch.Name {
-			bix = i
-		}
-	}
-	return bix
-}
-
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (r *Repository) Checkout(b *Branch) error {
@@ -129,7 +108,7 @@ func (r *Repository) Checkout(b *Branch) error {
 		log.Warn("Cannot checkout " + err.Error())
 		return err
 	}
-
+	r.State.Branch = b
 	// make this conditional on global scale
 	// we don't care if this function returns an error
 	r.State.Remote.SyncBranches(b.Name)
@@ -226,5 +205,10 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	}
 	b.Pullables = pull
 	b.Pushables = push
+	// return b.initCommits(r)
+	return nil
+}
+
+func (b *Branch) InitializeCommits(r *Repository) error {
 	return b.initCommits(r)
 }

@@ -2,6 +2,7 @@ package gui
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -45,7 +46,7 @@ var (
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = ws + string(green.Sprint("→")) + ws
+	selectionIndicator = ws + "→" + ws
 	tab                = ws
 )
 
@@ -112,21 +113,26 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	return prefix + repoName
 }
 
-func commitLabel(c *git.Commit) string {
+func commitLabel(c *git.Commit, sel bool) string {
+	re := regexp.MustCompile(`\r?\n`)
+	msg := re.ReplaceAllString(c.Message, " ")
+	if sel {
+		msg = green.Sprint(msg)
+	}
 	var body string
 	switch c.CommitType {
 	case git.EvenCommit:
-		body = cyan.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		body = cyan.Sprint(c.Hash[:hashLength]) + " " + msg
 	case git.LocalCommit:
-		body = blue.Sprint(c.Hash[:hashLength]) + " " + c.Message
+		body = blue.Sprint(c.Hash[:hashLength]) + " " + msg
 	case git.RemoteCommit:
 		if len(c.Hash) > hashLength {
-			body = yellow.Sprint(c.Hash[:hashLength]) + " " + c.Message
+			body = yellow.Sprint(c.Hash[:hashLength]) + " " + msg
 		} else {
-			body = yellow.Sprint(c.Hash[:len(c.Hash)]) + " " + c.Message
+			body = yellow.Sprint(c.Hash[:len(c.Hash)]) + " " + msg
 		}
 	default:
-		body = c.Hash[:hashLength] + " " + c.Message
+		body = c.Hash[:hashLength] + " " + msg
 	}
 	return body
 }
@@ -188,4 +194,112 @@ func trimRemoteURL(url string) (urltype string, shorturl string) {
 		urltype = "https"
 	}
 	return urltype, shorturl
+}
+
+// DiffStatDecorationRules is a rule set for creating diffstat text
+type DiffStatDecorationRules struct {
+	MaxNameLength        int
+	MaxChangeCountLength int
+	MaxChangesLength     int
+}
+
+// DiffStatItem is a line of a diff stat
+type DiffStatItem struct {
+	FileName    string
+	ChangeCount string
+	Changes     string
+}
+
+func genDiffStat(in string) (*DiffStatDecorationRules, []*DiffStatItem) {
+	rules := &DiffStatDecorationRules{}
+	stats := make([]*DiffStatItem, 0)
+
+	re := regexp.MustCompile(`\s+\|\s+`)
+	r1 := regexp.MustCompile(`\d+\s+`)
+
+	for _, line := range strings.Split(in, "\n") {
+		s := re.Split(line, 2)
+		ds := &DiffStatItem{}
+		ds.FileName = s[0]
+
+		if rules.MaxNameLength < len(ds.FileName) {
+			rules.MaxNameLength = len(ds.FileName)
+		}
+
+		if len(s) > 1 && r1.MatchString(s[1]) {
+			cc := r1.FindString(s[1])
+			ds.ChangeCount = strings.TrimSpace(cc)
+			if rules.MaxChangeCountLength < len(ds.ChangeCount) {
+				rules.MaxChangeCountLength = len(ds.ChangeCount)
+			}
+			d := r1.Split(s[1], 2)
+
+			ds.Changes = d[1]
+			if rules.MaxChangesLength < len(ds.Changes) {
+				rules.MaxChangesLength = len(ds.Changes)
+			}
+		}
+		stats = append(stats, ds)
+	}
+	return rules, stats
+}
+
+func decorateDiffStat(in string, sum bool) string {
+	var d string
+
+	s := strings.Split(in, "\n")
+	if sum {
+		d = strconv.Itoa(len(s)-1) + " file(s) changed." + "\n\n"
+	}
+	rule, stats := genDiffStat(in)
+	for _, stat := range stats {
+		if len(stat.FileName) <= 0 {
+			continue
+		}
+		d = d + cyan.Sprint(addWhiteSpace(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + addWhiteSpace(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
+		sr := []rune(stat.Changes)
+		for _, r := range sr {
+			if r == '+' {
+				d = d + green.Sprint(string(r))
+			} else if r == '-' {
+				d = d + red.Sprint(string(r))
+			} else {
+				d = d + string(r)
+			}
+		}
+		d = d + "\n"
+	}
+	return d
+}
+
+func addWhiteSpace(in string, max int, direction, trim bool) string {
+	realmax := 50
+	il := len(in)
+	if max > realmax {
+		max = 50
+	}
+	if trim && il > realmax {
+		return " ..." + in[il-46:]
+	}
+	if il < max {
+		if direction {
+			in = in + strings.Repeat(" ", max-il)
+		} else {
+			in = strings.Repeat(" ", max-il) + in
+		}
+	}
+	return in
+}
+
+func decorateCommit(in string) string {
+	var d string
+	lines := strings.Split(in, "\n")
+	d = d + strings.Replace(lines[0], "Hash:", cyan.Sprint("Hash:"), 1) + "\n"
+	d = d + strings.Replace(lines[1], "Author:", cyan.Sprint("Author:"), 1) + "\n"
+	d = d + strings.Replace(lines[2], "Date:", cyan.Sprint("Date:"), 1) + "\n"
+	for _, l := range lines[3:] {
+		d = d + l + "\n"
+	}
+	d = d[:len(d)]
+	return d
 }

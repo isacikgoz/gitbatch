@@ -2,6 +2,7 @@ package git
 
 import (
 	"regexp"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
@@ -13,10 +14,19 @@ import (
 // combined) commit date and commit type wheter it is local commit or a remote
 type Commit struct {
 	Hash       string
-	Author     string
+	Author     *Contributor
+	Commiter   *Contributor
 	Message    string
 	Time       string
 	CommitType CommitType
+	C          *object.Commit
+}
+
+// Contributor is the person
+type Contributor struct {
+	Name  string
+	Email string
+	When  time.Time
 }
 
 // CommitType is the Type of the commit; it can be local or remote (upstream diff)
@@ -30,28 +40,6 @@ const (
 	// RemoteCommit is the commit that not merged to local branch
 	RemoteCommit CommitType = "remote"
 )
-
-// NextCommit iterates over next commit of a branch
-// TODO: the commits entites can tied to branch instead ot the repository
-func (b *Branch) NextCommit() {
-	b.State.Commit = b.Commits[(b.currentCommitIndex()+1)%len(b.Commits)]
-}
-
-// PreviousCommit iterates to opposite direction
-func (b *Branch) PreviousCommit() {
-	b.State.Commit = b.Commits[(len(b.Commits)+b.currentCommitIndex()-1)%len(b.Commits)]
-}
-
-// returns the active commit index
-func (b *Branch) currentCommitIndex() int {
-	cix := 0
-	for i, c := range b.Commits {
-		if c.Hash == b.State.Commit.Hash {
-			cix = i
-		}
-	}
-	return cix
-}
 
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
@@ -78,20 +66,15 @@ func (b *Branch) initCommits(r *Repository) error {
 
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
-		re := regexp.MustCompile(`\r?\n`)
+
 		cmType := EvenCommit
 		for _, lc := range lcs {
 			if lc.Hash == c.Hash.String() {
 				cmType = LocalCommit
 			}
 		}
-		commit := &Commit{
-			Hash:       re.ReplaceAllString(c.Hash.String(), " "),
-			Author:     c.Author.Email,
-			Message:    re.ReplaceAllString(c.Message, " "),
-			Time:       c.Author.When.String(),
-			CommitType: cmType,
-		}
+
+		commit := commit(c, cmType)
 		b.Commits = append(b.Commits, commit)
 		return nil
 	})
@@ -113,20 +96,11 @@ func (b *Branch) pullDiffsToUpstream(r *Repository) ([]*Commit, error) {
 		Ref1: head,
 		Ref2: upstream,
 	})
-
-	re := regexp.MustCompile(`\r?\n`)
 	if err != nil {
 		// possibly found nothing or no upstream set
 	} else {
 		for _, c := range pullables {
-
-			commit := &Commit{
-				Hash:       c.Hash.String(),
-				Author:     c.Author.Email,
-				Message:    re.ReplaceAllString(c.Message, " "),
-				Time:       c.Author.When.String(),
-				CommitType: RemoteCommit,
-			}
+			commit := commit(c, RemoteCommit)
 			remoteCommits = append(remoteCommits, commit)
 		}
 	}
@@ -146,21 +120,68 @@ func (b *Branch) pushDiffsToUpstream(r *Repository) ([]*Commit, error) {
 		Ref2: head,
 	})
 
-	re := regexp.MustCompile(`\r?\n`)
 	if err != nil {
 		// possibly found nothing or no upstream set
 	} else {
 		for _, c := range pushables {
-
-			commit := &Commit{
-				Hash:       c.Hash.String(),
-				Author:     c.Author.Email,
-				Message:    re.ReplaceAllString(c.Message, " "),
-				Time:       c.Author.When.String(),
-				CommitType: LocalCommit,
-			}
+			commit := commit(c, LocalCommit)
 			notPushedCommits = append(notPushedCommits, commit)
 		}
 	}
 	return notPushedCommits, nil
+}
+
+func commit(c *object.Commit, t CommitType) *Commit {
+	commit := &Commit{
+		Hash: c.Hash.String(),
+		Author: &Contributor{
+			Name:  c.Author.Name,
+			Email: c.Author.Email,
+			When:  c.Author.When,
+		},
+		Commiter: &Contributor{
+			Name:  c.Committer.Name,
+			Email: c.Committer.Email,
+			When:  c.Committer.When,
+		},
+		Message:    c.Message,
+		CommitType: t,
+		C:          c,
+	}
+	return commit
+}
+
+// DiffStat Show diff stat
+func (c *Commit) DiffStat(done chan bool) string {
+
+	var str string
+	defer recoverDiff(str)
+	if c.C == nil {
+		return ""
+	}
+	d, err := c.C.Stats()
+	if err != nil {
+		return ""
+	}
+	str = d.String()
+	done <- true
+	return str
+}
+
+func (c *Commit) String() string {
+	d := "Hash:" + " " + c.Hash
+	d = d + "\n" + "Author:" + " " + c.Author.Name + " <" + c.Author.Email + ">"
+	d = d + "\n" + "Date:" + " " + c.Author.When.String() + "\n"
+	re := regexp.MustCompile(`\r?\n`)
+	s := re.Split(c.Message, -1)
+	for _, l := range s {
+		d = d + "\n" + " " + l
+	}
+	return d
+}
+
+func recoverDiff(str string) {
+	if r := recover(); r != nil {
+		str = "diffstat overloaded"
+	}
 }
