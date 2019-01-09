@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -197,33 +196,87 @@ func trimRemoteURL(url string) (urltype string, shorturl string) {
 	return urltype, shorturl
 }
 
+// DiffStatDecorationRules is a rule set for creating diffstat text
+type DiffStatDecorationRules struct {
+	MaxNameLength        int
+	MaxChangeCountLength int
+	MaxChangesLength     int
+}
+
+// DiffStatItem is a line of a diff stat
+type DiffStatItem struct {
+	FileName    string
+	ChangeCount string
+	Changes     string
+}
+
+func genDiffStat(in string) (*DiffStatDecorationRules, []*DiffStatItem) {
+	rules := &DiffStatDecorationRules{}
+	stats := make([]*DiffStatItem, 0)
+
+	re := regexp.MustCompile(`\s+\|\s+`)
+	r1 := regexp.MustCompile(`\d+\s+`)
+
+	for _, line := range strings.Split(in, "\n") {
+		s := re.Split(line, 2)
+		ds := &DiffStatItem{}
+		ds.FileName = s[0]
+
+		if rules.MaxNameLength < len(ds.FileName) {
+			rules.MaxNameLength = len(ds.FileName)
+		}
+
+		if len(s) > 1 && r1.MatchString(s[1]) {
+			cc := r1.FindString(s[1])
+			ds.ChangeCount = strings.TrimSpace(cc)
+			if rules.MaxChangeCountLength < len(ds.ChangeCount) {
+				rules.MaxChangeCountLength = len(ds.ChangeCount)
+			}
+			d := r1.Split(s[1], 2)
+
+			ds.Changes = d[1]
+			if rules.MaxChangesLength < len(ds.Changes) {
+				rules.MaxChangesLength = len(ds.Changes)
+			}
+		}
+		stats = append(stats, ds)
+	}
+	return rules, stats
+}
+
 func decorateDiffStat(in string) string {
-	dr := regexp.MustCompile(` | `)
 	var d string
 	s := strings.Split(in, "\n")
 	d = strconv.Itoa(len(s)-1) + " file(s) changed." + "\n\n"
-	for _, line := range s {
-		if dr.MatchString(line) {
-			sp := dr.Split(line, 4)
-
-			d = d + cyan.Sprint(sp[1]) + " "
-			d = d + sp[2] + " "
-			if len(sp) <= 3 {
-				fmt.Println("")
-				continue
-			}
-			sr := []rune(sp[3])
-			for _, r := range sr {
-				if r == '+' {
-					d = d + green.Sprint(string(r))
-				} else if r == '-' {
-					d = d + red.Sprint(string(r))
-				} else {
-					d = d + string(r)
-				}
-			}
-			d = d + "\n"
+	rule, stats := genDiffStat(in)
+	for _, stat := range stats {
+		if len(stat.FileName) <= 0 {
+			continue
 		}
+		d = d + cyan.Sprint(addWhiteSpace(stat.FileName, rule.MaxNameLength, true)) + yellow.Sprint(" | ") + addWhiteSpace(stat.ChangeCount, rule.MaxChangeCountLength, false) + " "
+		sr := []rune(stat.Changes)
+		for _, r := range sr {
+			if r == '+' {
+				d = d + green.Sprint(string(r))
+			} else if r == '-' {
+				d = d + red.Sprint(string(r))
+			} else {
+				d = d + string(r)
+			}
+		}
+		d = d + "\n"
 	}
 	return d
+}
+
+func addWhiteSpace(in string, max int, direction bool) string {
+	il := len(in)
+	if il < max {
+		if direction {
+			in = in + strings.Repeat(" ", max-il)
+		} else {
+			in = strings.Repeat(" ", max-il) + in
+		}
+	}
+	return in
 }

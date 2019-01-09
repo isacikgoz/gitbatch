@@ -166,7 +166,7 @@ func (c *Commit) DiffStat() string {
 func (c *Commit) String() string {
 	d := "Hash:" + " " + c.Hash
 	d = d + "\n" + "Author:" + " " + c.Author.Name + " <" + c.Author.Email + ">"
-	d = d + "\n" + "Date:" + " " + c.Author.When.String()
+	d = d + "\n" + "Date:" + " " + c.Author.When.String() + "\n"
 	re := regexp.MustCompile(`\r?\n`)
 	s := re.Split(c.Message, -1)
 	for _, l := range s {
