@@ -48,11 +48,24 @@ func DiffFile(f *git.File) (output string, err error) {
 }
 
 // DiffStat shows current working status "git diff --stat"
-func DiffStat(r *git.Repository) (output string, err error) {
+func DiffStat(r *git.Repository) (string, error) {
 	args := make([]string, 0)
 	args = append(args, "diff")
 	args = append(args, "--stat")
-	output, err = Run(r.AbsPath, "git", args)
+	output, err := Run(r.AbsPath, "git", args)
+	if err != nil {
+		log.Warn(err)
+	}
+	re := regexp.MustCompile(`\n?\r`)
+	output = re.ReplaceAllString(output, "\n")
+	return output, err
+}
+
+// PlainDiff shows current working status "git diff"
+func PlainDiff(r *git.Repository) (string, error) {
+	args := make([]string, 0)
+	args = append(args, "diff")
+	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn(err)
 	}

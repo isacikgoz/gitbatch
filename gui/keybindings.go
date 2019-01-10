@@ -518,22 +518,6 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       true,
-		}, {
-			View:        commitViewFeature.Name,
-			Key:         gocui.KeySpace,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.selectCommit,
-			Display:     "space",
-			Description: "select",
-			Vital:       true,
-		}, {
-			View:        commitViewFeature.Name,
-			Key:         's',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.focusStat,
-			Display:     "s",
-			Description: "status",
-			Vital:       true,
 		},
 		// Detailview
 		{
@@ -560,6 +544,30 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "pg down",
 			Description: "Page Down",
 			Vital:       true,
+		}, {
+			View:        detailViewFeature.Name,
+			Key:         gocui.KeyArrowDown,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.focusStatusCursorDown,
+			Display:     "↓",
+			Description: "Down",
+			Vital:       false,
+		}, {
+			View:        detailViewFeature.Name,
+			Key:         gocui.KeyArrowUp,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.focusStatusCursorUp,
+			Display:     "↑",
+			Description: "Up",
+			Vital:       false,
+		}, {
+			View:        detailViewFeature.Name,
+			Key:         gocui.KeySpace,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.addreset,
+			Display:     "space",
+			Description: "add/reset",
+			Vital:       false,
 		},
 		// upstream confirmation
 		{

@@ -45,6 +45,19 @@ func Status(r *git.Repository) ([]*git.File, error) {
 	return nil, errors.New("Unhandled status operation")
 }
 
+// PlainStatus returns the palin status
+func PlainStatus(r *git.Repository) (string, error) {
+	args := make([]string, 0)
+	args = append(args, "status")
+	output, err := Run(r.AbsPath, "git", args)
+	if err != nil {
+		log.Warn(err)
+	}
+	re := regexp.MustCompile(`\n?\r`)
+	output = re.ReplaceAllString(output, "\n")
+	return output, err
+}
+
 // LoadFiles function simply commands a git status and collects output in a
 // structured way
 func statusWithGit(r *git.Repository) ([]*git.File, error) {
