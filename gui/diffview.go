@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/core/command"
-	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/jroimartin/gocui"
 )
 
@@ -52,43 +51,6 @@ func (gui *Gui) openCommitDiffView(g *gocui.Gui, v *gocui.View) (err error) {
 		}
 	}
 	out.Title = " Commit Detail "
-	return nil
-}
-
-// called from status, so initial view may be stagedview or unstaged view
-func (gui *Gui) openFileDiffView(g *gocui.Gui, v *gocui.View) (err error) {
-
-	_, cy := v.Cursor()
-	_, oy := v.Origin()
-	var files []*git.File
-	switch v.Name() {
-	case unstageViewFeature.Name:
-		files = unstagedFiles
-	case stageViewFeature.Name:
-		files = stagedFiles
-	}
-
-	if len(files) <= 0 {
-		return nil
-	}
-	output, err := command.DiffFile(files[cy+oy])
-	if err != nil || len(output) <= 0 {
-		return nil
-	}
-	if err != nil {
-		if err = gui.openErrorView(g, output,
-			"You should manually resolve this issue",
-			diffReturnView); err != nil {
-			return err
-		}
-	}
-	colorized := colorizeDiff(output)
-	_, err = gui.prepareDiffView(g, v, colorized)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-	}
 	return nil
 }
 

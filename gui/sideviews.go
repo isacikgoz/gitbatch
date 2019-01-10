@@ -47,9 +47,6 @@ func (gui *Gui) renderSideViews(r *git.Repository) error {
 	if err := gui.resetSideCursors(); err != nil {
 		return err
 	}
-	// if err := gui.renderCommits(r); err != nil {
-	// 	return err
-	// }
 	if err := gui.renderBranches(r); err != nil {
 		return err
 	}

@@ -113,77 +113,6 @@ func (gui *Gui) generateKeybindings() error {
 		}
 		gui.KeyBindings = append(gui.KeyBindings, sideViewKeybindings...)
 	}
-	// Statusviews common keybindings
-	for _, view := range statusViews {
-		statusKeybindings := []*KeyBinding{
-			{
-				View:        view.Name,
-				Key:         'q',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.closeStatusView,
-				Display:     "q",
-				Description: "Close/Cancel",
-				Vital:       true,
-			}, {
-				View:        view.Name,
-				Key:         gocui.KeyTab,
-				Modifier:    gocui.ModNone,
-				Handler:     gui.nextStatusView,
-				Display:     "tab",
-				Description: "Next Panel",
-				Vital:       true,
-			}, {
-				View:        view.Name,
-				Key:         gocui.KeyArrowUp,
-				Modifier:    gocui.ModNone,
-				Handler:     gui.statusCursorUp,
-				Display:     "↑",
-				Description: "Up",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         gocui.KeyArrowDown,
-				Modifier:    gocui.ModNone,
-				Handler:     gui.statusCursorDown,
-				Display:     "↓",
-				Description: "Down",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'k',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.statusCursorUp,
-				Display:     "k",
-				Description: "Up",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'j',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.statusCursorDown,
-				Display:     "j",
-				Description: "Down",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         't',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.stashChanges,
-				Display:     "t",
-				Description: "Save to Stash",
-				Vital:       true,
-			}, {
-				View:        view.Name,
-				Key:         'm',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.openCommitMessageView,
-				Display:     "m",
-				Description: "Commit Changes",
-				Vital:       true,
-			},
-		}
-		gui.KeyBindings = append(gui.KeyBindings, statusKeybindings...)
-	}
 	for _, view := range authViews {
 		authKeybindings := []*KeyBinding{
 			{
@@ -245,76 +174,6 @@ func (gui *Gui) generateKeybindings() error {
 		gui.KeyBindings = append(gui.KeyBindings, commitKeybindings...)
 	}
 	individualKeybindings := []*KeyBinding{
-		// stash view
-		{
-			View:        stashViewFeature.Name,
-			Key:         'p',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.popStash,
-			Display:     "p",
-			Description: "Pop Item",
-			Vital:       true,
-		}, {
-			View:        stashViewFeature.Name,
-			Key:         'd',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.showStash,
-			Display:     "d",
-			Description: "Show diff",
-			Vital:       true,
-		},
-		// staged view
-		{
-			View:        stageViewFeature.Name,
-			Key:         'r',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.resetChanges,
-			Display:     "r",
-			Description: "Reset Item",
-			Vital:       true,
-		}, {
-			View:        stageViewFeature.Name,
-			Key:         gocui.KeyCtrlR,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.resetAllChanges,
-			Display:     "ctrl+r",
-			Description: "Reset All Items",
-			Vital:       true,
-		}, {
-			View:        stageViewFeature.Name,
-			Key:         'd',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.openFileDiffView,
-			Display:     "d",
-			Description: "Show diff",
-			Vital:       true,
-		},
-		// unstaged view
-		{
-			View:        unstageViewFeature.Name,
-			Key:         'a',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.addChanges,
-			Display:     "a",
-			Description: "Add Item",
-			Vital:       true,
-		}, {
-			View:        unstageViewFeature.Name,
-			Key:         gocui.KeyCtrlA,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.addAllChanges,
-			Display:     "ctrl+a",
-			Description: "Add All Items",
-			Vital:       true,
-		}, {
-			View:        unstageViewFeature.Name,
-			Key:         'd',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.openFileDiffView,
-			Display:     "d",
-			Description: "Show diff",
-			Vital:       true,
-		},
 		// Main view controls
 		{
 			View:        mainViewFeature.Name,
@@ -453,14 +312,6 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
 		}, {
-			View:        mainViewFeature.Name,
-			Key:         's',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.openStatusView,
-			Display:     "s",
-			Description: "Open Status",
-			Vital:       true,
-		}, {
 			View:        "",
 			Key:         gocui.KeyCtrlC,
 			Modifier:    gocui.ModNone,
@@ -567,6 +418,24 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.addreset,
 			Display:     "space",
 			Description: "add/reset",
+			Vital:       false,
+		},
+		// stashview
+		{
+			View:        stashViewFeature.Name,
+			Key:         gocui.KeyArrowDown,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.stashCursorDown,
+			Display:     "↓",
+			Description: "Iterate over branches",
+			Vital:       false,
+		}, {
+			View:        stashViewFeature.Name,
+			Key:         gocui.KeyArrowUp,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.stashCursorUp,
+			Display:     "↑",
+			Description: "Iterate over branches",
 			Vital:       false,
 		},
 		// upstream confirmation

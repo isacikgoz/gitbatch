@@ -34,7 +34,7 @@ func shortStatus(r *git.Repository, option string) string {
 
 // Status returns the dirty files
 func Status(r *git.Repository) ([]*git.File, error) {
-	statusCmdMode = statusCmdModeNative
+	statusCmdMode = statusCmdModeLegacy
 
 	switch statusCmdMode {
 	case statusCmdModeLegacy:

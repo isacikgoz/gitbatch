@@ -77,14 +77,14 @@ var (
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
 	detailViewFeature       = viewFeature{Name: "details", Title: " Details "}
-	stashedViewFeature      = viewFeature{Name: "stashed", Title: " Stash "}
+	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
 
 	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
 	modes     = []mode{fetchMode, pullMode, mergeMode}
-	mainViews = []viewFeature{mainViewFeature, commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
+	mainViews = []viewFeature{mainViewFeature, commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
 	loaded    = make(chan bool)
 )
 

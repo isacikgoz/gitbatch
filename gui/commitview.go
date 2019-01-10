@@ -26,7 +26,7 @@ var (
 // open the commit message views
 func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	maxX, maxY := g.Size()
-	commitMesageReturnView = v.Name()
+	// commitMesageReturnView = v.Name()
 	vFrame, err := g.SetView(commitFrameViewFeature.Name, maxX/2-30, maxY/2-4, maxX/2+30, maxY/2+3)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
@@ -172,7 +172,7 @@ func (gui *Gui) nextCommitView(g *gocui.Gui, v *gocui.View) error {
 
 // close the opened commite mesage view
 func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	r := gui.getSelectedRepository()
+	// r := gui.getSelectedRepository()
 	g.Cursor = false
 	for _, view := range commitViews {
 		if err := g.DeleteView(view.Name); err != nil {
@@ -184,8 +184,9 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := refreshAllStatusView(g, r, true); err != nil {
-		return err
-	}
-	return gui.closeViewCleanup(commitMesageReturnView)
+	// if err := refreshAllStatusView(g, r, true); err != nil {
+	// 	return err
+	// }
+	// return gui.closeViewCleanup(commitMesageReturnView)
+	return nil
 }

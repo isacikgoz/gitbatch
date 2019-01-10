@@ -3,6 +3,7 @@ package command
 import (
 	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/isacikgoz/gitbatch/core/git"
@@ -65,6 +66,20 @@ func DiffStat(r *git.Repository) (string, error) {
 func PlainDiff(r *git.Repository) (string, error) {
 	args := make([]string, 0)
 	args = append(args, "diff")
+	output, err := Run(r.AbsPath, "git", args)
+	if err != nil {
+		log.Warn(err)
+	}
+	re := regexp.MustCompile(`\n?\r`)
+	output = re.ReplaceAllString(output, "\n")
+	return output, err
+}
+
+// StashDiff shows diff of stash item "git show stash@{0}"
+func StashDiff(r *git.Repository, id int) (string, error) {
+	args := make([]string, 0)
+	args = append(args, "show")
+	args = append(args, "stash@{"+strconv.Itoa(id)+"}")
 	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn(err)

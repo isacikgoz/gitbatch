@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	focusViews = []viewFeature{commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
+	focusViews = []viewFeature{commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
 )
 
 // set the layout and create views with their default size, name etc. values
@@ -45,11 +45,11 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(stashedViewFeature.Name, 0, int(0.85*float32(maxY)), dx-1, maxY-2); err != nil {
+	if v, err := g.SetView(stashViewFeature.Name, 0, int(0.85*float32(maxY)), dx-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = stashedViewFeature.Title
+		v.Title = stashViewFeature.Title
 		v.Wrap = false
 		v.Autoscroll = false
 	}
