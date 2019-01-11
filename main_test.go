@@ -2,18 +2,11 @@ package main
 
 import (
 	"os"
-	"strings"
 	"testing"
 )
 
 var (
-	wd, _ = os.Getwd()
-	sp    = string(os.PathSeparator)
-	d     = strings.TrimSuffix(wd, sp+"app")
-
-	relparent = ".." + sp + "test"
-	parent    = d + sp + "test"
-	data      = parent + sp + "test-data"
+	sp = string(os.PathSeparator)
 )
 
 func TestRun(t *testing.T) {
@@ -24,6 +17,7 @@ func TestRun(t *testing.T) {
 		inp4 bool
 		inp5 string
 	}{
+		// TODO: generate scenarios
 		{
 			[]string{},
 			"debug",

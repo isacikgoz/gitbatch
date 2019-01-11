@@ -17,7 +17,13 @@ func (gui *Gui) initFocusStat(r *git.Repository) error {
 		return err
 	}
 	v.Clear()
-	v.Title = " Status "
+	if err := gui.removeDetailViewKeybindings(); err != nil {
+		return err
+	}
+	v.Title = string(StatusMode)
+	if err := gui.updateDiffViewKeybindings(); err != nil {
+		return err
+	}
 	fmt.Fprintln(v, "On branch "+cyan.Sprint(r.State.Branch.Name))
 	ps, err := strconv.Atoi(r.State.Branch.Pushables)
 	pl, er2 := strconv.Atoi(r.State.Branch.Pullables)
@@ -75,9 +81,9 @@ func (gui *Gui) initFocusStat(r *git.Repository) error {
 		}
 		_, cy := v.Cursor()
 		if cy == 0 {
-			gui.focusStatusCursorDown(gui.g, v)
+			gui.statusCursorDown(gui.g, v)
 		} else {
-			gui.focusStatusCursorUp(gui.g, v)
+			gui.statusCursorUp(gui.g, v)
 		}
 	}
 	return nil
@@ -85,8 +91,8 @@ func (gui *Gui) initFocusStat(r *git.Repository) error {
 
 // moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
-func (gui *Gui) focusStatusCursorDown(g *gocui.Gui, v *gocui.View) error {
-	if v != nil && v.Title == " Status " {
+func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
 		_, cy := v.Cursor()
 		ox, oy := v.Origin()
 		ly := v.BufferLines()
@@ -115,8 +121,8 @@ func (gui *Gui) focusStatusCursorDown(g *gocui.Gui, v *gocui.View) error {
 }
 
 // moves the cursor upwards for the main view
-func (gui *Gui) focusStatusCursorUp(g *gocui.Gui, v *gocui.View) error {
-	if v != nil && v.Title == " Status " {
+func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
 		ox, oy := v.Origin()
 		_, cy := v.Cursor()
 		ly := v.BufferLines()
@@ -139,33 +145,50 @@ func (gui *Gui) focusStatusCursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gui *Gui) addreset(g *gocui.Gui, v *gocui.View) error {
-	if v.Title == " Status " {
-		_, cy := v.Cursor()
-		line, err := v.Line(cy)
-		if err != nil {
-			return err
-		}
-		r := gui.getSelectedRepository()
-		files, err := command.Status(r)
-		if err != nil {
-			return err
-		}
-		for _, f := range files {
-			if strings.Contains(line, f.Name) {
-				if f.X != git.StatusNotupdated && f.X != git.StatusUntracked && f.X != git.StatusIgnored && f.X != git.StatusUpdated {
-					if err := command.Reset(r, f, &command.ResetOptions{}); err != nil {
-						return err
-					}
+func (gui *Gui) statusAddReset(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	line, err := v.Line(cy)
+	if err != nil {
+		return err
+	}
+	r := gui.getSelectedRepository()
+	files, err := command.Status(r)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if strings.Contains(line, f.Name) {
+			if f.X != git.StatusNotupdated && f.X != git.StatusUntracked && f.X != git.StatusIgnored && f.X != git.StatusUpdated {
+				if err := command.Reset(r, f, &command.ResetOptions{}); err != nil {
+					return err
 				}
-				if f.Y != git.StatusNotupdated {
-					if err := command.Add(r, f, &command.AddOptions{}); err != nil {
-						return err
-					}
+			}
+			if f.Y != git.StatusNotupdated {
+				if err := command.Add(r, f, &command.AddOptions{}); err != nil {
+					return err
 				}
 			}
 		}
-		return gui.initFocusStat(r)
 	}
-	return nil
+	return gui.initFocusStat(r)
+}
+
+func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
+
+	_, cy := v.Cursor()
+	line, err := v.Line(cy)
+	if err != nil {
+		return err
+	}
+	r := gui.getSelectedRepository()
+	files, err := command.Status(r)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if strings.Contains(line, f.Name) {
+
+		}
+	}
+	return gui.initFocusStat(r)
 }

@@ -4,11 +4,39 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/isacikgoz/gitbatch/core/command"
 	"github.com/jroimartin/gocui"
 )
 
-func (gui *Gui) commitDetail(ix int) error {
+type DetailViewMode string
+
+const (
+	CommitStatMode DetailViewMode = " Commit Stats "
+	CommitDiffMode DetailViewMode = " Diffs "
+	StashStatMode  DetailViewMode = " Stash Stats "
+	StashDiffMode  DetailViewMode = " Stash Diffs "
+	StatusMode     DetailViewMode = " Repository Status "
+	FileDiffMode   DetailViewMode = " File Diffs "
+)
+
+var (
+	detailViewModes = []DetailViewMode{CommitStatMode, CommitDiffMode, StashDiffMode, StashStatMode, StatusMode, FileDiffMode}
+)
+
+func (gui *Gui) commitStat(g *gocui.Gui, v *gocui.View) error {
+	vc, err := gui.g.View(commitViewFeature.Name)
+	if err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+	}
+	_, oy := vc.Origin()
+	_, cy := vc.Cursor()
+
+	return gui.commitStats(oy + cy)
+
+}
+
+func (gui *Gui) commitStats(ix int) error {
 
 	v, err := gui.g.View(detailViewFeature.Name)
 	if err != nil {
@@ -21,7 +49,13 @@ func (gui *Gui) commitDetail(ix int) error {
 	if ix == 0 {
 		return gui.initFocusStat(r)
 	}
-	v.Title = detailViewFeature.Title
+	if err := gui.removeDetailViewKeybindings(); err != nil {
+		return err
+	}
+	v.Title = string(CommitStatMode)
+	if err := gui.updateDiffViewKeybindings(); err != nil {
+		return err
+	}
 	c := r.State.Branch.Commits[ix-1]
 	done := make(chan bool)
 	var stat string
@@ -65,25 +99,18 @@ func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
 	_, oy := vcm.Origin()
 	_, cy := vcm.Cursor()
 	ix := oy + cy
-	v.Title = detailViewFeature.Title
-	r := gui.getSelectedRepository()
 	if ix == 0 {
-		p, err := command.PlainDiff(r)
-		if err != nil {
-			return err
-		}
-		var s string
-		for _, d := range colorizeDiff(p) {
-			s = s + "\n" + d
-		}
-		if len(s) <= 1 {
-			return nil
-		}
-
-		v.Clear()
-		fmt.Fprintf(v, s)
 		return nil
 	}
+
+	if err := gui.removeDetailViewKeybindings(); err != nil {
+		return err
+	}
+	v.Title = string(CommitDiffMode)
+	if err := gui.updateDiffViewKeybindings(); err != nil {
+		return err
+	}
+	r := gui.getSelectedRepository()
 
 	v.Clear()
 	c := r.State.Branch.Commits[ix-1]
@@ -104,7 +131,7 @@ func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
 
 // moves cursor down for a page size
 func (gui *Gui) dpageDown(g *gocui.Gui, v *gocui.View) error {
-	if v != nil && v.Title == detailViewFeature.Title {
+	if v != nil {
 		ox, oy := v.Origin()
 		cx, _ := v.Cursor()
 		_, vy := v.Size()
@@ -128,7 +155,7 @@ func (gui *Gui) dpageDown(g *gocui.Gui, v *gocui.View) error {
 
 // moves cursor up for a page size
 func (gui *Gui) dpageUp(g *gocui.Gui, v *gocui.View) error {
-	if v != nil && v.Title == detailViewFeature.Title {
+	if v != nil {
 		ox, oy := v.Origin()
 		cx, cy := v.Cursor()
 		_, vy := v.Size()
@@ -147,5 +174,32 @@ func (gui *Gui) dpageUp(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (gui *Gui) updateDiffViewKeybindings() error {
+	v, err := gui.g.View(detailViewFeature.Name)
+	if err != nil {
+		return err
+	}
+
+	if err := gui.generateKeybindingsForDetailView(v.Title); err != nil {
+		return err
+	}
+	if err := gui.updateKeyBindingsView(gui.g, v.Title); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) removeDetailViewKeybindings() error {
+	a := gui.KeyBindings
+	gui.g.DeleteKeybindings(detailViewFeature.Name)
+	// for i, b := range a {
+	// 	if b.View == detailViewFeature.Name {
+	// 		a = a[:i+copy(a[i:], a[i+1:])]
+	// 	}
+	// }
+	gui.KeyBindings = a
 	return nil
 }

@@ -15,7 +15,6 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, commitViewFeature.Name)
 
 	r.State.Branch.InitializeCommits(r)
 
@@ -28,6 +27,8 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	if err := gui.initStashedView(r); err != nil {
 		return err
 	}
+
+	gui.updateKeyBindingsView(g, commitViewFeature.Name)
 	gui.g.Update(func(g *gocui.Gui) error {
 		return gui.renderMain()
 	})
@@ -60,7 +61,9 @@ func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
 		v.EditDelete(true)
 		pos := cy + oy + 1
 		adjustAnchor(pos, ly, v)
-		gui.commitDetail(pos)
+		if err := gui.commitStats(pos); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -75,7 +78,9 @@ func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
 		pos := cy + oy - 1
 		adjustAnchor(pos, ly, v)
 		if pos >= 0 {
-			gui.commitDetail(cy + oy - 1)
+			if err := gui.commitStats(cy + oy - 1); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

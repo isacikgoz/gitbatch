@@ -75,7 +75,13 @@ func (gui *Gui) stashDiff(ix int) error {
 	if err != nil {
 		return err
 	}
-	v.Title = " Stash Detail "
+	if err := gui.removeDetailViewKeybindings(); err != nil {
+		return err
+	}
+	v.Title = string(StashDiffMode)
+	if err := gui.updateDiffViewKeybindings(); err != nil {
+		return err
+	}
 	v.Clear()
 	d, err := command.StashDiff(r, st[ix].StashID)
 	if err != nil {
