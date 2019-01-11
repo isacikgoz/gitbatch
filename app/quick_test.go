@@ -5,6 +5,11 @@ import (
 )
 
 func TestQuick(t *testing.T) {
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 	var tests = []struct {
 		inp1 []string
 		inp2 string

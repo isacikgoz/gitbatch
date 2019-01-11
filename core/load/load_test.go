@@ -2,28 +2,34 @@ package load
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
+	"time"
 
 	"github.com/isacikgoz/gitbatch/core/git"
+	ggit "gopkg.in/src-d/go-git.v4"
 )
 
 var (
 	testChannel = make(chan bool)
+
+	sp       = string(os.PathSeparator)
+	basic    = testRepoDir + sp + "basic-repo"
+	dirty    = testRepoDir + sp + "dirty-repo"
+	non      = testRepoDir + sp + "non-repo"
+	subbasic = non + sp + "basic-repo"
+
+	testRepoDir, _ = ioutil.TempDir("", "test-data")
 )
 
 func TestSyncLoad(t *testing.T) {
-	var (
-		wd, _ = os.Getwd()
-		sp    = string(os.PathSeparator)
-		d     = strings.TrimSuffix(wd, sp+"core"+sp+"load")
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 
-		parent = d + sp + "test"
-		data   = parent + sp + "test-data"
-		basic  = data + sp + "basic-repo"
-		dirty  = data + sp + "dirty-repo"
-	)
 	var tests = []struct {
 		input []string
 	}{
@@ -37,16 +43,12 @@ func TestSyncLoad(t *testing.T) {
 }
 
 func TestAsyncLoad(t *testing.T) {
-	var (
-		wd, _ = os.Getwd()
-		sp    = string(os.PathSeparator)
-		d     = strings.TrimSuffix(wd, sp+"core"+sp+"load")
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 
-		parent = d + sp + "test"
-		data   = parent + sp + "test-data"
-		basic  = data + sp + "basic-repo"
-		dirty  = data + sp + "dirty-repo"
-	)
 	var tests = []struct {
 		inp1 []string
 		inp2 AsyncAdd
@@ -55,10 +57,12 @@ func TestAsyncLoad(t *testing.T) {
 		{[]string{basic, dirty}, testAsyncMockFunc, testChannel},
 	}
 	for _, test := range tests {
-		if err := AsyncLoad(test.inp1, test.inp2, test.inp3); err != nil {
+		err := AsyncLoad(test.inp1, test.inp2, test.inp3)
+		if err != nil {
 			t.Errorf("Test Failed. error: %s", err.Error())
 		}
 	}
+
 }
 
 func testAsyncMockFunc(r *git.Repository) {
@@ -67,4 +71,21 @@ func testAsyncMockFunc(r *git.Repository) {
 			fmt.Println(r.Name)
 		}
 	}()
+}
+
+func testRepo() (*git.Repository, error) {
+	testRepoURL := "https://gitlab.com/isacikgoz/test-data.git"
+	_, err := ggit.PlainClone(testRepoDir, false, &ggit.CloneOptions{
+		URL:               testRepoURL,
+		RecurseSubmodules: ggit.DefaultSubmoduleRecursionDepth,
+	})
+	time.Sleep(time.Second)
+	if err != nil && err != ggit.NoErrAlreadyUpToDate {
+		return nil, err
+	}
+	return git.InitializeRepo(testRepoDir)
+}
+
+func cleanRepo() error {
+	return os.RemoveAll(testRepoDir)
 }

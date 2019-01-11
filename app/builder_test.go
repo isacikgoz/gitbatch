@@ -1,10 +1,14 @@
 package app
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/isacikgoz/gitbatch/core/git"
 	log "github.com/sirupsen/logrus"
+	ggit "gopkg.in/src-d/go-git.v4"
 )
 
 var (
@@ -22,6 +26,8 @@ var (
 		QuickMode:   true,
 		Mode:        "pull",
 	}
+
+	testRepoDir, _ = ioutil.TempDir("", "test-data")
 )
 
 func TestSetup(t *testing.T) {
@@ -87,15 +93,51 @@ func TestOverrideConfig(t *testing.T) {
 }
 
 func TestExecQuickMode(t *testing.T) {
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 	var tests = []struct {
 		inp1 []string
 		inp2 *Config
 	}{
-		{[]string{""}, config1},
+		{[]string{basic}, config1},
 	}
 	for _, test := range tests {
 		if err := execQuickMode(test.inp1, test.inp2); err != nil {
 			t.Errorf("Test Failed: %s", err.Error())
 		}
 	}
+}
+
+func testRepo() (*git.Repository, error) {
+	testRepoURL := "https://gitlab.com/isacikgoz/test-data.git"
+	_, err := ggit.PlainClone(testRepoDir, false, &ggit.CloneOptions{
+		URL:               testRepoURL,
+		RecurseSubmodules: ggit.DefaultSubmoduleRecursionDepth,
+	})
+	time.Sleep(time.Second)
+	if err != nil && err != ggit.NoErrAlreadyUpToDate {
+		return nil, err
+	}
+	return git.InitializeRepo(testRepoDir)
+}
+
+func testFile(name string) (*git.File, error) {
+	_, err := os.Create(testRepoDir + string(os.PathSeparator) + name)
+	if err != nil {
+		return nil, err
+	}
+	f := &git.File{
+		Name:    name,
+		AbsPath: testRepoDir + string(os.PathSeparator) + name,
+		X:       git.StatusUntracked,
+		Y:       git.StatusUntracked,
+	}
+	return f, nil
+}
+
+func cleanRepo() error {
+	return os.RemoveAll(testRepoDir)
 }

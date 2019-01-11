@@ -13,22 +13,27 @@ var (
 
 	relparent = ".." + sp + "test"
 	parent    = d + sp + "test"
-	data      = parent + sp + "test-data"
-	basic     = data + sp + "basic-repo"
-	dirty     = data + sp + "dirty-repo"
-	non       = data + sp + "non-repo"
-	subbasic  = non + sp + "basic-repo"
+	// data      = parent + sp + "test-data"
+	basic    = testRepoDir + sp + "basic-repo"
+	dirty    = testRepoDir + sp + "dirty-repo"
+	non      = testRepoDir + sp + "non-repo"
+	subbasic = non + sp + "basic-repo"
 )
 
 func TestGenerateDirectories(t *testing.T) {
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 	var tests = []struct {
 		inp1     []string
 		inp2     int
 		expected []string
 	}{
-		{[]string{relparent}, 0, []string{data}},
-		{[]string{data}, 0, []string{basic, dirty}},
-		{[]string{data}, 2, []string{basic, dirty, subbasic}},
+		// {[]string{relparent}, 0, []string{testRepoDir}},
+		{[]string{testRepoDir}, 0, []string{basic, dirty}},
+		{[]string{testRepoDir}, 2, []string{basic, dirty, subbasic}},
 	}
 	for _, test := range tests {
 		if output := generateDirectories(test.inp1, test.inp2); !testEq(output, test.expected) {
@@ -38,6 +43,11 @@ func TestGenerateDirectories(t *testing.T) {
 }
 
 func TestWalkRecursive(t *testing.T) {
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 	var tests = []struct {
 		inp1 []string
 		inp2 []string
@@ -45,9 +55,9 @@ func TestWalkRecursive(t *testing.T) {
 		exp2 []string
 	}{
 		{
-			[]string{data},
+			[]string{testRepoDir},
 			[]string{""},
-			[]string{data + sp + ".git", data + sp + ".gitmodules", non},
+			[]string{testRepoDir + sp + ".git", testRepoDir + sp + ".gitmodules", non},
 			[]string{"", basic, dirty},
 		},
 	}
@@ -59,6 +69,11 @@ func TestWalkRecursive(t *testing.T) {
 }
 
 func TestSeperateDirectories(t *testing.T) {
+	defer cleanRepo()
+	_, err := testRepo()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
 	var tests = []struct {
 		input string
 		exp1  []string
@@ -70,8 +85,8 @@ func TestSeperateDirectories(t *testing.T) {
 			nil,
 		},
 		{
-			data,
-			[]string{data + sp + ".git", data + sp + ".gitmodules", non},
+			testRepoDir,
+			[]string{testRepoDir + sp + ".git", testRepoDir + sp + ".gitmodules", non},
 			[]string{basic, dirty},
 		},
 	}
