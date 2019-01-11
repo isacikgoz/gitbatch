@@ -12,16 +12,13 @@ import (
 
 // there is no AI, only too much if clauses
 func (gui *Gui) initFocusStat(r *git.Repository) error {
-	v, err := gui.g.View(detailViewFeature.Name)
+	v, err := gui.g.View(dynamicViewFeature.Name)
 	if err != nil {
 		return err
 	}
 	v.Clear()
-	if err := gui.removeDetailViewKeybindings(); err != nil {
-		return err
-	}
 	v.Title = string(StatusMode)
-	if err := gui.updateDiffViewKeybindings(); err != nil {
+	if err := gui.updateDynamicKeybindings(); err != nil {
 		return err
 	}
 	fmt.Fprintln(v, "On branch "+cyan.Sprint(r.State.Branch.Name))

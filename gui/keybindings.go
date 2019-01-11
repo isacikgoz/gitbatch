@@ -21,6 +21,7 @@ type KeyBinding struct {
 // generate the gui's controls a.k.a. keybindings
 func (gui *Gui) generateKeybindings() error {
 	// Mainviews common keybindings
+	gui.KeyBindings = make([]*KeyBinding, 0)
 	for _, view := range mainViews {
 		mainKeybindings := []*KeyBinding{
 			{
@@ -351,7 +352,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorDown,
 			Display:     "↓",
-			Description: "Iterate over branches",
+			Description: "Iterate over commits",
 			Vital:       false,
 		}, {
 			View:        commitViewFeature.Name,
@@ -359,7 +360,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorUp,
 			Display:     "↑",
-			Description: "Iterate over branches",
+			Description: "Iterate over commits",
 			Vital:       false,
 		}, {
 			View:        commitViewFeature.Name,
@@ -369,6 +370,38 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "d",
 			Description: "Show commit diff",
 			Vital:       true,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         's',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitStat,
+			Display:     "s",
+			Description: "Show commit stat",
+			Vital:       true,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         gocui.KeyPgup,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitPageUp,
+			Display:     "page up",
+			Description: "Page up",
+			Vital:       false,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         gocui.KeyHome,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitCursorTop,
+			Display:     "home",
+			Description: "Home",
+			Vital:       false,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         gocui.KeyPgdn,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitPageDown,
+			Display:     "page down",
+			Description: "Page Down",
+			Vital:       false,
 		},
 		// stashview
 		{
@@ -387,6 +420,22 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "↑",
 			Description: "Iterate over branches",
 			Vital:       false,
+		}, {
+			View:        stashViewFeature.Name,
+			Key:         'd',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.stashDiff,
+			Display:     "d",
+			Description: "Show stash diff",
+			Vital:       true,
+		}, {
+			View:        stashViewFeature.Name,
+			Key:         'o',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.stashPop,
+			Display:     "o",
+			Description: "Pop item",
+			Vital:       true,
 		},
 		// upstream confirmation
 		{
@@ -405,48 +454,6 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "enter",
 			Description: "Set Upstream",
 			Vital:       true,
-		},
-		// Diff View Controls
-		{
-			View:        diffViewFeature.Name,
-			Key:         'q',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.closeCommitDiffView,
-			Display:     "q",
-			Description: "Close/Cancel",
-			Vital:       true,
-		}, {
-			View:        diffViewFeature.Name,
-			Key:         gocui.KeyArrowUp,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.fastCursorUp,
-			Display:     "↑",
-			Description: "Page up",
-			Vital:       true,
-		}, {
-			View:        diffViewFeature.Name,
-			Key:         gocui.KeyArrowDown,
-			Modifier:    gocui.ModNone,
-			Handler:     gui.fastCursorDown,
-			Display:     "↓",
-			Description: "Page down",
-			Vital:       true,
-		}, {
-			View:        diffViewFeature.Name,
-			Key:         'k',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.fastCursorUp,
-			Display:     "k",
-			Description: "Page up",
-			Vital:       false,
-		}, {
-			View:        diffViewFeature.Name,
-			Key:         'j',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.fastCursorDown,
-			Display:     "j",
-			Description: "Page down",
-			Vital:       false,
 		},
 		// Application Controls
 		{

@@ -7,45 +7,6 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
-	mainViews = focusViews
-	r := gui.getSelectedRepository()
-	gui.order = focus
-
-	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
-		return err
-	}
-
-	r.State.Branch.InitializeCommits(r)
-
-	if err := gui.renderCommits(r); err != nil {
-		return err
-	}
-	if err := gui.initFocusStat(r); err != nil {
-		return err
-	}
-	if err := gui.initStashedView(r); err != nil {
-		return err
-	}
-
-	gui.updateKeyBindingsView(g, commitViewFeature.Name)
-	gui.g.Update(func(g *gocui.Gui) error {
-		return gui.renderMain()
-	})
-	return nil
-}
-
-func (gui *Gui) focusBackToMain(g *gocui.Gui, v *gocui.View) error {
-	mainViews = overviewViews
-	gui.order = overview
-
-	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
-		return err
-	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
-	return nil
-}
-
 // moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
@@ -108,5 +69,57 @@ func (gui *Gui) renderCommits(r *git.Repository) error {
 		fmt.Fprintln(v, tab+commitLabel(c, false))
 	}
 	adjustAnchor(si, len(cs), v)
+	return nil
+}
+
+// moves cursor down for a page size
+func (gui *Gui) commitPageDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		_, oy := v.Origin()
+		_, vy := v.Size()
+		_, cy := v.Cursor()
+		lr := len(v.BufferLines())
+		if lr < vy {
+			return nil
+		}
+		v.EditDelete(true)
+
+		adjustAnchor(oy+cy+vy-1, lr, v)
+		// if err := gui.commitStats(oy + cy + vy - 1); err != nil {
+		// 	return err
+		// }
+
+	}
+	return nil
+}
+
+// moves cursor to the top
+func (gui *Gui) commitCursorTop(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+
+		v.EditDelete(true)
+		lr := len(v.BufferLines())
+
+		adjustAnchor(0, lr, v)
+		if err := gui.commitStats(0); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// moves cursor up for a page size
+func (gui *Gui) commitPageUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		_, oy := v.Origin()
+		_, cy := v.Cursor()
+		_, vy := v.Size()
+		lr := len(v.BufferLines())
+		v.EditDelete(true)
+		adjustAnchor(oy+cy-vy+1, lr, v)
+		// if err := gui.commitStats(oy + cy - vy + 1); err != nil {
+		// 	return err
+		// }
+	}
 	return nil
 }

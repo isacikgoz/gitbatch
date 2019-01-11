@@ -76,7 +76,7 @@ var (
 	diffViewFeature         = viewFeature{Name: "diff", Title: " Diff Detail "}
 	cheatSheetViewFeature   = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature        = viewFeature{Name: "error", Title: " Error "}
-	detailViewFeature       = viewFeature{Name: "details", Title: " Details "}
+	dynamicViewFeature      = viewFeature{Name: "dynamic", Title: " Dynamic "}
 	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
 
 	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
@@ -84,7 +84,7 @@ var (
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
 	modes     = []mode{fetchMode, pullMode, mergeMode}
-	mainViews = []viewFeature{mainViewFeature, commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
+	mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
 	loaded    = make(chan bool)
 )
 

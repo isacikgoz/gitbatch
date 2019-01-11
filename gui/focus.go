@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	focusViews = []viewFeature{commitViewFeature, detailViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
+	focusViews = []viewFeature{commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
 )
 
 // set the layout and create views with their default size, name etc. values
@@ -61,11 +61,11 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(detailViewFeature.Name, rx, 0, maxX-1, maxY-2); err != nil {
+	if v, err := g.SetView(dynamicViewFeature.Name, rx, 0, maxX-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = detailViewFeature.Title
+		v.Title = dynamicViewFeature.Title
 		v.Wrap = false
 		v.Autoscroll = false
 	}
@@ -78,5 +78,44 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Frame = false
 		gui.updateKeyBindingsView(g, commitFrameViewFeature.Name)
 	}
+	return nil
+}
+
+func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
+	mainViews = focusViews
+	r := gui.getSelectedRepository()
+	gui.order = focus
+
+	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
+		return err
+	}
+
+	r.State.Branch.InitializeCommits(r)
+
+	if err := gui.renderCommits(r); err != nil {
+		return err
+	}
+	if err := gui.initStashedView(r); err != nil {
+		return err
+	}
+	if err := gui.initFocusStat(r); err != nil {
+		return err
+	}
+
+	gui.updateKeyBindingsView(g, commitViewFeature.Name)
+	gui.g.Update(func(g *gocui.Gui) error {
+		return gui.renderMain()
+	})
+	return nil
+}
+
+func (gui *Gui) focusBackToMain(g *gocui.Gui, v *gocui.View) error {
+	mainViews = overviewViews
+	gui.order = overview
+
+	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
+		return err
+	}
+	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }

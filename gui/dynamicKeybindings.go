@@ -4,19 +4,29 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
-	t := DetailViewMode(mode)
+func (gui *Gui) updateDynamicKeybindings() error {
+	vd, err := gui.g.View(dynamicViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	t := DynamicViewMode(vd.Title)
+
+	// the order is important here
+	gui.generateKeybindings()
+	gui.g.DeleteKeybindings(vd.Name())
+
 	keybindings := []*KeyBinding{
 		{
-			View:        detailViewFeature.Name,
+			View:        dynamicViewFeature.Name,
 			Key:         'q',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.quit,
 			Display:     "q",
 			Description: "Quit",
-			Vital:       true,
+			// buggy and messy,
+			Vital: false,
 		}, {
-			View:        detailViewFeature.Name,
+			View:        dynamicViewFeature.Name,
 			Key:         gocui.KeyTab,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.nextMainView,
@@ -30,7 +40,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	case CommitStatMode:
 		caseBindings := []*KeyBinding{
 			{
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         'd',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.commitDiff,
@@ -38,7 +48,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "diff",
 				Vital:       true,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgup,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageUp,
@@ -46,7 +56,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Page up",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageDown,
@@ -59,7 +69,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	case CommitDiffMode:
 		caseBindings := []*KeyBinding{
 			{
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         's',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.commitStat,
@@ -67,7 +77,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "stats",
 				Vital:       true,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgup,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageUp,
@@ -75,7 +85,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Page up",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageDown,
@@ -88,7 +98,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	case StashDiffMode:
 		caseBindings := []*KeyBinding{
 			{
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         's',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.commitDiff,
@@ -96,7 +106,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "stats",
 				Vital:       true,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgup,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageUp,
@@ -104,7 +114,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Page up",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageDown,
@@ -117,7 +127,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	case StashStatMode:
 		caseBindings := []*KeyBinding{
 			{
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         'd',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.commitDiff,
@@ -125,7 +135,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "diff",
 				Vital:       true,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgup,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageUp,
@@ -133,7 +143,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Page up",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageDown,
@@ -146,7 +156,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	case StatusMode:
 		caseBindings := []*KeyBinding{
 			{
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         'd',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.statusDiff,
@@ -154,7 +164,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "diff",
 				Vital:       true,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyArrowDown,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.statusCursorDown,
@@ -162,7 +172,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Down",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyArrowUp,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.statusCursorUp,
@@ -170,7 +180,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Up",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeySpace,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.statusAddReset,
@@ -183,7 +193,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	case FileDiffMode:
 		caseBindings := []*KeyBinding{
 			{
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         'd',
 				Modifier:    gocui.ModNone,
 				Handler:     gui.commitDiff,
@@ -191,7 +201,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "diff",
 				Vital:       true,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgup,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageUp,
@@ -199,7 +209,7 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 				Description: "Page up",
 				Vital:       false,
 			}, {
-				View:        detailViewFeature.Name,
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.dpageDown,
@@ -212,12 +222,15 @@ func (gui *Gui) generateKeybindingsForDetailView(mode string) error {
 	default:
 
 	}
-
-	// gui.KeyBindings = append(gui.KeyBindings, keybindings...)
+	gui.KeyBindings = append(gui.KeyBindings, keybindings...)
 	for _, k := range keybindings {
 		if err := gui.g.SetKeybinding(k.View, k.Key, k.Modifier, k.Handler); err != nil {
 			return err
 		}
+	}
+	v := gui.g.CurrentView()
+	if v.Name() == dynamicViewFeature.Name {
+		gui.updateKeyBindingsView(gui.g, dynamicViewFeature.Name)
 	}
 	return nil
 }

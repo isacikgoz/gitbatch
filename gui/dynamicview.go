@@ -7,19 +7,15 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-type DetailViewMode string
+type DynamicViewMode string
 
 const (
-	CommitStatMode DetailViewMode = " Commit Stats "
-	CommitDiffMode DetailViewMode = " Diffs "
-	StashStatMode  DetailViewMode = " Stash Stats "
-	StashDiffMode  DetailViewMode = " Stash Diffs "
-	StatusMode     DetailViewMode = " Repository Status "
-	FileDiffMode   DetailViewMode = " File Diffs "
-)
-
-var (
-	detailViewModes = []DetailViewMode{CommitStatMode, CommitDiffMode, StashDiffMode, StashStatMode, StatusMode, FileDiffMode}
+	CommitStatMode DynamicViewMode = " Commit Stats "
+	CommitDiffMode DynamicViewMode = " Diffs "
+	StashStatMode  DynamicViewMode = " Stash Stats "
+	StashDiffMode  DynamicViewMode = " Stash Diffs "
+	StatusMode     DynamicViewMode = " Repository Status "
+	FileDiffMode   DynamicViewMode = " File Diffs "
 )
 
 func (gui *Gui) commitStat(g *gocui.Gui, v *gocui.View) error {
@@ -38,7 +34,7 @@ func (gui *Gui) commitStat(g *gocui.Gui, v *gocui.View) error {
 
 func (gui *Gui) commitStats(ix int) error {
 
-	v, err := gui.g.View(detailViewFeature.Name)
+	v, err := gui.g.View(dynamicViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -49,11 +45,8 @@ func (gui *Gui) commitStats(ix int) error {
 	if ix == 0 {
 		return gui.initFocusStat(r)
 	}
-	if err := gui.removeDetailViewKeybindings(); err != nil {
-		return err
-	}
 	v.Title = string(CommitStatMode)
-	if err := gui.updateDiffViewKeybindings(); err != nil {
+	if err := gui.updateDynamicKeybindings(); err != nil {
 		return err
 	}
 	c := r.State.Branch.Commits[ix-1]
@@ -68,13 +61,13 @@ func (gui *Gui) commitStats(ix int) error {
 
 	go func(gui *Gui) {
 		if <-done {
-			if !strings.Contains(strings.Join(v.BufferLines(), c.Hash), ld) {
+			if !strings.Contains(strings.Join(v.BufferLines(), "\n"), c.Hash) {
 				return
 			}
 			v.Clear()
 			fmt.Fprintf(v, "%s\n", decorateCommit(c.String()))
 			gui.g.Update(func(g *gocui.Gui) error {
-				v, err := gui.g.View(detailViewFeature.Name)
+				v, err := gui.g.View(dynamicViewFeature.Name)
 				if err != nil {
 					return err
 				}
@@ -88,7 +81,7 @@ func (gui *Gui) commitStats(ix int) error {
 }
 
 func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
-	v, err := gui.g.View(detailViewFeature.Name)
+	v, err := gui.g.View(dynamicViewFeature.Name)
 	if err != nil {
 		return err
 	}
@@ -103,11 +96,8 @@ func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
 		return nil
 	}
 
-	if err := gui.removeDetailViewKeybindings(); err != nil {
-		return err
-	}
 	v.Title = string(CommitDiffMode)
-	if err := gui.updateDiffViewKeybindings(); err != nil {
+	if err := gui.updateDynamicKeybindings(); err != nil {
 		return err
 	}
 	r := gui.getSelectedRepository()
@@ -174,32 +164,5 @@ func (gui *Gui) dpageUp(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	return nil
-}
-
-func (gui *Gui) updateDiffViewKeybindings() error {
-	v, err := gui.g.View(detailViewFeature.Name)
-	if err != nil {
-		return err
-	}
-
-	if err := gui.generateKeybindingsForDetailView(v.Title); err != nil {
-		return err
-	}
-	if err := gui.updateKeyBindingsView(gui.g, v.Title); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (gui *Gui) removeDetailViewKeybindings() error {
-	a := gui.KeyBindings
-	gui.g.DeleteKeybindings(detailViewFeature.Name)
-	// for i, b := range a {
-	// 	if b.View == detailViewFeature.Name {
-	// 		a = a[:i+copy(a[i:], a[i+1:])]
-	// 	}
-	// }
-	gui.KeyBindings = a
 	return nil
 }

@@ -63,11 +63,11 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(detailViewFeature.Name, -1*int(0.20*float32(maxX)), 0, -1, maxY); err != nil {
+	if v, err := g.SetView(dynamicViewFeature.Name, -1*int(0.20*float32(maxX)), 0, -1, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Title = detailViewFeature.Title
+		v.Title = dynamicViewFeature.Title
 		v.Wrap = false
 		v.Autoscroll = false
 	}
