@@ -100,6 +100,8 @@ var (
 const (
 	// RepositoryUpdated defines the topic for an updated repository.
 	RepositoryUpdated = "repository.updated"
+	// BranchUpdated defines the topic for an updated branch.
+	BranchUpdated = "branch.updated"
 )
 
 // FastInitializeRepo initializes a Repository struct without its belongings.

@@ -78,10 +78,13 @@ func (b *Branch) initCommits(r *Repository) error {
 		b.Commits = append(b.Commits, commit)
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 	if b.State.Commit == nil {
 		b.State.Commit = b.Commits[0]
 	}
-	return err
+	return nil
 }
 
 // this function creates the commit entities according to active branchs diffs

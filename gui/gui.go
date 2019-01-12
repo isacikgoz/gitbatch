@@ -153,6 +153,7 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 	rs[index] = r
 	// add listener
 	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
+	r.On(git.BranchUpdated, gui.branchUpdated)
 	// update gui
 	gui.repositoryUpdated(nil)
 	gui.renderTitle()

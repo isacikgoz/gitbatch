@@ -7,6 +7,14 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// listens the event -> "branch.updated"
+func (gui *Gui) branchUpdated(event *git.RepositoryEvent) error {
+	gui.g.Update(func(g *gocui.Gui) error {
+		return gui.renderCommits(gui.getSelectedRepository())
+	})
+	return nil
+}
+
 // moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
@@ -55,16 +63,16 @@ func (gui *Gui) renderCommits(r *git.Repository) error {
 	}
 	v.Clear()
 	cs := r.State.Branch.Commits
-	bc := r.State.Branch.State.Commit
+	// bc := r.State.Branch.State.Commit
 	si := 0
 	fmt.Fprintln(v, " "+yellow.Sprint("*******")+" "+yellow.Sprint("Current State"))
 
-	for i, c := range cs {
-		if c.Hash == bc.Hash {
-			si = i
-			fmt.Fprintln(v, ws+commitLabel(c, false))
-			continue
-		}
+	for _, c := range cs {
+		// if c.Hash == bc.Hash {
+		// 	si = i
+		// 	fmt.Fprintln(v, ws+commitLabel(c, false))
+		// 	continue
+		// }
 
 		fmt.Fprintln(v, tab+commitLabel(c, false))
 	}

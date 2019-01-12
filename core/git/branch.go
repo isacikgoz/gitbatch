@@ -93,10 +93,14 @@ func (r *Repository) initBranches() error {
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (r *Repository) Checkout(b *Branch) error {
+	// var reinit bool
 	if b.Name == r.State.Branch.Name {
 		return nil
 	}
-
+	// if it already loaded its commits, consider reload again
+	// if len(b.Commits) > 0 {
+	// 	reinit = true
+	// }
 	w, err := r.Repo.Worktree()
 	if err != nil {
 		log.Warn("Cannot get work tree " + err.Error())
@@ -109,11 +113,20 @@ func (r *Repository) Checkout(b *Branch) error {
 		return err
 	}
 	r.State.Branch = b
+
 	// make this conditional on global scale
 	// we don't care if this function returns an error
 	r.State.Remote.SyncBranches(b.Name)
-
-	return r.Refresh()
+	// if reinit {
+	b.initCommits(r)
+	// }
+	// if err := r.Refresh(); err != nil {
+	// 	return err
+	// }
+	if err := r.Publish(BranchUpdated, nil); err != nil {
+		return err
+	}
+	return nil
 }
 
 // checking the branch if it has any changes from its head revision. Initially
@@ -209,6 +222,7 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	return nil
 }
 
+// InitializeCommits loads the commits
 func (b *Branch) InitializeCommits(r *Repository) error {
 	return b.initCommits(r)
 }
