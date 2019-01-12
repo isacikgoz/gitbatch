@@ -22,8 +22,8 @@ type KeyBinding struct {
 func (gui *Gui) generateKeybindings() error {
 	// Mainviews common keybindings
 	gui.KeyBindings = make([]*KeyBinding, 0)
-	for _, view := range mainViews {
-		mainKeybindings := []*KeyBinding{
+	for _, view := range focusViews {
+		focusKeybindings := []*KeyBinding{
 			{
 				View:        view.Name,
 				Key:         'q',
@@ -34,33 +34,17 @@ func (gui *Gui) generateKeybindings() error {
 				Vital:       true,
 			}, {
 				View:        view.Name,
-				Key:         'f',
+				Key:         gocui.KeyBackspace2,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.switchToFetchMode,
-				Display:     "f",
-				Description: "Fetch mode",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'p',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.switchToPullMode,
-				Display:     "p",
-				Description: "Pull mode",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'm',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.switchToMergeMode,
-				Display:     "m",
-				Description: "Merge mode",
-				Vital:       false,
+				Handler:     gui.focusBackToMain,
+				Display:     "backspace",
+				Description: "Back to Overview",
+				Vital:       true,
 			}, {
 				View:        view.Name,
 				Key:         gocui.KeyTab,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
+				Handler:     gui.nextFocusView,
 				Display:     "tab",
 				Description: "Next Panel",
 				Vital:       false,
@@ -68,7 +52,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowRight,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
+				Handler:     gui.nextFocusView,
 				Display:     "→",
 				Description: "Next Panel",
 				Vital:       false,
@@ -76,7 +60,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'l',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
+				Handler:     gui.nextFocusView,
 				Display:     "l",
 				Description: "Next Panel",
 				Vital:       false,
@@ -84,7 +68,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowLeft,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousMainView,
+				Handler:     gui.previousFocusView,
 				Display:     "←",
 				Description: "Prev Panel",
 				Vital:       false,
@@ -92,13 +76,13 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'h',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousMainView,
+				Handler:     gui.previousFocusView,
 				Display:     "h",
 				Description: "Prev Panel",
 				Vital:       false,
 			},
 		}
-		gui.KeyBindings = append(gui.KeyBindings, mainKeybindings...)
+		gui.KeyBindings = append(gui.KeyBindings, focusKeybindings...)
 	}
 	for _, view := range sideViews {
 		sideViewKeybindings := []*KeyBinding{
@@ -210,10 +194,42 @@ func (gui *Gui) generateKeybindings() error {
 		// Main view controls
 		{
 			View:        mainViewFeature.Name,
-			Key:         'r',
+			Key:         'q',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.quit,
+			Display:     "q",
+			Description: "Quit",
+			Vital:       true,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'f',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToFetchMode,
+			Display:     "f",
+			Description: "Fetch mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToPullMode,
+			Display:     "p",
+			Description: "Pull mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'm',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToMergeMode,
+			Display:     "m",
+			Description: "Merge mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         gocui.KeyTab,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.focusToRepository,
-			Display:     "r",
+			Display:     "tab",
 			Description: "Focus",
 			Vital:       true,
 		}, {
@@ -371,14 +387,6 @@ func (gui *Gui) generateKeybindings() error {
 		},
 		// CommitView
 		{
-			View:        commitViewFeature.Name,
-			Key:         'r',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.focusBackToMain,
-			Display:     "r",
-			Description: "Back to Overview",
-			Vital:       true,
-		}, {
 			View:        commitViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
 			Modifier:    gocui.ModNone,

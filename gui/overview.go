@@ -5,15 +5,17 @@ import (
 )
 
 var (
-	overviewViews = []viewFeature{mainViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
+	overviewViews = []viewFeature{mainViewFeature}
 )
 
 // set the layout and create views with their default size, name etc. values
 // TODO: window sizes can be handled better
 func (gui *Gui) overviewLayout(g *gocui.Gui) error {
+	g.SelFgColor = gocui.ColorDefault
 	maxX, maxY := g.Size()
-	dx := int(0.55 * float32(maxX))
-	if v, err := g.SetView(mainViewFeature.Name, 0, 0, dx-1, maxY-2); err != nil {
+	// dx := int(0.55 * float32(maxX))
+	dx := -2
+	if v, err := g.SetView(mainViewFeature.Name, 0, 0, maxX-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -23,7 +25,7 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 			return err
 		}
 	}
-	if v, err := g.SetView(remoteViewFeature.Name, dx, 0, maxX-1, int(0.15*float32(maxY))-1); err != nil {
+	if v, err := g.SetView(remoteViewFeature.Name, dx, 0, -1, int(0.15*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -31,7 +33,7 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(remoteBranchViewFeature.Name, dx, int(0.15*float32(maxY)), maxX-1, int(0.55*float32(maxY))-1); err != nil {
+	if v, err := g.SetView(remoteBranchViewFeature.Name, dx, int(0.15*float32(maxY)), -1, int(0.55*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -39,7 +41,7 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Overwrite = false
 	}
-	if v, err := g.SetView(branchViewFeature.Name, dx, int(0.55*float32(maxY)), maxX-1, maxY-2); err != nil {
+	if v, err := g.SetView(branchViewFeature.Name, dx, int(0.55*float32(maxY)), -1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}

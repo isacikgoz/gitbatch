@@ -83,9 +83,9 @@ var (
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
-	modes     = []mode{fetchMode, pullMode, mergeMode}
-	mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
-	loaded    = make(chan bool)
+	modes = []mode{fetchMode, pullMode, mergeMode}
+	// mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
+	loaded = make(chan bool)
 )
 
 // NewGui creates a Gui opject and fill it's state related entites
@@ -135,7 +135,7 @@ func (gui *Gui) Run() error {
 		log.Error("Keybindings could not be set.")
 		return err
 	}
-	mainViews = overviewViews
+	// mainViews = overviewViews
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Error("Error in the main loop. " + err.Error())
 		return err
@@ -190,16 +190,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return gui.focusLayout(g)
 	}
 	return nil
-}
-
-// focus to next view
-func (gui *Gui) nextMainView(g *gocui.Gui, v *gocui.View) error {
-	return gui.nextViewOfGroup(g, v, mainViews)
-}
-
-// focus to previous view
-func (gui *Gui) previousMainView(g *gocui.Gui, v *gocui.View) error {
-	return gui.previousViewOfGroup(g, v, mainViews)
 }
 
 // quit from the gui and end its loop
