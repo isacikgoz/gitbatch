@@ -184,9 +184,8 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	// if err := refreshAllStatusView(g, r, true); err != nil {
-	// 	return err
-	// }
-	// return gui.closeViewCleanup(commitMesageReturnView)
+	if err := gui.focusToRepository(g, v); err != nil {
+		return err
+	}
 	return nil
 }

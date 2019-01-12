@@ -64,6 +64,38 @@ func (gui *Gui) generateKeybindings() error {
 				Display:     "tab",
 				Description: "Next Panel",
 				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowRight,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextMainView,
+				Display:     "→",
+				Description: "Next Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'l',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.nextMainView,
+				Display:     "l",
+				Description: "Next Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         gocui.KeyArrowLeft,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.previousMainView,
+				Display:     "←",
+				Description: "Prev Panel",
+				Vital:       false,
+			}, {
+				View:        view.Name,
+				Key:         'h',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.previousMainView,
+				Display:     "h",
+				Description: "Prev Panel",
+				Vital:       false,
 			},
 		}
 		gui.KeyBindings = append(gui.KeyBindings, mainKeybindings...)
@@ -178,10 +210,10 @@ func (gui *Gui) generateKeybindings() error {
 		// Main view controls
 		{
 			View:        mainViewFeature.Name,
-			Key:         'f',
+			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.focusToRepository,
-			Display:     "f",
+			Display:     "r",
 			Description: "Focus",
 			Vital:       true,
 		}, {
@@ -306,10 +338,10 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'r',
+			Key:         'd',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.sortByMod,
-			Display:     "r",
+			Display:     "d",
 			Description: "Sort repositories by Modification date",
 			Vital:       false,
 		}, {
@@ -340,10 +372,10 @@ func (gui *Gui) generateKeybindings() error {
 		// CommitView
 		{
 			View:        commitViewFeature.Name,
-			Key:         'f',
+			Key:         'r',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.focusBackToMain,
-			Display:     "f",
+			Display:     "r",
 			Description: "Back to Overview",
 			Vital:       true,
 		}, {

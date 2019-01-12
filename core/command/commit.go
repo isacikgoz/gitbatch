@@ -64,21 +64,15 @@ func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 
 // commitWithGoGit is the primary commit method
 func commitWithGoGit(r *git.Repository, options *CommitOptions) (err error) {
-	config, err := r.Repo.Config()
-	if err != nil {
-		return err
-	}
-	name := config.Raw.Section("user").Option("name")
-	email := config.Raw.Section("user").Option("email")
 	opt := &gogit.CommitOptions{
 		Author: &object.Signature{
-			Name:  name,
-			Email: email,
+			Name:  options.User,
+			Email: options.Email,
 			When:  time.Now(),
 		},
 		Committer: &object.Signature{
-			Name:  name,
-			Email: email,
+			Name:  options.User,
+			Email: options.Email,
 			When:  time.Now(),
 		},
 	}

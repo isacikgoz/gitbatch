@@ -33,6 +33,38 @@ func (gui *Gui) updateDynamicKeybindings() error {
 			Display:     "tab",
 			Description: "Next Panel",
 			Vital:       false,
+		}, {
+			View:        dynamicViewFeature.Name,
+			Key:         gocui.KeyArrowRight,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.nextMainView,
+			Display:     "→",
+			Description: "Next Panel",
+			Vital:       false,
+		}, {
+			View:        dynamicViewFeature.Name,
+			Key:         'l',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.nextMainView,
+			Display:     "l",
+			Description: "Next Panel",
+			Vital:       false,
+		}, {
+			View:        dynamicViewFeature.Name,
+			Key:         gocui.KeyArrowLeft,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.previousMainView,
+			Display:     "←",
+			Description: "Prev Panel",
+			Vital:       false,
+		}, {
+			View:        dynamicViewFeature.Name,
+			Key:         'h',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.previousMainView,
+			Display:     "h",
+			Description: "Prev Panel",
+			Vital:       false,
 		},
 	}
 
@@ -165,6 +197,22 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,
+				Key:         'c',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.openCommitMessageView,
+				Display:     "c",
+				Description: "commit",
+				Vital:       true,
+			}, {
+				View:        dynamicViewFeature.Name,
+				Key:         't',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.stashChanges,
+				Display:     "t",
+				Description: "stash",
+				Vital:       true,
+			}, {
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyArrowDown,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.statusCursorDown,
@@ -194,11 +242,11 @@ func (gui *Gui) updateDynamicKeybindings() error {
 		caseBindings := []*KeyBinding{
 			{
 				View:        dynamicViewFeature.Name,
-				Key:         'd',
+				Key:         's',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.commitDiff,
-				Display:     "d",
-				Description: "diff",
+				Handler:     gui.statusStat,
+				Display:     "s",
+				Description: "stats",
 				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,

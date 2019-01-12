@@ -184,8 +184,46 @@ func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
 	}
 	for _, f := range files {
 		if strings.Contains(line, f.Name) {
-
+			out, err := command.DiffFile(f)
+			if err != nil {
+				return err
+			}
+			v.Clear()
+			v.Title = string(FileDiffMode)
+			if err := gui.updateDynamicKeybindings(); err != nil {
+				return err
+			}
+			fmt.Fprintln(v, strings.Join(colorizeDiff(out), "\n"))
 		}
 	}
-	return gui.initFocusStat(r)
+	return nil
+}
+
+//
+func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
+	r := gui.getSelectedRepository()
+	output, err := r.Stash()
+	if err != nil {
+		if err = gui.openErrorView(g, output,
+			"You should manually resolve this issue",
+			stashViewFeature.Name); err != nil {
+			return err
+		}
+	}
+	if err := gui.focusToRepository(g, v); err != nil {
+		return err
+	}
+	if err := gui.initStashedView(r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) statusStat(g *gocui.Gui, v *gocui.View) error {
+
+	r := gui.getSelectedRepository()
+	if err := gui.initFocusStat(r); err != nil {
+		return err
+	}
+	return nil
 }

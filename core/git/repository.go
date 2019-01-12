@@ -19,15 +19,9 @@ type RepositoryInterface interface {
 	SetWorkStatus(WorkStatus)
 
 	initBranches() error
-	NextBranch() *Branch
-	PreviousBranch() *Branch
-	currentBranchIndex() int
 	Checkout(*Branch) error
 	isClean() bool
 
-	NextRemote() error
-	PreviousRemote() error
-	currentRemoteIndex() int
 	initRemotes() error
 
 	loadStashedItems() error

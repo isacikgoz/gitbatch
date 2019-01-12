@@ -126,7 +126,10 @@ func (r *Repository) Checkout(b *Branch) error {
 	if err := r.Publish(BranchUpdated, nil); err != nil {
 		return err
 	}
-	return nil
+	if err := r.SyncRemoteAndBranch(b); err != nil {
+		return err
+	}
+	return r.Publish(RepositoryUpdated, nil)
 }
 
 // checking the branch if it has any changes from its head revision. Initially

@@ -106,7 +106,7 @@ func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	// since the pop is a func of stashed item, we need to refresh entity here
-	defer r.Refresh()
+	// defer r.Refresh()
 	stashedItem := r.Stasheds[oy+cy]
 	output, err := stashedItem.Pop()
 	if err != nil {
@@ -115,6 +115,13 @@ func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 			stashViewFeature.Name); err != nil {
 			return err
 		}
+	}
+	r.Refresh()
+	if err := gui.focusToRepository(g, v); err != nil {
+		return err
+	}
+	if err := gui.initStashedView(r); err != nil {
+		return err
 	}
 	return nil
 }
