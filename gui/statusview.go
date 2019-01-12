@@ -127,7 +127,7 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 		ap := oy + cy
 		var prev int
 		for i := ap - 1; i >= 0; i-- {
-			if len(ly[i]) > 0 && ly[i][0] == ' ' {
+			if i < len(ly) && len(ly[i]) > 0 && ly[i][0] == ' ' {
 				prev = ap - i
 				break
 			}
@@ -222,6 +222,37 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) statusStat(g *gocui.Gui, v *gocui.View) error {
 
 	r := gui.getSelectedRepository()
+	if err := gui.initFocusStat(r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) statusAddAll(g *gocui.Gui, v *gocui.View) error {
+
+	r := gui.getSelectedRepository()
+	if err := command.AddAll(r, &command.AddOptions{}); err != nil {
+		return err
+	}
+	if err := gui.initFocusStat(r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) statusResetAll(g *gocui.Gui, v *gocui.View) error {
+
+	r := gui.getSelectedRepository()
+	ref, err := r.Repo.Head()
+	if err != nil {
+		return err
+	}
+	if err := command.ResetAll(r, &command.ResetOptions{
+		Hash:  ref.Hash().String(),
+		Rtype: command.ResetMixed,
+	}); err != nil {
+		return err
+	}
 	if err := gui.initFocusStat(r); err != nil {
 		return err
 	}

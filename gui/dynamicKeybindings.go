@@ -235,6 +235,22 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Display:     "space",
 				Description: "add/reset",
 				Vital:       true,
+			}, {
+				View:        dynamicViewFeature.Name,
+				Key:         gocui.KeyCtrlA,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusAddAll,
+				Display:     "c-a",
+				Description: "add all",
+				Vital:       true,
+			}, {
+				View:        dynamicViewFeature.Name,
+				Key:         gocui.KeyCtrlR,
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusResetAll,
+				Display:     "c-r",
+				Description: "reset all",
+				Vital:       true,
 			},
 		}
 		keybindings = append(keybindings, caseBindings...)
