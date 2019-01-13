@@ -24,15 +24,14 @@ func TestRevlistNew(t *testing.T) {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	// HEAD..@{u}
-	upstream := r.State.Remote.Branch.Reference.Hash().String()
 	headref, err := r.Repo.Head()
 	head := headref.Hash().String()
 	fmt.Printf("HEAD (%s) @: %s\n", headref.Name(), head)
-	fmt.Printf("REMOTE (%s) @ %s\n", r.State.Remote.Branch.Name, upstream)
+	fmt.Printf("REMOTE (%s) @ %s\n", r.State.Remote.Name, r.State.Branch.Upstream.Name)
 	fmt.Printf("\n")
 	pullables, err := RevList(r, RevListOptions{
 		Ref1: head,
-		Ref2: upstream,
+		Ref2: r.State.Branch.Upstream.Reference.Hash().String(),
 	})
 	if err != nil {
 		t.Errorf("Test Failed.")
@@ -42,7 +41,7 @@ func TestRevlistNew(t *testing.T) {
 	}
 	fmt.Printf("\n")
 	pushables, err := RevList(r, RevListOptions{
-		Ref1: upstream,
+		Ref1: r.State.Branch.Upstream.Reference.Hash().String(),
 		Ref2: head,
 	})
 	if err != nil {
