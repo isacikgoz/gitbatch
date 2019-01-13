@@ -20,10 +20,10 @@ func (gui *Gui) updateDynamicKeybindings() error {
 			View:        dynamicViewFeature.Name,
 			Key:         'q',
 			Modifier:    gocui.ModNone,
-			Handler:     gui.quit,
+			Handler:     gui.focusBackToMain,
 			Display:     "q",
-			Description: "Quit",
-			// buggy and messy,
+			Description: "Back to Overview",
+			// buggy and messy
 			Vital: false,
 		}, {
 			View:        dynamicViewFeature.Name,

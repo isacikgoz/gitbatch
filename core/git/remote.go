@@ -11,7 +11,6 @@ type Remote struct {
 	Name     string
 	URL      []string
 	RefSpecs []string
-	Branch   *RemoteBranch
 	Branches []*RemoteBranch
 }
 
@@ -33,9 +32,6 @@ func (r *Repository) initRemotes() error {
 			RefSpecs: rfs,
 		}
 		remote.loadRemoteBranches(r)
-		if len(remote.Branches) > 0 {
-			remote.Branch = remote.Branches[0]
-		}
 		r.Remotes = append(r.Remotes, remote)
 
 	}
@@ -45,12 +41,4 @@ func (r *Repository) initRemotes() error {
 	}
 	r.State.Remote = r.Remotes[0]
 	return err
-}
-
-// SyncBranches sets the remote branch according to repository's active branch
-func (r *Remote) SyncBranches(branchName string) error {
-	if err := r.switchRemoteBranch(r.Name + "/" + branchName); err != nil {
-		// probably couldn't find, but its ok.
-	}
-	return nil
 }

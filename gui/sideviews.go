@@ -112,14 +112,14 @@ func (gui *Gui) renderRemoteBranches(r *git.Repository) error {
 	}
 	v.Clear()
 	rs := r.State.Remote.Branches
-	rc := r.State.Remote.Branch
+	// rc := r.State.Remote.Branch
 	si := 0
-	for i, rb := range rs {
-		if rb.Name == rc.Name {
-			si = i
-			fmt.Fprintln(v, ws+green.Sprint(rb.Name))
-			continue
-		}
+	for _, rb := range rs {
+		// if rb.Name == rc.Name {
+		// 	si = i
+		// 	fmt.Fprintln(v, ws+green.Sprint(rb.Name))
+		// 	continue
+		// }
 		fmt.Fprintln(v, tab+rb.Name)
 	}
 	adjustAnchor(si, len(rs), v)
@@ -139,7 +139,7 @@ func (gui *Gui) selectSideItem(g *gocui.Gui, v *gocui.View) error {
 		r.Checkout(r.Branches[ix])
 		err = gui.renderBranches(r)
 	} else if v.Name() == remoteBranchViewFeature.Name {
-		r.State.Remote.Branch = r.State.Remote.Branches[ix]
+		// r.State.Remote.Branch = r.State.Remote.Branches[ix]
 		err = gui.renderRemoteBranches(r)
 	} else if v.Name() == remoteViewFeature.Name {
 		r.State.Remote = r.Remotes[ix]
@@ -239,4 +239,20 @@ func (gui *Gui) closeConfirmationView(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	return gui.closeViewCleanup(branchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) openRemoteBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnTop(remoteBranchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(remoteBranchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) closeRemoteBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnBottom(remoteBranchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(remoteViewFeature.Name)
 }

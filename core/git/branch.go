@@ -1,6 +1,7 @@
 package git
 
 import (
+	"errors"
 	"os/exec"
 	"sort"
 	"strconv"
@@ -20,6 +21,7 @@ import (
 type Branch struct {
 	Name      string
 	Reference *plumbing.Reference
+	Upstream  *RemoteBranch
 	Commits   []*Commit
 	State     *BranchState
 	Pushables string
@@ -86,6 +88,13 @@ func (r *Repository) initBranches() error {
 		lbs = append(lbs, branch)
 		r.State.Branch = branch
 	}
+	rb, err := getUpstream(r, r.State.Branch.Name)
+	if err != nil {
+		log.Warn("Upstream not set " + r.Name)
+	} else {
+		r.State.Branch.Upstream = rb
+	}
+
 	r.Branches = lbs
 	return nil
 }
@@ -114,9 +123,12 @@ func (r *Repository) Checkout(b *Branch) error {
 	}
 	r.State.Branch = b
 
-	// make this conditional on global scale
-	// we don't care if this function returns an error
-	r.State.Remote.SyncBranches(b.Name)
+	rb, err := getUpstream(r, r.State.Branch.Name)
+	if err != nil {
+		log.Warn("Upstream not set")
+	} else {
+		r.State.Branch.Upstream = rb
+	}
 	// if reinit {
 	b.initCommits(r)
 	// }
@@ -198,11 +210,16 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	if err != nil {
 		return err
 	}
-	upstream := r.State.Remote.Branch.Reference.Hash().String()
+	if b.Upstream == nil {
+		b.Pullables = "?"
+		b.Pushables = "?"
+		return nil
+	}
+
 	headd := headRef.Hash().String()
 	var push, pull string
 	pushables, err := RevList(r, RevListOptions{
-		Ref1: upstream,
+		Ref1: b.Upstream.Reference.Hash().String(),
 		Ref2: headd,
 	})
 	if err != nil {
@@ -212,7 +229,7 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	}
 	pullables, err := RevList(r, RevListOptions{
 		Ref1: headd,
-		Ref2: upstream,
+		Ref2: b.Upstream.Reference.Hash().String(),
 	})
 	if err != nil {
 		pull = "?"
@@ -228,4 +245,44 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 // InitializeCommits loads the commits
 func (b *Branch) InitializeCommits(r *Repository) error {
 	return b.initCommits(r)
+}
+
+func getUpstream(r *Repository, branchName string) (*RemoteBranch, error) {
+	args := []string{"config", "--get", "branch." + branchName + ".remote"}
+	cmd := exec.Command("git", args...)
+	cmd.Dir = r.AbsPath
+	cr, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, errors.New("upstream not found")
+	}
+
+	args = []string{"config", "--get", "branch." + branchName + ".merge"}
+	cmd = exec.Command("git", args...)
+	cmd.Dir = r.AbsPath
+	cm, err := cmd.CombinedOutput()
+	if err != nil || !strings.Contains(string(cm), branchName) {
+		return nil, errors.New("default merge branch found")
+	}
+
+	for _, rm := range r.Remotes {
+		if rm.Name == trimTrailingNewline(string(cr)) {
+			r.State.Remote = rm
+		}
+	}
+
+	for _, rb := range r.State.Remote.Branches {
+		if rb.Name == r.State.Remote.Name+"/"+branchName {
+			return rb, nil
+		}
+	}
+	return nil, errors.New("upstream not found")
+}
+
+// trimTrailingNewline removes the trailing new line form a string. this method
+// is used mostly on outputs of a command
+func trimTrailingNewline(s string) string {
+	if strings.HasSuffix(s, "\n") || strings.HasSuffix(s, "\r") {
+		return s[:len(s)-1]
+	}
+	return s
 }

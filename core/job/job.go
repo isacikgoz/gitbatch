@@ -51,6 +51,11 @@ func (j *Job) start() error {
 		}
 	case PullJob:
 		var opts *command.PullOptions
+		if j.Repository.State.Branch.Upstream == nil {
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = "upstream not set"
+			return nil
+		}
 		if j.Options != nil {
 			opts = j.Options.(*command.PullOptions)
 		} else {
@@ -64,12 +69,17 @@ func (j *Job) start() error {
 			return err
 		}
 	case MergeJob:
+		if j.Repository.State.Branch.Upstream == nil {
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = "upstream not set"
+			return nil
+		}
 		if err := command.Merge(j.Repository, &command.MergeOptions{
-			BranchName: j.Repository.State.Remote.Branch.Name,
+			BranchName: j.Repository.State.Branch.Upstream.Name,
 		}); err != nil {
 			j.Repository.SetWorkStatus(git.Fail)
 			j.Repository.State.Message = err.Error()
-			return nil
+			return err
 		}
 	default:
 		j.Repository.SetWorkStatus(git.Available)

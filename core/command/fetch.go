@@ -64,7 +64,7 @@ func Fetch(r *git.Repository, options *FetchOptions) (err error) {
 		if r.State.Branch == nil {
 			refspec = "+refs/heads/*:refs/remotes/origin/*"
 		} else {
-			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Branch.Name
+			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Branch.Name
 		}
 		err = fetchWithGoGit(r, options, refspec)
 		return err

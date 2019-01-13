@@ -147,7 +147,6 @@ func (r *Repository) loadComponents(reset bool) error {
 		return err
 	}
 
-	r.State.Remote.SyncBranches(r.State.Branch.Name)
 	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
 		return err
 	}

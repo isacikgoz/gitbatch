@@ -1,7 +1,6 @@
 package git
 
 import (
-	"errors"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -53,15 +52,4 @@ func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) 
 		}
 		return false
 	}, refs), nil
-}
-
-// switches to the given remote branch
-func (rm *Remote) switchRemoteBranch(remoteBranchName string) error {
-	for _, rb := range rm.Branches {
-		if rb.Name == remoteBranchName {
-			rm.Branch = rb
-			return nil
-		}
-	}
-	return errors.New("Remote branch not found")
 }

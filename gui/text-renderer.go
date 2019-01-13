@@ -88,16 +88,7 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	// rendering the satus according to repository's state
 	if r.WorkStatus() == git.Queued {
 		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
-			switch mode := j.JobType; mode {
-			case job.FetchJob:
-				suffix = blue.Sprint(queuedSymbol)
-			case job.PullJob:
-				suffix = magenta.Sprint(queuedSymbol)
-			case job.MergeJob:
-				suffix = cyan.Sprint(queuedSymbol)
-			default:
-				suffix = green.Sprint(queuedSymbol)
-			}
+			suffix = printJob(r, j.JobType)
 		}
 		return prefix + repoName + ws + suffix
 	} else if r.WorkStatus() == git.Working {
@@ -111,6 +102,21 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(r.State.Message)
 	}
 	return prefix + repoName
+}
+
+func printJob(r *git.Repository, jt job.JobType) string {
+	var info string
+	switch jt {
+	case job.FetchJob:
+		info = blue.Sprint(queuedSymbol) + ws + "(" + blue.Sprint("fetch") + ws + r.State.Remote.Name + ")"
+	case job.PullJob:
+		info = magenta.Sprint(queuedSymbol) + ws + "(" + magenta.Sprint("pull") + ws + r.State.Remote.Name + ")"
+	case job.MergeJob:
+		info = cyan.Sprint(queuedSymbol) + ws + "(" + cyan.Sprint("merge") + ws + r.State.Branch.Upstream.Name + ")"
+	default:
+		info = green.Sprint(queuedSymbol)
+	}
+	return info
 }
 
 func commitLabel(c *git.Commit, sel bool) string {
