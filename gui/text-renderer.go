@@ -88,14 +88,13 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	// rendering the satus according to repository's state
 	if r.WorkStatus() == git.Queued {
 		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
-			suffix = printJob(r, j.JobType)
+			suffix = printQueued(r, j.JobType)
 		}
 		return prefix + repoName + ws + suffix
 	} else if r.WorkStatus() == git.Working {
-		// TODO: maybe the type of the job can be written while its working?
 		return prefix + repoName + ws + green.Sprint(workingSymbol)
 	} else if r.WorkStatus() == git.Success {
-		return prefix + repoName + ws + green.Sprint(successSymbol)
+		return prefix + repoName + ws + green.Sprint(successSymbol) + ws + r.State.Message
 	} else if r.WorkStatus() == git.Paused {
 		return prefix + repoName + ws + yellow.Sprint("authentication required (u)")
 	} else if r.WorkStatus() == git.Fail {
@@ -104,7 +103,7 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	return prefix + repoName
 }
 
-func printJob(r *git.Repository, jt job.JobType) string {
+func printQueued(r *git.Repository, jt job.JobType) string {
 	var info string
 	switch jt {
 	case job.FetchJob:

@@ -186,7 +186,13 @@ func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
 		if strings.Contains(line, f.Name) {
 			out, err := command.DiffFile(f)
 			if err != nil {
-				return err
+				v.Clear()
+				v.Title = string(FileDiffMode)
+				if err := gui.updateDynamicKeybindings(); err != nil {
+					return err
+				}
+				fmt.Fprintln(v, "Can't get diff")
+				return nil
 			}
 			v.Clear()
 			v.Title = string(FileDiffMode)
