@@ -73,6 +73,7 @@ func pullWithGit(r *git.Repository, options *PullOptions) (err error) {
 		return gerr.ParseGitError(out, err)
 	}
 	r.SetWorkStatus(git.Success)
+	r.State.Message = ""
 	return r.Refresh()
 }
 
@@ -135,7 +136,7 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 			return pullWithGit(r, options)
 		}
 	}
-
 	r.SetWorkStatus(git.Success)
+	r.State.Message = ""
 	return r.Refresh()
 }

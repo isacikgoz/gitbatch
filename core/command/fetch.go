@@ -95,6 +95,7 @@ func fetchWithGit(r *git.Repository, options *FetchOptions) (err error) {
 		return gerr.ParseGitError(out, err)
 	}
 	r.SetWorkStatus(git.Success)
+	r.State.Message = ""
 	// till this step everything should be ok
 	return r.Refresh()
 }
@@ -156,8 +157,8 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 			return fetchWithGit(r, options)
 		}
 	}
-
 	r.SetWorkStatus(git.Success)
+	r.State.Message = ""
 	// till this step everything should be ok
 	return r.Refresh()
 }
