@@ -46,7 +46,7 @@ var (
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = ws + "→" + ws
+	selectionIndicator = "→" + ws
 	tab                = ws
 
 	renderRules = &RepositoryDecorationRules{}
@@ -54,10 +54,11 @@ var (
 
 // RepositoryDecorationRules is a rule set for creating repositry labels
 type RepositoryDecorationRules struct {
-	MaxName      int
-	MaxPushables int
-	MaxPullables int
-	MaxBranch    int
+	MaxName        int
+	MaxPushables   int
+	MaxPullables   int
+	MaxBranch      int
+	MaxBranchDirty int
 }
 
 // this function handles the render and representation of the repository
@@ -67,38 +68,32 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	var prefix string
 	b := r.State.Branch
 	if b.Pushables != "?" {
-		prefix = prefix + pushable + ws + b.Pushables +
-			ws + pullable + ws + b.Pullables
+		prefix = prefix + pushable + ws + align(b.Pushables, renderRules.MaxPushables, false, false) +
+			ws + pullable + ws + align(b.Pullables, renderRules.MaxPullables, false, false)
 	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(b.Pushables) +
-			ws + pullable + ws + yellow.Sprint(b.Pullables) + ws + ws
+		prefix = prefix + pushable + ws + yellow.Sprint(align(b.Pushables, renderRules.MaxPushables, false, false)) +
+			ws + pullable + ws + yellow.Sprint(align(b.Pullables, renderRules.MaxPullables, false, false))
 	}
-	coloredBuffer := 28
-	prefix = addWhiteSpace(prefix, renderRules.MaxPushables+renderRules.MaxPullables+coloredBuffer, true, true) + yellow.Sprint("|")
+	prefix = prefix + ws + yellow.Sprint("|")
 	var repoName string
 	sr := gui.getSelectedRepository()
 	if sr == r {
-		coloredBuffer = 9
-		// prefix = prefix + selectionIndicator
-		// repoName =  + strings.Repeat(ws, 8)
-		repoName = addWhiteSpace(green.Sprint(r.Name), renderRules.MaxName+coloredBuffer, true, true) + ws + yellow.Sprint("|")
+		repoName = selectionIndicator + green.Sprint(align(r.Name, renderRules.MaxName, true, true))
 	} else {
-		// prefix = prefix + ws
-		repoName = addWhiteSpace(r.Name, renderRules.MaxName, true, true) + ws + yellow.Sprint("|")
+		repoName = align(r.Name, renderRules.MaxName+2, true, true)
 	}
-
+	repoName = repoName + ws + yellow.Sprint("|")
 	// some branch names can be really long, in that times I hope the first
 	// characters are important and meaningful
+	// calculate mean length, that would look cooler
 	// branch := adjustTextLength(b.Name, maxBranchLength)
-	// var branch string
+	branch := cyan.Sprint(b.Name)
 	if !b.Clean {
-		branch := addWhiteSpace(cyan.Sprint(b.Name)+ws+dirty, renderRules.MaxBranch+22, true, true)
-		prefix = prefix + ws + branch + ws + yellow.Sprint("|") + ws
+		branch = align(branch+ws+dirty, renderRules.MaxBranchDirty, true, true)
 	} else {
-		branch := addWhiteSpace(cyan.Sprint(b.Name), renderRules.MaxBranch+11, true, true)
-		prefix = prefix + ws + branch + ws + yellow.Sprint("|") + ws
+		branch = align(branch, renderRules.MaxBranch, true, true)
 	}
-
+	prefix = prefix + ws + branch + ws + yellow.Sprint("|") + ws
 	var suffix string
 	// rendering the satus according to repository's state
 	if r.WorkStatus() == git.Queued {
@@ -276,7 +271,7 @@ func decorateDiffStat(in string, sum bool) string {
 		if len(stat.FileName) <= 0 {
 			continue
 		}
-		d = d + cyan.Sprint(addWhiteSpace(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + addWhiteSpace(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
+		d = d + cyan.Sprint(align(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + align(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
 		sr := []rune(stat.Changes)
 		for _, r := range sr {
 			if r == '+' {
@@ -292,7 +287,7 @@ func decorateDiffStat(in string, sum bool) string {
 	return d
 }
 
-func addWhiteSpace(in string, max int, direction, trim bool) string {
+func align(in string, max int, direction, trim bool) string {
 	realmax := 50
 	il := len(in)
 	if max > realmax {
@@ -341,6 +336,7 @@ func (gui *Gui) renderRules() *RepositoryDecorationRules {
 			rules.MaxName = len(r.Name)
 		}
 	}
-
+	rules.MaxBranchDirty = rules.MaxBranch + len(cyan.Sprint("")) + len(dirty) + len(ws)
+	rules.MaxBranch = rules.MaxBranch + len(cyan.Sprint("")) + 2
 	return rules
 }
