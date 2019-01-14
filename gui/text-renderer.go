@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -43,6 +45,8 @@ var (
 
 	keySymbol = ws + yellow.Sprint("🔑") + ws
 
+	sep = ws + yellow.Sprint("|") + ws
+
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
@@ -65,52 +69,84 @@ type RepositoryDecorationRules struct {
 // TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	renderRules = gui.renderRules()
-	var prefix string
-	b := r.State.Branch
-	if b.Pushables != "?" {
-		prefix = prefix + pushable + ws + align(b.Pushables, renderRules.MaxPushables, false, false) +
-			ws + pullable + ws + align(b.Pullables, renderRules.MaxPullables, false, false)
-	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(align(b.Pushables, renderRules.MaxPushables, false, false)) +
-			ws + pullable + ws + yellow.Sprint(align(b.Pullables, renderRules.MaxPullables, false, false))
-	}
-	prefix = prefix + ws + yellow.Sprint("|")
+
+	gui.renderTableHeader(renderRules)
+
+	var line string
+
+	line = line + renderRevCount(r, renderRules) + sep
+	line = line + renderBranchName(r, renderRules) + sep
+	line = line + gui.renderRepoName(r, renderRules) + sep
+	line = line + gui.renderStatus(r)
+
+	return line
+}
+
+func (gui *Gui) renderRepoName(r *git.Repository, rule *RepositoryDecorationRules) string {
 	var repoName string
 	sr := gui.getSelectedRepository()
 	if sr == r {
-		repoName = selectionIndicator + green.Sprint(align(r.Name, renderRules.MaxName, true, true))
+		repoName = selectionIndicator + green.Sprint(align(r.Name, rule.MaxName, true, true))
 	} else {
-		repoName = align(r.Name, renderRules.MaxName+2, true, true)
+		repoName = align(r.Name, rule.MaxName+2, true, true)
 	}
-	repoName = repoName + ws + yellow.Sprint("|")
-	// some branch names can be really long, in that times I hope the first
-	// characters are important and meaningful
-	// calculate mean length, that would look cooler
-	// branch := adjustTextLength(b.Name, maxBranchLength)
+	return repoName
+}
+
+func renderBranchName(r *git.Repository, rule *RepositoryDecorationRules) string {
+	b := r.State.Branch
 	branch := cyan.Sprint(b.Name)
 	if !b.Clean {
-		branch = align(branch+ws+dirty, renderRules.MaxBranchDirty, true, true)
+		branch = align(branch+ws+dirty, rule.MaxBranchDirty, true, true)
 	} else {
-		branch = align(branch, renderRules.MaxBranch, true, true)
+		branch = align(branch, rule.MaxBranch, true, true)
 	}
-	prefix = prefix + ws + branch + ws + yellow.Sprint("|") + ws
-	var suffix string
-	// rendering the satus according to repository's state
+	return branch
+}
+
+func renderRevCount(r *git.Repository, rule *RepositoryDecorationRules) string {
+	var revCount string
+	b := r.State.Branch
+	if b.Pushables != "?" {
+		revCount = pushable + ws + align(b.Pushables, rule.MaxPushables, false, false) +
+			ws + pullable + ws + align(b.Pullables, rule.MaxPullables, false, false)
+	} else {
+		revCount = pushable + ws + yellow.Sprint(align(b.Pushables, rule.MaxPushables, false, false)) +
+			ws + pullable + ws + yellow.Sprint(align(b.Pullables, rule.MaxPullables, false, false))
+	}
+	return revCount
+}
+
+func (gui *Gui) renderStatus(r *git.Repository) string {
+	var status string
 	if r.WorkStatus() == git.Queued {
 		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
-			suffix = printQueued(r, j.JobType)
+			status = printQueued(r, j.JobType)
 		}
-		return prefix + repoName + ws + suffix
 	} else if r.WorkStatus() == git.Working {
-		return prefix + repoName + ws + green.Sprint(workingSymbol)
+		status = green.Sprint(workingSymbol) + ws + r.State.Message
 	} else if r.WorkStatus() == git.Success {
-		return prefix + repoName + ws + green.Sprint(successSymbol) + ws + r.State.Message
+		status = green.Sprint(successSymbol) + ws + r.State.Message
 	} else if r.WorkStatus() == git.Paused {
-		return prefix + repoName + ws + yellow.Sprint("authentication required (u)")
+		status = yellow.Sprint("! authentication required (u)")
 	} else if r.WorkStatus() == git.Fail {
-		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(r.State.Message)
+		status = red.Sprint(failSymbol) + ws + red.Sprint(r.State.Message)
 	}
-	return prefix + repoName
+	return status
+}
+
+func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
+	v, err := gui.g.View(mainViewFrameFeature.Name)
+	if err != nil {
+		log.Warn(err.Error())
+	}
+	v.Clear()
+	var header string
+	revlen := 2 + rule.MaxPullables + 2 + rule.MaxPushables + 1
+	header = ws + magenta.Sprint(align("revs", revlen, true, true)) + sep
+	header = header + align(magenta.Sprint("branch"), renderRules.MaxBranch, true, true) + sep
+	header = header + magenta.Sprint(align("name", renderRules.MaxName+2, true, true)) + sep
+	fmt.Fprintln(v, header)
 }
 
 func printQueued(r *git.Repository, jt job.JobType) string {

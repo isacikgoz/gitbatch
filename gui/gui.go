@@ -66,6 +66,7 @@ const (
 
 var (
 	mainViewFeature         = viewFeature{Name: "main", Title: " Matched Repositories "}
+	mainViewFrameFeature    = viewFeature{Name: "mainframe", Title: " Matched Repositories "}
 	loadingViewFeature      = viewFeature{Name: "loading", Title: " Loading in Progress "}
 	branchViewFeature       = viewFeature{Name: "branch", Title: " Branches "}
 	remoteViewFeature       = viewFeature{Name: "remotes", Title: " Remotes "}
@@ -161,23 +162,23 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 	gui.State.Repositories = rs
 	go func() {
 		if <-loaded {
-			v, err := gui.g.View(mainViewFeature.Name)
+			v, err := gui.g.View(mainViewFrameFeature.Name)
 			if err != nil {
 				log.Warn(err.Error())
 				return
 			}
-			v.Title = mainViewFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
+			v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
 		}
 	}()
 }
 
 func (gui *Gui) renderTitle() error {
-	v, err := gui.g.View(mainViewFeature.Name)
+	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
 		log.Warn(err.Error())
 		return err
 	}
-	v.Title = mainViewFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
+	v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
 	return nil
 }
 

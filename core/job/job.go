@@ -36,6 +36,7 @@ func (j *Job) start() error {
 	// TOOD: Better implementation required
 	switch mode := j.JobType; mode {
 	case FetchJob:
+		j.Repository.State.Message = "fetching.."
 		var opts *command.FetchOptions
 		if j.Options != nil {
 			opts = j.Options.(*command.FetchOptions)
@@ -50,6 +51,7 @@ func (j *Job) start() error {
 			return err
 		}
 	case PullJob:
+		j.Repository.State.Message = "pulling.."
 		var opts *command.PullOptions
 		if j.Repository.State.Branch.Upstream == nil {
 			j.Repository.SetWorkStatus(git.Fail)
@@ -69,6 +71,7 @@ func (j *Job) start() error {
 			return err
 		}
 	case MergeJob:
+		j.Repository.State.Message = "merging.."
 		if j.Repository.State.Branch.Upstream == nil {
 			j.Repository.SetWorkStatus(git.Fail)
 			j.Repository.State.Message = "upstream not set"

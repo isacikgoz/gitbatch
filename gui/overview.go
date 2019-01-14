@@ -15,7 +15,13 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 	// dx := int(0.55 * float32(maxX))
 	dx := -2
-	if v, err := g.SetView(mainViewFeature.Name, 0, 0, maxX-1, maxY-2); err != nil {
+	if v, err := g.SetView(mainViewFrameFeature.Name, 0, 0, maxX-1, maxY-2); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = mainViewFrameFeature.Title
+	}
+	if v, err := g.SetView(mainViewFeature.Name, 1, 1, maxX-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -24,6 +30,7 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
 			return err
 		}
+		v.Frame = false
 	}
 	if v, err := g.SetView(remoteViewFeature.Name, dx, 0, -1, int(0.15*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {

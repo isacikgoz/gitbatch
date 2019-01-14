@@ -67,6 +67,9 @@ func (gui *Gui) renderBranches(r *git.Repository) error {
 	}
 	v.Clear()
 	bs := r.Branches
+	if r.State.Branch == nil {
+		return nil
+	}
 	bc := r.State.Branch
 	si := 0
 	for i, b := range bs {
