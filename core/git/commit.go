@@ -91,13 +91,14 @@ func (b *Branch) initCommits(r *Repository) error {
 // to *its* configured upstream
 func (b *Branch) pullDiffsToUpstream(r *Repository) ([]*Commit, error) {
 	remoteCommits := make([]*Commit, 0)
-	upstream := r.State.Remote.Branch.Reference.Hash().String()
-
+	if r.State.Branch.Upstream == nil {
+		return remoteCommits, nil
+	}
 	head := b.Reference.Hash().String()
 
 	pullables, err := RevList(r, RevListOptions{
 		Ref1: head,
-		Ref2: upstream,
+		Ref2: b.Upstream.Reference.Hash().String(),
 	})
 	if err != nil {
 		// possibly found nothing or no upstream set
@@ -114,12 +115,13 @@ func (b *Branch) pullDiffsToUpstream(r *Repository) ([]*Commit, error) {
 // upstream of the specific branch
 func (b *Branch) pushDiffsToUpstream(r *Repository) ([]*Commit, error) {
 	notPushedCommits := make([]*Commit, 0)
-	upstream := r.State.Remote.Branch.Reference.Hash().String()
-
+	if r.State.Branch.Upstream == nil {
+		return notPushedCommits, nil
+	}
 	head := b.Reference.Hash().String()
 
 	pushables, err := RevList(r, RevListOptions{
-		Ref1: upstream,
+		Ref1: b.Upstream.Reference.Hash().String(),
 		Ref2: head,
 	})
 

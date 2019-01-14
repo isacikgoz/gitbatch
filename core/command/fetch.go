@@ -2,6 +2,7 @@ package command
 
 import (
 	"os"
+	"regexp"
 	"strings"
 
 	gerr "github.com/isacikgoz/gitbatch/core/errors"
@@ -64,7 +65,7 @@ func Fetch(r *git.Repository, options *FetchOptions) (err error) {
 		if r.State.Branch == nil {
 			refspec = "+refs/heads/*:refs/remotes/origin/*"
 		} else {
-			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Branch.Name
+			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Name + "/" + r.State.Branch.Name
 		}
 		err = fetchWithGoGit(r, options, refspec)
 		return err
@@ -95,6 +96,7 @@ func fetchWithGit(r *git.Repository, options *FetchOptions) (err error) {
 		return gerr.ParseGitError(out, err)
 	}
 	r.SetWorkStatus(git.Success)
+	r.State.Message = ""
 	// till this step everything should be ok
 	return r.Refresh()
 }
@@ -129,11 +131,12 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 	if options.Progress {
 		opt.Progress = os.Stdout
 	}
-
+	msg := "fetch complete, focus to see details"
 	if err := r.Repo.Fetch(opt); err != nil {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// Already up-to-date
 			log.Warn(err.Error())
+			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
 			// we dont have remote ref, so lets pull other things.. maybe it'd be useful
@@ -156,8 +159,40 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 			return fetchWithGit(r, options)
 		}
 	}
-
 	r.SetWorkStatus(git.Success)
+
+	ref, _ := r.Repo.Head()
+
+	uref := "origin/HEAD"
+	if r.State.Branch != nil && r.State.Branch.Upstream != nil {
+		uref = r.State.Branch.Upstream.Reference.Hash().String()[:7]
+	}
+
+	msg, err = getFetchMessage(r, ref.Hash().String()[:7], uref)
+	if err != nil {
+		msg = "couldn't get stat"
+	}
+	r.State.Message = msg
 	// till this step everything should be ok
 	return r.Refresh()
+}
+
+func getFetchMessage(r *git.Repository, ref1, ref2 string) (string, error) {
+	msg := ref1 + ".." + ref2 + " "
+	if ref1 == ref2 {
+		msg = msg + "already up-to-date"
+	} else {
+		out, err := DiffStatRefs(r, ref1, ref2)
+		if err != nil {
+			return "", err
+		}
+		re := regexp.MustCompile(`\r?\n`)
+		lines := re.Split(out, -1)
+		last := lines[len(lines)-1]
+		if len(last) > 0 {
+			changes := strings.Split(last, ",")
+			msg = msg + changes[0][1:]
+		}
+	}
+	return msg, nil
 }

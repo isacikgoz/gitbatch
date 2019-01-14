@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -43,74 +45,123 @@ var (
 
 	keySymbol = ws + yellow.Sprint("🔑") + ws
 
+	sep = ws + yellow.Sprint("|") + ws
+
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
-	selectionIndicator = ws + "→" + ws
+	selectionIndicator = "→" + ws
 	tab                = ws
+
+	renderRules = &RepositoryDecorationRules{}
 )
+
+// RepositoryDecorationRules is a rule set for creating repositry labels
+type RepositoryDecorationRules struct {
+	MaxName        int
+	MaxPushables   int
+	MaxPullables   int
+	MaxBranch      int
+	MaxBranchDirty int
+}
 
 // this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) repositoryLabel(r *git.Repository) string {
+	renderRules = gui.renderRules()
 
-	var prefix string
-	b := r.State.Branch
-	if b.Pushables != "?" {
-		prefix = prefix + pushable + ws + b.Pushables +
-			ws + pullable + ws + b.Pullables
-	} else {
-		prefix = prefix + pushable + ws + yellow.Sprint(b.Pushables) +
-			ws + pullable + ws + yellow.Sprint(b.Pullables)
-	}
+	gui.renderTableHeader(renderRules)
 
+	var line string
+
+	line = line + renderRevCount(r, renderRules) + sep
+	line = line + renderBranchName(r, renderRules) + sep
+	line = line + gui.renderRepoName(r, renderRules) + sep
+	line = line + gui.renderStatus(r)
+
+	return line
+}
+
+func (gui *Gui) renderRepoName(r *git.Repository, rule *RepositoryDecorationRules) string {
 	var repoName string
 	sr := gui.getSelectedRepository()
 	if sr == r {
-		prefix = prefix + selectionIndicator
-		repoName = green.Sprint(r.Name)
+		repoName = selectionIndicator + green.Sprint(align(r.Name, rule.MaxName, true, true))
 	} else {
-		prefix = prefix + ws
-		repoName = r.Name
+		repoName = align(r.Name, rule.MaxName+2, true, true)
 	}
-	// some branch names can be really long, in that times I hope the first
-	// characters are important and meaningful
-	branch := adjustTextLength(b.Name, maxBranchLength)
-	prefix = prefix + string(cyan.Sprint(branch))
+	return repoName
+}
 
+func renderBranchName(r *git.Repository, rule *RepositoryDecorationRules) string {
+	b := r.State.Branch
+	branch := cyan.Sprint(b.Name)
 	if !b.Clean {
-		prefix = prefix + ws + dirty + ws
+		branch = align(branch+ws+dirty, rule.MaxBranchDirty, true, true)
 	} else {
-		prefix = prefix + ws
+		branch = align(branch, rule.MaxBranch, true, true)
 	}
+	return branch
+}
 
-	var suffix string
-	// rendering the satus according to repository's state
+func renderRevCount(r *git.Repository, rule *RepositoryDecorationRules) string {
+	var revCount string
+	b := r.State.Branch
+	if b.Pushables != "?" {
+		revCount = pushable + ws + align(b.Pushables, rule.MaxPushables, false, false) +
+			ws + pullable + ws + align(b.Pullables, rule.MaxPullables, false, false)
+	} else {
+		revCount = pushable + ws + yellow.Sprint(align(b.Pushables, rule.MaxPushables, false, false)) +
+			ws + pullable + ws + yellow.Sprint(align(b.Pullables, rule.MaxPullables, false, false))
+	}
+	return revCount
+}
+
+func (gui *Gui) renderStatus(r *git.Repository) string {
+	var status string
 	if r.WorkStatus() == git.Queued {
 		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
-			switch mode := j.JobType; mode {
-			case job.FetchJob:
-				suffix = blue.Sprint(queuedSymbol)
-			case job.PullJob:
-				suffix = magenta.Sprint(queuedSymbol)
-			case job.MergeJob:
-				suffix = cyan.Sprint(queuedSymbol)
-			default:
-				suffix = green.Sprint(queuedSymbol)
-			}
+			status = printQueued(r, j.JobType)
 		}
-		return prefix + repoName + ws + suffix
 	} else if r.WorkStatus() == git.Working {
-		// TODO: maybe the type of the job can be written while its working?
-		return prefix + repoName + ws + green.Sprint(workingSymbol)
+		status = green.Sprint(workingSymbol) + ws + r.State.Message
 	} else if r.WorkStatus() == git.Success {
-		return prefix + repoName + ws + green.Sprint(successSymbol)
+		status = green.Sprint(successSymbol) + ws + r.State.Message
 	} else if r.WorkStatus() == git.Paused {
-		return prefix + repoName + ws + yellow.Sprint("authentication required (u)")
+		status = yellow.Sprint("! authentication required (u)")
 	} else if r.WorkStatus() == git.Fail {
-		return prefix + repoName + ws + red.Sprint(failSymbol) + ws + red.Sprint(r.State.Message)
+		status = red.Sprint(failSymbol) + ws + red.Sprint(r.State.Message)
 	}
-	return prefix + repoName
+	return status
+}
+
+func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
+	v, err := gui.g.View(mainViewFrameFeature.Name)
+	if err != nil {
+		log.Warn(err.Error())
+	}
+	v.Clear()
+	var header string
+	revlen := 2 + rule.MaxPullables + 2 + rule.MaxPushables + 1
+	header = ws + magenta.Sprint(align("revs", revlen, true, true)) + sep
+	header = header + align(magenta.Sprint("branch"), renderRules.MaxBranch, true, true) + sep
+	header = header + magenta.Sprint(align("name", renderRules.MaxName+2, true, true)) + sep
+	fmt.Fprintln(v, header)
+}
+
+func printQueued(r *git.Repository, jt job.JobType) string {
+	var info string
+	switch jt {
+	case job.FetchJob:
+		info = blue.Sprint(queuedSymbol) + ws + "(" + blue.Sprint("fetch") + ws + r.State.Remote.Name + ")"
+	case job.PullJob:
+		info = magenta.Sprint(queuedSymbol) + ws + "(" + magenta.Sprint("pull") + ws + r.State.Remote.Name + ")"
+	case job.MergeJob:
+		info = cyan.Sprint(queuedSymbol) + ws + "(" + cyan.Sprint("merge") + ws + r.State.Branch.Upstream.Name + ")"
+	default:
+		info = green.Sprint(queuedSymbol)
+	}
+	return info
 }
 
 func commitLabel(c *git.Commit, sel bool) string {
@@ -256,7 +307,7 @@ func decorateDiffStat(in string, sum bool) string {
 		if len(stat.FileName) <= 0 {
 			continue
 		}
-		d = d + cyan.Sprint(addWhiteSpace(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + addWhiteSpace(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
+		d = d + cyan.Sprint(align(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + align(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
 		sr := []rune(stat.Changes)
 		for _, r := range sr {
 			if r == '+' {
@@ -272,7 +323,7 @@ func decorateDiffStat(in string, sum bool) string {
 	return d
 }
 
-func addWhiteSpace(in string, max int, direction, trim bool) string {
+func align(in string, max int, direction, trim bool) string {
 	realmax := 50
 	il := len(in)
 	if max > realmax {
@@ -302,4 +353,26 @@ func decorateCommit(in string) string {
 	}
 	d = d[:len(d)]
 	return d
+}
+
+func (gui *Gui) renderRules() *RepositoryDecorationRules {
+	rules := &RepositoryDecorationRules{}
+
+	for _, r := range gui.State.Repositories {
+		if len(r.State.Branch.Pullables) > rules.MaxPullables {
+			rules.MaxPullables = len(r.State.Branch.Pullables)
+		}
+		if len(r.State.Branch.Pushables) > rules.MaxPushables {
+			rules.MaxPushables = len(r.State.Branch.Pushables)
+		}
+		if len(r.State.Branch.Name) > rules.MaxBranch {
+			rules.MaxBranch = len(r.State.Branch.Name)
+		}
+		if len(r.Name) > rules.MaxName {
+			rules.MaxName = len(r.Name)
+		}
+	}
+	rules.MaxBranchDirty = rules.MaxBranch + len(cyan.Sprint("")) + len(dirty) + len(ws)
+	rules.MaxBranch = rules.MaxBranch + len(cyan.Sprint("")) + 2
+	return rules
 }

@@ -54,7 +54,7 @@ func TestFetchWithGoGit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
-	refspec := "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Branch.Name
+	refspec := "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Branch.Name
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *FetchOptions

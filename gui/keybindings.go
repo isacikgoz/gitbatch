@@ -22,45 +22,21 @@ type KeyBinding struct {
 func (gui *Gui) generateKeybindings() error {
 	// Mainviews common keybindings
 	gui.KeyBindings = make([]*KeyBinding, 0)
-	for _, view := range mainViews {
-		mainKeybindings := []*KeyBinding{
+	for _, view := range focusViews {
+		focusKeybindings := []*KeyBinding{
 			{
 				View:        view.Name,
 				Key:         'q',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.quit,
+				Handler:     gui.focusBackToMain,
 				Display:     "q",
-				Description: "Quit",
+				Description: "Back to Overview",
 				Vital:       true,
-			}, {
-				View:        view.Name,
-				Key:         'f',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.switchToFetchMode,
-				Display:     "f",
-				Description: "Fetch mode",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'p',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.switchToPullMode,
-				Display:     "p",
-				Description: "Pull mode",
-				Vital:       false,
-			}, {
-				View:        view.Name,
-				Key:         'm',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.switchToMergeMode,
-				Display:     "m",
-				Description: "Merge mode",
-				Vital:       false,
 			}, {
 				View:        view.Name,
 				Key:         gocui.KeyTab,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
+				Handler:     gui.nextFocusView,
 				Display:     "tab",
 				Description: "Next Panel",
 				Vital:       false,
@@ -68,7 +44,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowRight,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
+				Handler:     gui.nextFocusView,
 				Display:     "→",
 				Description: "Next Panel",
 				Vital:       false,
@@ -76,7 +52,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'l',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextMainView,
+				Handler:     gui.nextFocusView,
 				Display:     "l",
 				Description: "Next Panel",
 				Vital:       false,
@@ -84,7 +60,7 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         gocui.KeyArrowLeft,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousMainView,
+				Handler:     gui.previousFocusView,
 				Display:     "←",
 				Description: "Prev Panel",
 				Vital:       false,
@@ -92,13 +68,13 @@ func (gui *Gui) generateKeybindings() error {
 				View:        view.Name,
 				Key:         'h',
 				Modifier:    gocui.ModNone,
-				Handler:     gui.previousMainView,
+				Handler:     gui.previousFocusView,
 				Display:     "h",
 				Description: "Prev Panel",
 				Vital:       false,
 			},
 		}
-		gui.KeyBindings = append(gui.KeyBindings, mainKeybindings...)
+		gui.KeyBindings = append(gui.KeyBindings, focusKeybindings...)
 	}
 	for _, view := range sideViews {
 		sideViewKeybindings := []*KeyBinding{
@@ -210,10 +186,42 @@ func (gui *Gui) generateKeybindings() error {
 		// Main view controls
 		{
 			View:        mainViewFeature.Name,
-			Key:         'r',
+			Key:         'q',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.quit,
+			Display:     "q",
+			Description: "Quit",
+			Vital:       true,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'f',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToFetchMode,
+			Display:     "f",
+			Description: "Fetch mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'p',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToPullMode,
+			Display:     "p",
+			Description: "Pull mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         'm',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToMergeMode,
+			Display:     "m",
+			Description: "Merge mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         gocui.KeyTab,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.focusToRepository,
-			Display:     "r",
+			Display:     "tab",
 			Description: "Focus",
 			Vital:       true,
 		}, {
@@ -330,6 +338,14 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openBranchesView,
+			Display:     "b",
+			Description: "branches",
+			Vital:       true,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         'n',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.sortByName,
@@ -353,12 +369,28 @@ func (gui *Gui) generateKeybindings() error {
 			Description: "Force application to quit",
 			Vital:       false,
 		}, {
+			View:        remoteViewFeature.Name,
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openRemoteBranchesView,
+			Display:     "b",
+			Description: "Remote Branches",
+			Vital:       true,
+		}, {
 			View:        remoteBranchViewFeature.Name,
 			Key:         's',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.syncRemoteBranch,
 			Display:     "s",
 			Description: "Synch with Remote",
+			Vital:       true,
+		}, {
+			View:        remoteBranchViewFeature.Name,
+			Key:         'q',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeRemoteBranchesView,
+			Display:     "q",
+			Description: "close/cancel",
 			Vital:       true,
 		}, {
 			View:        branchViewFeature.Name,
@@ -368,17 +400,17 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "u",
 			Description: "Set Upstream",
 			Vital:       true,
+		}, {
+			View:        branchViewFeature.Name,
+			Key:         'q',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeBranchesView,
+			Display:     "q",
+			Description: "close/cancel",
+			Vital:       true,
 		},
 		// CommitView
 		{
-			View:        commitViewFeature.Name,
-			Key:         'r',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.focusBackToMain,
-			Display:     "r",
-			Description: "Back to Overview",
-			Vital:       true,
-		}, {
 			View:        commitViewFeature.Name,
 			Key:         gocui.KeyArrowDown,
 			Modifier:    gocui.ModNone,

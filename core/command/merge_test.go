@@ -13,7 +13,7 @@ func TestMerge(t *testing.T) {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	opts := &MergeOptions{
-		BranchName: r.State.Remote.Branch.Name,
+		BranchName: r.State.Branch.Upstream.Name,
 	}
 	var tests = []struct {
 		inp1 *git.Repository

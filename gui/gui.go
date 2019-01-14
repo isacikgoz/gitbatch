@@ -66,6 +66,7 @@ const (
 
 var (
 	mainViewFeature         = viewFeature{Name: "main", Title: " Matched Repositories "}
+	mainViewFrameFeature    = viewFeature{Name: "mainframe", Title: " Matched Repositories "}
 	loadingViewFeature      = viewFeature{Name: "loading", Title: " Loading in Progress "}
 	branchViewFeature       = viewFeature{Name: "branch", Title: " Branches "}
 	remoteViewFeature       = viewFeature{Name: "remotes", Title: " Remotes "}
@@ -83,9 +84,9 @@ var (
 	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
 	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
 
-	modes     = []mode{fetchMode, pullMode, mergeMode}
-	mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
-	loaded    = make(chan bool)
+	modes = []mode{fetchMode, pullMode, mergeMode}
+	// mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
+	loaded = make(chan bool)
 )
 
 // NewGui creates a Gui opject and fill it's state related entites
@@ -135,7 +136,7 @@ func (gui *Gui) Run() error {
 		log.Error("Keybindings could not be set.")
 		return err
 	}
-	mainViews = overviewViews
+	// mainViews = overviewViews
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Error("Error in the main loop. " + err.Error())
 		return err
@@ -161,23 +162,23 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 	gui.State.Repositories = rs
 	go func() {
 		if <-loaded {
-			v, err := gui.g.View(mainViewFeature.Name)
+			v, err := gui.g.View(mainViewFrameFeature.Name)
 			if err != nil {
 				log.Warn(err.Error())
 				return
 			}
-			v.Title = mainViewFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
+			v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
 		}
 	}()
 }
 
 func (gui *Gui) renderTitle() error {
-	v, err := gui.g.View(mainViewFeature.Name)
+	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
 		log.Warn(err.Error())
 		return err
 	}
-	v.Title = mainViewFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
+	v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
 	return nil
 }
 
@@ -190,16 +191,6 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 		return gui.focusLayout(g)
 	}
 	return nil
-}
-
-// focus to next view
-func (gui *Gui) nextMainView(g *gocui.Gui, v *gocui.View) error {
-	return gui.nextViewOfGroup(g, v, mainViews)
-}
-
-// focus to previous view
-func (gui *Gui) previousMainView(g *gocui.Gui, v *gocui.View) error {
-	return gui.previousViewOfGroup(g, v, mainViews)
 }
 
 // quit from the gui and end its loop

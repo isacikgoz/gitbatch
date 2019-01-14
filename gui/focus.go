@@ -5,15 +5,17 @@ import (
 )
 
 var (
-	focusViews = []viewFeature{commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
+	focusViews = []viewFeature{commitViewFeature, dynamicViewFeature, remoteViewFeature, branchViewFeature, stashViewFeature}
 )
 
 // set the layout and create views with their default size, name etc. values
 // TODO: window sizes can be handled better
 func (gui *Gui) focusLayout(g *gocui.Gui) error {
+
+	g.SelFgColor = gocui.ColorGreen
 	maxX, maxY := g.Size()
-	dx := int(0.20 * float32(maxX))
-	rx := int(0.60 * float32(maxX))
+	dx := int(0.35 * float32(maxX))
+	rx := int(0.75 * float32(maxX))
 	if v, err := g.SetView(mainViewFeature.Name, -2*dx, 0, 0, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -21,7 +23,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Title = mainViewFeature.Title
 		v.Overwrite = true
 	}
-	if v, err := g.SetView(remoteViewFeature.Name, 0, 0, dx-1, int(0.15*float32(maxY))-1); err != nil {
+	if v, err := g.SetView(remoteViewFeature.Name, rx, 0, maxX-1, int(0.25*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -29,15 +31,16 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(remoteBranchViewFeature.Name, 0, int(0.15*float32(maxY)), dx-1, int(0.50*float32(maxY))-1); err != nil {
+	if v, err := g.SetView(remoteBranchViewFeature.Name, int(0.25*float32(maxX)), int(0.25*float32(maxY)), int(0.75*float32(maxX)), int(0.75*float32(maxY))); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Title = remoteBranchViewFeature.Title
 		v.Wrap = false
 		v.Overwrite = false
+		g.SetViewOnBottom(v.Name())
 	}
-	if v, err := g.SetView(branchViewFeature.Name, 0, int(0.50*float32(maxY)), dx-1, int(0.85*float32(maxY))-1); err != nil {
+	if v, err := g.SetView(branchViewFeature.Name, rx, int(0.25*float32(maxY)), maxX-1, int(0.75*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -45,7 +48,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(stashViewFeature.Name, 0, int(0.85*float32(maxY)), dx-1, maxY-2); err != nil {
+	if v, err := g.SetView(stashViewFeature.Name, rx, int(0.75*float32(maxY)), maxX-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -53,7 +56,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(commitViewFeature.Name, dx, 0, rx-1, maxY-2); err != nil {
+	if v, err := g.SetView(commitViewFeature.Name, 0, 0, dx-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -61,7 +64,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Autoscroll = false
 	}
-	if v, err := g.SetView(dynamicViewFeature.Name, rx, 0, maxX-1, maxY-2); err != nil {
+	if v, err := g.SetView(dynamicViewFeature.Name, dx, 0, rx-1, maxY-2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -82,11 +85,14 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 }
 
 func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
-	mainViews = focusViews
+	// mainViews = focusViews
 	r := gui.getSelectedRepository()
 	gui.order = focus
 
 	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
+		return err
+	}
+	if err := gui.sendOverviewViewsToBottom(g, v); err != nil {
 		return err
 	}
 
@@ -110,12 +116,42 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) focusBackToMain(g *gocui.Gui, v *gocui.View) error {
-	mainViews = overviewViews
+	// mainViews = overviewViews
 	gui.order = overview
 
 	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
 		return err
 	}
+	if err := gui.sendFocusViewsToBottom(g, v); err != nil {
+		return err
+	}
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	return nil
+}
+
+// focus to next view
+func (gui *Gui) nextFocusView(g *gocui.Gui, v *gocui.View) error {
+	return gui.nextViewOfGroup(g, v, focusViews)
+}
+
+// focus to previous view
+func (gui *Gui) previousFocusView(g *gocui.Gui, v *gocui.View) error {
+	return gui.previousViewOfGroup(g, v, focusViews)
+}
+
+func (gui *Gui) sendFocusViewsToBottom(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnBottom(branchViewFeature.Name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) sendOverviewViewsToBottom(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnTop(branchViewFeature.Name); err != nil {
+		return err
+	}
+	if _, err := g.SetViewOnTop(commitViewFeature.Name); err != nil {
+		return err
+	}
 	return nil
 }

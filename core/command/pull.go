@@ -69,10 +69,17 @@ func pullWithGit(r *git.Repository, options *PullOptions) (err error) {
 	if options.Force {
 		args = append(args, "-f")
 	}
+	ref, _ := r.Repo.Head()
 	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		return gerr.ParseGitError(out, err)
 	}
+	newref, _ := r.Repo.Head()
 	r.SetWorkStatus(git.Success)
+	msg, err := getMergeMessage(r, ref.Hash().String(), newref.Hash().String())
+	if err != nil {
+		msg = "couldn't get stat"
+	}
+	r.State.Message = msg
 	return r.Refresh()
 }
 
@@ -108,12 +115,14 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 	if err != nil {
 		return err
 	}
-
+	var msg string
+	ref, _ := r.Repo.Head()
 	if err = w.Pull(opt); err != nil {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// log.Error("error: " + err.Error())
 			// Already up-to-date
 			log.Warn(err.Error())
+			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if err == memory.ErrRefHasChanged && pullTryCount < pullMaxTry {
 			pullTryCount++
@@ -135,7 +144,13 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 			return pullWithGit(r, options)
 		}
 	}
+	newref, _ := r.Repo.Head()
 
+	msg, err = getMergeMessage(r, ref.Hash().String(), newref.Hash().String())
+	if err != nil {
+		msg = "couldn't get stat"
+	}
 	r.SetWorkStatus(git.Success)
+	r.State.Message = msg
 	return r.Refresh()
 }

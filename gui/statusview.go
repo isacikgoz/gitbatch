@@ -25,21 +25,21 @@ func (gui *Gui) initFocusStat(r *git.Repository) error {
 	ps, err := strconv.Atoi(r.State.Branch.Pushables)
 	pl, er2 := strconv.Atoi(r.State.Branch.Pullables)
 	// TODO: move to text-render
-	if err != nil || er2 != nil {
+	if err != nil || er2 != nil || r.State.Branch.Upstream == nil {
 		fmt.Fprintln(v, "Your branch is not tracking a remote branch.")
 	} else {
 		if ps == 0 && pl == 0 {
-			fmt.Fprintln(v, "Your branch is up to date with "+cyan.Sprint(r.State.Remote.Branch.Name))
+			fmt.Fprintln(v, "Your branch is up to date with "+cyan.Sprint(r.State.Branch.Upstream.Name))
 		} else {
 			if ps > 0 && pl > 0 {
-				fmt.Fprintln(v, "Your branch and "+cyan.Sprint(r.State.Remote.Branch.Name)+" have diverged,")
+				fmt.Fprintln(v, "Your branch and "+cyan.Sprint(r.State.Branch.Upstream.Name)+" have diverged,")
 				fmt.Fprintln(v, "and have "+yellow.Sprint(r.State.Branch.Pushables)+" and "+yellow.Sprint(r.State.Branch.Pullables)+" different commits each, respectively.")
 				fmt.Fprintln(v, "(\"pull\" to merge the remote branch into yours)")
 			} else if pl > 0 && ps == 0 {
-				fmt.Fprintln(v, "Your branch is behind "+cyan.Sprint(r.State.Remote.Branch.Name)+" by "+yellow.Sprint(r.State.Branch.Pullables)+" commit(s).")
+				fmt.Fprintln(v, "Your branch is behind "+cyan.Sprint(r.State.Branch.Upstream.Name)+" by "+yellow.Sprint(r.State.Branch.Pullables)+" commit(s).")
 				fmt.Fprintln(v, "(\"pull\" to update your local branch)")
 			} else if ps > 0 && pl == 0 {
-				fmt.Fprintln(v, "Your branch is ahead of "+cyan.Sprint(r.State.Remote.Branch.Name)+" by "+yellow.Sprint(r.State.Branch.Pushables)+" commit(s).")
+				fmt.Fprintln(v, "Your branch is ahead of "+cyan.Sprint(r.State.Branch.Upstream.Name)+" by "+yellow.Sprint(r.State.Branch.Pushables)+" commit(s).")
 				fmt.Fprintln(v, "(\"push\" to publish your local commits)")
 			}
 		}
@@ -186,7 +186,13 @@ func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
 		if strings.Contains(line, f.Name) {
 			out, err := command.DiffFile(f)
 			if err != nil {
-				return err
+				v.Clear()
+				v.Title = string(FileDiffMode)
+				if err := gui.updateDynamicKeybindings(); err != nil {
+					return err
+				}
+				fmt.Fprintln(v, "Can't get diff")
+				return nil
 			}
 			v.Clear()
 			v.Title = string(FileDiffMode)
