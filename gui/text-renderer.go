@@ -48,12 +48,22 @@ var (
 
 	selectionIndicator = ws + "→" + ws
 	tab                = ws
+
+	renderRules = &RepositoryDecorationRules{}
 )
+
+// RepositoryDecorationRules is a rule set for creating repositry labels
+type RepositoryDecorationRules struct {
+	MaxName      int
+	MaxPushables int
+	MaxPullables int
+	MaxBranch    int
+}
 
 // this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) repositoryLabel(r *git.Repository) string {
-
+	renderRules = gui.renderRules()
 	var prefix string
 	b := r.State.Branch
 	if b.Pushables != "?" {
@@ -61,27 +71,32 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 			ws + pullable + ws + b.Pullables
 	} else {
 		prefix = prefix + pushable + ws + yellow.Sprint(b.Pushables) +
-			ws + pullable + ws + yellow.Sprint(b.Pullables)
+			ws + pullable + ws + yellow.Sprint(b.Pullables) + ws + ws
 	}
-
+	coloredBuffer := 28
+	prefix = addWhiteSpace(prefix, renderRules.MaxPushables+renderRules.MaxPullables+coloredBuffer, true, true) + yellow.Sprint("|")
 	var repoName string
 	sr := gui.getSelectedRepository()
 	if sr == r {
-		prefix = prefix + selectionIndicator
-		repoName = green.Sprint(r.Name)
+		coloredBuffer = 9
+		// prefix = prefix + selectionIndicator
+		// repoName =  + strings.Repeat(ws, 8)
+		repoName = addWhiteSpace(green.Sprint(r.Name), renderRules.MaxName+coloredBuffer, true, true) + ws + yellow.Sprint("|")
 	} else {
-		prefix = prefix + ws
-		repoName = r.Name
+		// prefix = prefix + ws
+		repoName = addWhiteSpace(r.Name, renderRules.MaxName, true, true) + ws + yellow.Sprint("|")
 	}
+
 	// some branch names can be really long, in that times I hope the first
 	// characters are important and meaningful
-	branch := adjustTextLength(b.Name, maxBranchLength)
-	prefix = prefix + string(cyan.Sprint(branch))
-
+	// branch := adjustTextLength(b.Name, maxBranchLength)
+	// var branch string
 	if !b.Clean {
-		prefix = prefix + ws + dirty + ws
+		branch := addWhiteSpace(cyan.Sprint(b.Name)+ws+dirty, renderRules.MaxBranch+22, true, true)
+		prefix = prefix + ws + branch + ws + yellow.Sprint("|") + ws
 	} else {
-		prefix = prefix + ws
+		branch := addWhiteSpace(cyan.Sprint(b.Name), renderRules.MaxBranch+11, true, true)
+		prefix = prefix + ws + branch + ws + yellow.Sprint("|") + ws
 	}
 
 	var suffix string
@@ -307,4 +322,25 @@ func decorateCommit(in string) string {
 	}
 	d = d[:len(d)]
 	return d
+}
+
+func (gui *Gui) renderRules() *RepositoryDecorationRules {
+	rules := &RepositoryDecorationRules{}
+
+	for _, r := range gui.State.Repositories {
+		if len(r.State.Branch.Pullables) > rules.MaxPullables {
+			rules.MaxPullables = len(r.State.Branch.Pullables)
+		}
+		if len(r.State.Branch.Pushables) > rules.MaxPushables {
+			rules.MaxPushables = len(r.State.Branch.Pushables)
+		}
+		if len(r.State.Branch.Name) > rules.MaxBranch {
+			rules.MaxBranch = len(r.State.Branch.Name)
+		}
+		if len(r.Name) > rules.MaxName {
+			rules.MaxName = len(r.Name)
+		}
+	}
+
+	return rules
 }
