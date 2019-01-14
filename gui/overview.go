@@ -41,13 +41,14 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Wrap = false
 		v.Overwrite = false
 	}
-	if v, err := g.SetView(branchViewFeature.Name, dx, int(0.55*float32(maxY)), -1, maxY-2); err != nil {
+	if v, err := g.SetView(branchViewFeature.Name, int(0.25*float32(maxX)), int(0.25*float32(maxY)), int(0.75*float32(maxX)), int(0.75*float32(maxY))); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
 		v.Title = branchViewFeature.Title
 		v.Wrap = false
 		v.Autoscroll = false
+		g.SetViewOnBottom(v.Name())
 	}
 	if v, err := g.SetView(stashViewFeature.Name, -1*int(0.20*float32(maxX)), 0, -1, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -83,4 +84,20 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	}
 	return nil
+}
+
+// close confirmation view
+func (gui *Gui) openBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnTop(branchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(branchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) closeBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnBottom(branchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(mainViewFeature.Name)
 }

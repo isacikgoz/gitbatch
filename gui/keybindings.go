@@ -338,6 +338,14 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
+			Key:         'b',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openBranchesView,
+			Display:     "b",
+			Description: "branches",
+			Vital:       true,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         'n',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.sortByName,
@@ -391,6 +399,14 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.setUpstreamToBranch,
 			Display:     "u",
 			Description: "Set Upstream",
+			Vital:       true,
+		}, {
+			View:        branchViewFeature.Name,
+			Key:         'q',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeBranchesView,
+			Display:     "q",
+			Description: "close/cancel",
 			Vital:       true,
 		},
 		// CommitView

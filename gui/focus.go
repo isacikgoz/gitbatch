@@ -92,6 +92,9 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
 		return err
 	}
+	if err := gui.sendOverviewViewsToBottom(g, v); err != nil {
+		return err
+	}
 
 	r.State.Branch.InitializeCommits(r)
 
@@ -119,6 +122,9 @@ func (gui *Gui) focusBackToMain(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
 		return err
 	}
+	if err := gui.sendFocusViewsToBottom(g, v); err != nil {
+		return err
+	}
 	gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }
@@ -131,4 +137,21 @@ func (gui *Gui) nextFocusView(g *gocui.Gui, v *gocui.View) error {
 // focus to previous view
 func (gui *Gui) previousFocusView(g *gocui.Gui, v *gocui.View) error {
 	return gui.previousViewOfGroup(g, v, focusViews)
+}
+
+func (gui *Gui) sendFocusViewsToBottom(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnBottom(branchViewFeature.Name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) sendOverviewViewsToBottom(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnTop(branchViewFeature.Name); err != nil {
+		return err
+	}
+	if _, err := g.SetViewOnTop(commitViewFeature.Name); err != nil {
+		return err
+	}
+	return nil
 }
