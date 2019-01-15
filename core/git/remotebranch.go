@@ -1,7 +1,6 @@
 package git
 
 import (
-	"errors"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -14,29 +13,6 @@ import (
 type RemoteBranch struct {
 	Name      string
 	Reference *plumbing.Reference
-}
-
-// NextRemoteBranch iterates to the next remote branch
-func (rm *Remote) NextRemoteBranch(r *Repository) error {
-	rm.Branch = rm.Branches[(rm.currentRemoteBranchIndex()+1)%len(rm.Branches)]
-	return r.Publish(RepositoryUpdated, nil)
-}
-
-// PreviousRemoteBranch iterates to the previous remote branch
-func (rm *Remote) PreviousRemoteBranch(r *Repository) error {
-	rm.Branch = rm.Branches[(len(rm.Branches)+rm.currentRemoteBranchIndex()-1)%len(rm.Branches)]
-	return r.Publish(RepositoryUpdated, nil)
-}
-
-// returns the active remote branch index
-func (rm *Remote) currentRemoteBranchIndex() int {
-	cix := 0
-	for i, rb := range rm.Branches {
-		if rb.Reference.Hash() == rm.Branch.Reference.Hash() {
-			cix = i
-		}
-	}
-	return cix
 }
 
 // search for the remote branches of the remote. It takes the go-git's repo
@@ -76,15 +52,4 @@ func remoteBranchesIter(s storer.ReferenceStorer) (storer.ReferenceIter, error) 
 		}
 		return false
 	}, refs), nil
-}
-
-// switches to the given remote branch
-func (rm *Remote) switchRemoteBranch(remoteBranchName string) error {
-	for _, rb := range rm.Branches {
-		if rb.Name == remoteBranchName {
-			rm.Branch = rb
-			return nil
-		}
-	}
-	return errors.New("Remote branch not found")
 }

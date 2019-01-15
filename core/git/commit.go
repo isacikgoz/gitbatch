@@ -1,8 +1,8 @@
 package git
 
 import (
-	"os/exec"
 	"regexp"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
@@ -14,10 +14,19 @@ import (
 // combined) commit date and commit type wheter it is local commit or a remote
 type Commit struct {
 	Hash       string
-	Author     string
+	Author     *Contributor
+	Commiter   *Contributor
 	Message    string
 	Time       string
 	CommitType CommitType
+	C          *object.Commit
+}
+
+// Contributor is the person
+type Contributor struct {
+	Name  string
+	Email string
+	When  time.Time
 }
 
 // CommitType is the Type of the commit; it can be local or remote (upstream diff)
@@ -32,40 +41,14 @@ const (
 	RemoteCommit CommitType = "remote"
 )
 
-// NextCommit iterates over next commit of a branch
-// TODO: the commits entites can tied to branch instead ot the repository
-func (r *Repository) NextCommit() {
-	r.State.Commit = r.Commits[(r.currentCommitIndex()+1)%len(r.Commits)]
-}
-
-// PreviousCommit iterates to opposite direction
-func (r *Repository) PreviousCommit() {
-	r.State.Commit = r.Commits[(len(r.Commits)+r.currentCommitIndex()-1)%len(r.Commits)]
-}
-
-// returns the active commit index
-func (r *Repository) currentCommitIndex() int {
-	cix := 0
-	for i, c := range r.Commits {
-		if c.Hash == r.State.Commit.Hash {
-			cix = i
-		}
-	}
-	return cix
-}
-
 // loads the local commits by simply using git log way. ALso, gets the upstream
 // diff commits
-func (r *Repository) loadCommits() error {
-	rp := r.Repo
-	r.Commits = make([]*Commit, 0)
-	ref, err := rp.Head()
-	if err != nil {
-		log.Trace("Cannot get HEAD " + err.Error())
-		return err
-	}
+func (b *Branch) initCommits(r *Repository) error {
+	b.Commits = make([]*Commit, 0)
+	ref := b.Reference
+
 	// git log first
-	cIter, err := rp.Log(&git.LogOptions{
+	cIter, err := r.Repo.Log(&git.LogOptions{
 		From:  ref.Hash(),
 		Order: git.LogOrderCommitterTime,
 	})
@@ -75,57 +58,53 @@ func (r *Repository) loadCommits() error {
 	}
 	defer cIter.Close()
 	// find commits that fetched from upstream but not merged commits
-	rmcs, _ := r.pullDiffsToUpstream()
-	r.Commits = append(r.Commits, rmcs...)
+	rmcs, _ := b.pullDiffsToUpstream(r)
+	b.Commits = append(b.Commits, rmcs...)
 
 	// find commits that not pushed to upstream
-	lcs, _ := r.pushDiffsToUpstream()
+	lcs, _ := b.pushDiffsToUpstream(r)
 
 	// ... just iterates over the commits
 	err = cIter.ForEach(func(c *object.Commit) error {
-		re := regexp.MustCompile(`\r?\n`)
+
 		cmType := EvenCommit
 		for _, lc := range lcs {
-			if lc == re.ReplaceAllString(c.Hash.String(), " ") {
+			if lc.Hash == c.Hash.String() {
 				cmType = LocalCommit
 			}
 		}
-		commit := &Commit{
-			Hash:       re.ReplaceAllString(c.Hash.String(), " "),
-			Author:     c.Author.Email,
-			Message:    re.ReplaceAllString(c.Message, " "),
-			Time:       c.Author.When.String(),
-			CommitType: cmType,
-		}
-		r.Commits = append(r.Commits, commit)
+
+		commit := commit(c, cmType)
+		b.Commits = append(b.Commits, commit)
 		return nil
 	})
-	return err
+	if err != nil {
+		return err
+	}
+	if b.State.Commit == nil {
+		b.State.Commit = b.Commits[0]
+	}
+	return nil
 }
 
 // this function creates the commit entities according to active branchs diffs
 // to *its* configured upstream
-func (r *Repository) pullDiffsToUpstream() ([]*Commit, error) {
+func (b *Branch) pullDiffsToUpstream(r *Repository) ([]*Commit, error) {
 	remoteCommits := make([]*Commit, 0)
+	if r.State.Branch.Upstream == nil {
+		return remoteCommits, nil
+	}
+	head := b.Reference.Hash().String()
+
 	pullables, err := RevList(r, RevListOptions{
-		Ref1: "HEAD",
-		Ref2: "@{u}",
+		Ref1: head,
+		Ref2: b.Upstream.Reference.Hash().String(),
 	})
 	if err != nil {
 		// possibly found nothing or no upstream set
 	} else {
-		re := regexp.MustCompile(`\r?\n`)
-		for _, s := range pullables {
-			if len(s) < hashLength {
-				continue
-			}
-			commit := &Commit{
-				Hash:       s,
-				Author:     gitShowEmail(r.AbsPath, s),
-				Message:    re.ReplaceAllString(gitShowBody(r.AbsPath, s), " "),
-				Time:       gitShowDate(r.AbsPath, s),
-				CommitType: RemoteCommit,
-			}
+		for _, c := range pullables {
+			commit := commit(c, RemoteCommit)
 			remoteCommits = append(remoteCommits, commit)
 		}
 	}
@@ -134,49 +113,80 @@ func (r *Repository) pullDiffsToUpstream() ([]*Commit, error) {
 
 // this function returns the hashes of the commits that are not pushed to the
 // upstream of the specific branch
-func (r *Repository) pushDiffsToUpstream() ([]string, error) {
+func (b *Branch) pushDiffsToUpstream(r *Repository) ([]*Commit, error) {
+	notPushedCommits := make([]*Commit, 0)
+	if r.State.Branch.Upstream == nil {
+		return notPushedCommits, nil
+	}
+	head := b.Reference.Hash().String()
+
 	pushables, err := RevList(r, RevListOptions{
-		Ref1: "@{u}",
-		Ref2: "HEAD",
+		Ref1: b.Upstream.Reference.Hash().String(),
+		Ref2: head,
 	})
+
 	if err != nil {
-		return make([]string, 0), nil
+		// possibly found nothing or no upstream set
+	} else {
+		for _, c := range pushables {
+			commit := commit(c, LocalCommit)
+			notPushedCommits = append(notPushedCommits, commit)
+		}
 	}
-	return pushables, nil
+	return notPushedCommits, nil
 }
 
-// gitShowEmail gets author's e-mail with git show command
-func gitShowEmail(repoPath, hash string) string {
-	args := []string{"show", "--quiet", "--pretty=format:%ae", hash}
-	cmd := exec.Command("git", args...)
-	cmd.Dir = repoPath
-	out, err := cmd.CombinedOutput()
+func commit(c *object.Commit, t CommitType) *Commit {
+	commit := &Commit{
+		Hash: c.Hash.String(),
+		Author: &Contributor{
+			Name:  c.Author.Name,
+			Email: c.Author.Email,
+			When:  c.Author.When,
+		},
+		Commiter: &Contributor{
+			Name:  c.Committer.Name,
+			Email: c.Committer.Email,
+			When:  c.Committer.When,
+		},
+		Message:    c.Message,
+		CommitType: t,
+		C:          c,
+	}
+	return commit
+}
+
+// DiffStat Show diff stat
+func (c *Commit) DiffStat(done chan bool) string {
+
+	var str string
+	defer recoverDiff(str)
+	if c.C == nil {
+		return ""
+	}
+	d, err := c.C.Stats()
 	if err != nil {
 		return ""
 	}
-	return string(out)
+	str = d.String()
+	done <- true
+	return str
 }
 
-// gitShowBody gets body of the commit with git show
-func gitShowBody(repoPath, hash string) string {
-	args := []string{"show", "--quiet", "--pretty=format:%B", hash}
-	cmd := exec.Command("git", args...)
-	cmd.Dir = repoPath
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return ""
+func (c *Commit) String() string {
+	d := "Hash:" + " " + c.Hash
+	d = d + "\n" + "Author:" + " " + c.Author.Name + " <" + c.Author.Email + ">"
+	d = d + "\n" + "Date:" + " " + c.Author.When.String() + "\n"
+	re := regexp.MustCompile(`\r?\n`)
+	s := re.Split(c.Message, -1)
+	for _, l := range s {
+		d = d + "\n" + " " + l
 	}
-	return string(out)
+	return d
 }
 
-// gitShowDate gets commit's date with git show as string
-func gitShowDate(repoPath, hash string) string {
-	args := []string{"show", "--quiet", "--pretty=format:%ai", hash}
-	cmd := exec.Command("git", args...)
-	cmd.Dir = repoPath
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return ""
+func recoverDiff(str string) {
+	if r := recover(); r != nil {
+		str = "diffstat overloaded"
 	}
-	return string(out)
 }

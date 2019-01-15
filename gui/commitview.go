@@ -26,7 +26,7 @@ var (
 // open the commit message views
 func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	maxX, maxY := g.Size()
-	commitMesageReturnView = v.Name()
+	// commitMesageReturnView = v.Name()
 	vFrame, err := g.SetView(commitFrameViewFeature.Name, maxX/2-30, maxY/2-4, maxX/2+30, maxY/2+3)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
@@ -74,12 +74,13 @@ func (gui *Gui) openCommitUserNameView(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		name, err := command.Config(r, command.ConfigOptions{
+		name, err := command.Config(r, &command.ConfigOptions{
 			Section: "user",
 			Option:  "name",
 		})
 		if err != nil {
-			return err
+			// possibly could not get the user name
+			name = ""
 		}
 		fmt.Fprintln(v, name)
 		v.Editable = true
@@ -107,12 +108,13 @@ func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		email, err := command.Config(r, command.ConfigOptions{
+		email, err := command.Config(r, &command.ConfigOptions{
 			Section: "user",
 			Option:  "email",
 		})
 		if err != nil {
-			return err
+			// possibly could not get the user email
+			email = ""
 		}
 		fmt.Fprintln(v, email)
 		v.Editable = true
@@ -151,7 +153,7 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 		return errors.New("User email needs to be provided")
 	}
 
-	err = command.CommitCommand(r, command.CommitOptions{
+	err = command.Commit(r, &command.CommitOptions{
 		CommitMsg: msg,
 		User:      name,
 		Email:     email,
@@ -170,7 +172,7 @@ func (gui *Gui) nextCommitView(g *gocui.Gui, v *gocui.View) error {
 
 // close the opened commite mesage view
 func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
-	r := gui.getSelectedRepository()
+	// r := gui.getSelectedRepository()
 	g.Cursor = false
 	for _, view := range commitViews {
 		if err := g.DeleteView(view.Name); err != nil {
@@ -182,8 +184,8 @@ func (gui *Gui) closeCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	if err := refreshAllStatusView(g, r, true); err != nil {
+	if err := gui.focusToRepository(g, v); err != nil {
 		return err
 	}
-	return gui.closeViewCleanup(commitMesageReturnView)
+	return nil
 }

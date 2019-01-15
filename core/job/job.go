@@ -36,11 +36,12 @@ func (j *Job) start() error {
 	// TOOD: Better implementation required
 	switch mode := j.JobType; mode {
 	case FetchJob:
-		var opts command.FetchOptions
+		j.Repository.State.Message = "fetching.."
+		var opts *command.FetchOptions
 		if j.Options != nil {
-			opts = j.Options.(command.FetchOptions)
+			opts = j.Options.(*command.FetchOptions)
 		} else {
-			opts = command.FetchOptions{
+			opts = &command.FetchOptions{
 				RemoteName: j.Repository.State.Remote.Name,
 			}
 		}
@@ -50,11 +51,17 @@ func (j *Job) start() error {
 			return err
 		}
 	case PullJob:
-		var opts command.PullOptions
+		j.Repository.State.Message = "pulling.."
+		var opts *command.PullOptions
+		if j.Repository.State.Branch.Upstream == nil {
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = "upstream not set"
+			return nil
+		}
 		if j.Options != nil {
-			opts = j.Options.(command.PullOptions)
+			opts = j.Options.(*command.PullOptions)
 		} else {
-			opts = command.PullOptions{
+			opts = &command.PullOptions{
 				RemoteName: j.Repository.State.Remote.Name,
 			}
 		}
@@ -64,12 +71,18 @@ func (j *Job) start() error {
 			return err
 		}
 	case MergeJob:
-		if err := command.Merge(j.Repository, command.MergeOptions{
-			BranchName: j.Repository.State.Remote.Branch.Name,
+		j.Repository.State.Message = "merging.."
+		if j.Repository.State.Branch.Upstream == nil {
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = "upstream not set"
+			return nil
+		}
+		if err := command.Merge(j.Repository, &command.MergeOptions{
+			BranchName: j.Repository.State.Branch.Upstream.Name,
 		}); err != nil {
 			j.Repository.SetWorkStatus(git.Fail)
 			j.Repository.State.Message = err.Error()
-			return nil
+			return err
 		}
 	default:
 		j.Repository.SetWorkStatus(git.Available)

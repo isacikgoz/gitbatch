@@ -10,176 +10,189 @@ import (
 
 var (
 	confirmationViewFeature = viewFeature{Name: "confirmation", Title: " Confirmation "}
-	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, commitViewFeature}
+	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
 )
 
-// refreshes the side views of the application for given repository.Repository struct
-func (gui *Gui) renderSideViews(r *git.Repository) error {
-	if r == nil {
-		return nil
-	}
+// moves the cursor downwards for the main view and if it goes to bottom it
+// prevents from going further
+func (gui *Gui) sideCursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		_, cy := v.Cursor()
+		_, oy := v.Origin()
+		ly := len(v.BufferLines()) - 1
 
-	if err := gui.renderRemotes(r); err != nil {
+		// if we are at the end we just return
+		if cy+oy == ly-1 {
+			return nil
+		}
+		v.EditDelete(true)
+		adjustAnchor(cy+oy+1, ly, v)
+	}
+	return nil
+}
+
+// moves the cursor upwards for the main view
+func (gui *Gui) sideCursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		_, oy := v.Origin()
+		_, cy := v.Cursor()
+		ly := len(v.BufferLines()) - 1
+		v.EditDelete(true)
+		adjustAnchor(cy+oy-1, ly, v)
+	}
+	return nil
+}
+
+func (gui *Gui) renderSideViews(r *git.Repository) error {
+	if err := gui.resetSideCursors(); err != nil {
 		return err
 	}
-	if err := gui.renderBranch(r); err != nil {
+	if err := gui.renderBranches(r); err != nil {
 		return err
 	}
 	if err := gui.renderRemoteBranches(r); err != nil {
 		return err
 	}
-	if err := gui.renderCommits(r); err != nil {
+	if err := gui.renderRemotes(r); err != nil {
 		return err
 	}
+	return nil
+}
+
+// updates the branchesview for given entity
+func (gui *Gui) renderBranches(r *git.Repository) error {
+	v, err := gui.g.View(branchViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	bs := r.Branches
+	if r.State.Branch == nil {
+		return nil
+	}
+	bc := r.State.Branch
+	si := 0
+	for i, b := range bs {
+		if b.Name == bc.Name {
+			si = i
+			fmt.Fprintln(v, ws+green.Sprint(b.Name))
+			continue
+		}
+		fmt.Fprintln(v, tab+b.Name)
+	}
+	adjustAnchor(si, len(bs), v)
+	return nil
+}
+
+// updates the remotebranchesview for given entity
+func (gui *Gui) renderRemotes(r *git.Repository) error {
+	v, err := gui.g.View(remoteViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	v.Clear()
+	rs := r.Remotes
+	rc := r.State.Remote
+	si := 0
+	for i, rb := range rs {
+		_, shortURL := trimRemoteURL(rb.URL[0])
+		if rb.Name == rc.Name {
+			si = i
+			fmt.Fprintln(v, ws+green.Sprint(rb.Name+": "+shortURL))
+			continue
+		}
+		fmt.Fprintln(v, tab+rb.Name+": "+shortURL)
+	}
+	adjustAnchor(si, len(rs), v)
 	return nil
 }
 
 // updates the remotesview for given entity
-func (gui *Gui) renderRemotes(r *git.Repository) error {
-	var err error
-	out, err := gui.g.View(remoteViewFeature.Name)
-	if err != nil {
-		return err
-	}
-	out.Clear()
-	currentindex := 0
-	totalRemotes := len(r.Remotes)
-	if totalRemotes > 0 {
-		for i, rm := range r.Remotes {
-			_, shortURL := trimRemoteURL(rm.URL[0])
-			if rm.Name == r.State.Remote.Name {
-				currentindex = i
-				fmt.Fprintln(out, selectionIndicator+rm.Name+": "+shortURL)
-				continue
-			}
-			fmt.Fprintln(out, tab+rm.Name+": "+shortURL)
-		}
-		if err = gui.smartAnchorRelativeToLine(out, currentindex, totalRemotes); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// updates the remotebranchview for given entity
 func (gui *Gui) renderRemoteBranches(r *git.Repository) error {
-	var err error
-	out, err := gui.g.View(remoteBranchViewFeature.Name)
+	v, err := gui.g.View(remoteBranchViewFeature.Name)
 	if err != nil {
 		return err
 	}
-	out.Clear()
-	currentindex := 0
-	trb := len(r.State.Remote.Branches)
-	if trb > 0 {
-		for i, rm := range r.State.Remote.Branches {
-			if rm.Name == r.State.Remote.Branch.Name {
-				currentindex = i
-				fmt.Fprintln(out, selectionIndicator+rm.Name)
-				continue
-			}
-			fmt.Fprintln(out, tab+rm.Name)
-		}
-		if err = gui.smartAnchorRelativeToLine(out, currentindex, trb); err != nil {
-			return err
-		}
+	v.Clear()
+	rs := r.State.Remote.Branches
+	// rc := r.State.Remote.Branch
+	si := 0
+	for _, rb := range rs {
+		// if rb.Name == rc.Name {
+		// 	si = i
+		// 	fmt.Fprintln(v, ws+green.Sprint(rb.Name))
+		// 	continue
+		// }
+		fmt.Fprintln(v, tab+rb.Name)
 	}
+	adjustAnchor(si, len(rs), v)
 	return nil
 }
 
-// updates the branchview for given entity
-func (gui *Gui) renderBranch(r *git.Repository) error {
-	var err error
-	out, err := gui.g.View(branchViewFeature.Name)
-	if err != nil {
-		return err
-	}
-	out.Clear()
-	currentindex := 0
-	totalbranches := len(r.Branches)
-	for i, b := range r.Branches {
-		if b.Name == r.State.Branch.Name {
-			currentindex = i
-			fmt.Fprintln(out, selectionIndicator+b.Name)
-			continue
-		}
-		fmt.Fprintln(out, tab+b.Name)
-	}
-
-	return gui.smartAnchorRelativeToLine(out, currentindex, totalbranches)
-}
-
-// updates the commitsview for given entity
-func (gui *Gui) renderCommits(r *git.Repository) error {
-	var err error
-	out, err := gui.g.View(commitViewFeature.Name)
-	if err != nil {
-		return err
-	}
-	out.Clear()
-	currentindex := 0
-	totalcommits := len(r.Commits)
-	for i, c := range r.Commits {
-		if c.Hash == r.State.Commit.Hash {
-			currentindex = i
-			fmt.Fprintln(out, selectionIndicator+commitLabel(c))
-			continue
-		}
-		fmt.Fprintln(out, tab+commitLabel(c))
-	}
-	return gui.smartAnchorRelativeToLine(out, currentindex, totalcommits)
-}
-
-// cursor down variant for sideviews
-func (gui *Gui) sideViewsNextItem(g *gocui.Gui, v *gocui.View) error {
-	var err error
+func (gui *Gui) selectSideItem(g *gocui.Gui, v *gocui.View) error {
+	_, oy := v.Origin()
+	_, cy := v.Cursor()
 	r := gui.getSelectedRepository()
-	switch viewName := v.Name(); viewName {
-	case remoteBranchViewFeature.Name:
-		return r.State.Remote.NextRemoteBranch(r)
-	case remoteViewFeature.Name:
-		return r.NextRemote()
-	case branchViewFeature.Name:
-		if err = r.Checkout(r.NextBranch()); err != nil {
-			err = gui.openErrorView(g, err.Error(),
-				"You should manually resolve this issue",
-				branchViewFeature.Name)
-			return err
-		}
-	case commitViewFeature.Name:
-		r.NextCommit()
-		return gui.renderCommits(r)
+	ix := oy + cy
+	var err error
+	if v.Name() == commitViewFeature.Name {
+		r.State.Branch.State.Commit = r.State.Branch.Commits[ix]
+		err = gui.renderCommits(r)
+	} else if v.Name() == branchViewFeature.Name {
+		r.Checkout(r.Branches[ix])
+		err = gui.renderBranches(r)
+	} else if v.Name() == remoteBranchViewFeature.Name {
+		// r.State.Remote.Branch = r.State.Remote.Branches[ix]
+		err = gui.renderRemoteBranches(r)
+	} else if v.Name() == remoteViewFeature.Name {
+		r.State.Remote = r.Remotes[ix]
+		r.Refresh()
+		err = gui.renderRemotes(r)
 	}
 	return err
 }
 
-// cursor up variant for sideviews
-func (gui *Gui) sideViewsPreviousItem(g *gocui.Gui, v *gocui.View) error {
-	var err error
-	r := gui.getSelectedRepository()
-	switch viewName := v.Name(); viewName {
-	case remoteBranchViewFeature.Name:
-		return r.State.Remote.PreviousRemoteBranch(r)
-	case remoteViewFeature.Name:
-		return r.PreviousRemote()
-	case branchViewFeature.Name:
-		if err = r.Checkout(r.PreviousBranch()); err != nil {
-			err = gui.openErrorView(g, err.Error(),
-				"You should manually resolve this issue",
-				branchViewFeature.Name)
+func adjustAnchor(i, r int, v *gocui.View) error {
+	_, y := v.Size()
+	if i >= int(0.5*float32(y)) && r-i+int(0.5*float32(y)) >= y {
+		if err := v.SetOrigin(0, i-int(0.5*float32(y))); err != nil {
 			return err
 		}
-	case commitViewFeature.Name:
-		r.PreviousCommit()
-		return gui.renderCommits(r)
+	} else if r-i < y && r > y {
+		if err := v.SetOrigin(0, r-y); err != nil {
+			return err
+		}
+	} else if r-i <= int(0.5*float32(y)) && r > y-1 && i > y {
+		if err := v.SetOrigin(0, i-int(0.5*float32(y))); err != nil {
+			return err
+		}
+	} else {
+		if err := v.SetOrigin(0, 0); err != nil {
+			return err
+		}
 	}
-	return err
+	_, oy := v.Origin()
+	c := i - oy
+	v.SetCursor(0, c)
+	v.EditWrite('→')
+	return nil
+}
+
+func (gui *Gui) resetSideCursors() error {
+	for _, vf := range sideViews {
+		v, err := gui.g.View(vf.Name)
+		if err != nil {
+			return err
+		}
+		v.SetCursor(0, 0)
+	}
+	return nil
 }
 
 // basically does fetch --prune
 func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
-	return command.Fetch(r, command.FetchOptions{
+	return command.Fetch(r, &command.FetchOptions{
 		RemoteName: r.State.Remote.Name,
 		Prune:      true,
 	})
@@ -205,14 +218,14 @@ func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 	var err error
 	r := gui.getSelectedRepository()
-	if err = command.AddConfig(r, command.ConfigOptions{
+	if err = command.AddConfig(r, &command.ConfigOptions{
 		Section: "branch." + r.State.Branch.Name,
 		Option:  "remote",
 		Site:    command.ConfigSiteLocal,
 	}, r.State.Remote.Name); err != nil {
 		return err
 	}
-	if err = command.AddConfig(r, command.ConfigOptions{
+	if err = command.AddConfig(r, &command.ConfigOptions{
 		Section: "branch." + r.State.Branch.Name,
 		Option:  "merge",
 		Site:    command.ConfigSiteLocal,
@@ -229,4 +242,20 @@ func (gui *Gui) closeConfirmationView(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 	return gui.closeViewCleanup(branchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) openRemoteBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnTop(remoteBranchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(remoteBranchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) closeRemoteBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnBottom(remoteBranchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(remoteViewFeature.Name)
 }

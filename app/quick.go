@@ -9,7 +9,7 @@ import (
 	"github.com/isacikgoz/gitbatch/core/git"
 )
 
-func quick(directories []string, depth int, mode string) {
+func quick(directories []string, mode string) {
 	var wg sync.WaitGroup
 	start := time.Now()
 	for _, dir := range directories {
@@ -36,12 +36,12 @@ func operate(directory, mode string) error {
 	}
 	switch mode {
 	case "fetch":
-		return command.Fetch(r, command.FetchOptions{
+		return command.Fetch(r, &command.FetchOptions{
 			RemoteName: "origin",
 			Progress:   true,
 		})
 	case "pull":
-		return command.Pull(r, command.PullOptions{
+		return command.Pull(r, &command.PullOptions{
 			RemoteName: "origin",
 			Progress:   true,
 		})

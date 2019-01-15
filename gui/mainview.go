@@ -179,8 +179,14 @@ func (gui *Gui) addToQueue(r *git.Repository) error {
 	case FetchMode:
 		jt = job.FetchJob
 	case PullMode:
+		if r.State.Branch.Upstream == nil {
+			return nil
+		}
 		jt = job.PullJob
 	case MergeMode:
+		if r.State.Branch.Upstream == nil {
+			return nil
+		}
 		jt = job.MergeJob
 	default:
 		return nil

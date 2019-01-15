@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	giterr "github.com/isacikgoz/gitbatch/core/errors"
 	"github.com/isacikgoz/gitbatch/core/git"
 	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
@@ -28,51 +29,50 @@ type CommitOptions struct {
 	Email string
 }
 
-// CommitCommand defines which commit command to use.
-func CommitCommand(r *git.Repository, options CommitOptions) (err error) {
+// Commit defines which commit command to use.
+func Commit(r *git.Repository, opt *CommitOptions) (err error) {
 	// here we configure commit operation
 	// default mode is go-git (this may be configured)
 	commitCmdMode = commitCmdModeNative
 
 	switch commitCmdMode {
 	case commitCmdModeLegacy:
-		return commitWithGit(r, options)
+		return commitWithGit(r, opt)
 	case commitCmdModeNative:
-		return commitWithGoGit(r, options)
+		return commitWithGoGit(r, opt)
 	}
 	return errors.New("Unhandled commit operation")
 }
 
 // commitWithGit is simply a bare git commit -m <msg> command which is flexible
-func commitWithGit(r *git.Repository, options CommitOptions) (err error) {
+func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 	args := make([]string, 0)
 	args = append(args, commitCommand)
 	args = append(args, "-m")
 	// parse options to command line arguments
-	if len(options.CommitMsg) > 0 {
-		args = append(args, options.CommitMsg)
+	if len(opt.CommitMsg) > 0 {
+		args = append(args, opt.CommitMsg)
 	}
-	if err := GenericGitCommand(r.AbsPath, args); err != nil {
+	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		log.Warn("Error at git command (commit)")
 		r.Refresh()
-		return err
+		return giterr.ParseGitError(out, err)
 	}
 	// till this step everything should be ok
 	return r.Refresh()
 }
 
 // commitWithGoGit is the primary commit method
-func commitWithGoGit(r *git.Repository, options CommitOptions) (err error) {
-	config, err := r.Repo.Config()
-	if err != nil {
-		return err
-	}
-	name := config.Raw.Section("user").Option("name")
-	email := config.Raw.Section("user").Option("email")
+func commitWithGoGit(r *git.Repository, options *CommitOptions) (err error) {
 	opt := &gogit.CommitOptions{
 		Author: &object.Signature{
-			Name:  name,
-			Email: email,
+			Name:  options.User,
+			Email: options.Email,
+			When:  time.Now(),
+		},
+		Committer: &object.Signature{
+			Name:  options.User,
+			Email: options.Email,
 			When:  time.Now(),
 		},
 	}

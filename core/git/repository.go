@@ -1,7 +1,6 @@
 package git
 
 import (
-	"errors"
 	"os"
 	"sync"
 	"time"
@@ -9,6 +8,31 @@ import (
 	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 )
+
+// RepositoryInterface is interface to repositorty
+type RepositoryInterface interface {
+	loadComponents(bool) error
+	Refresh() error
+	On(string, RepositoryListener)
+	Publish(string, interface{}) error
+	WorkStatus() WorkStatus
+	SetWorkStatus(WorkStatus)
+
+	initBranches() error
+	Checkout(*Branch) error
+	isClean() bool
+
+	initRemotes() error
+
+	loadStashedItems() error
+	Stash() (string, error)
+}
+
+// Reference is the interface for commits, remotes and branches
+type Reference interface {
+	Next() *Reference
+	Previous() *Reference
+}
 
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
@@ -21,7 +45,6 @@ type Repository struct {
 	Repo     git.Repository
 	Branches []*Branch
 	Remotes  []*Remote
-	Commits  []*Commit
 	Stasheds []*StashedItem
 	State    *RepositoryState
 
@@ -34,7 +57,6 @@ type RepositoryState struct {
 	workStatus WorkStatus
 	Branch     *Branch
 	Remote     *Remote
-	Commit     *Commit
 	Message    string
 }
 
@@ -72,6 +94,8 @@ var (
 const (
 	// RepositoryUpdated defines the topic for an updated repository.
 	RepositoryUpdated = "repository.updated"
+	// BranchUpdated defines the topic for an updated branch.
+	BranchUpdated = "branch.updated"
 )
 
 // FastInitializeRepo initializes a Repository struct without its belongings.
@@ -115,36 +139,22 @@ func InitializeRepo(dir string) (r *Repository, err error) {
 // loadComponents initializes the fields of a repository such as branches,
 // remotes, commits etc. If reset, reload commit, remote pointers too
 func (r *Repository) loadComponents(reset bool) error {
-	if err := r.loadLocalBranches(); err != nil {
+	if err := r.initRemotes(); err != nil {
 		return err
 	}
-	if err := r.loadCommits(); err != nil {
+
+	if err := r.initBranches(); err != nil {
 		return err
 	}
-	if err := r.loadRemotes(); err != nil {
+
+	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
 		return err
 	}
+
 	if err := r.loadStashedItems(); err != nil {
 		log.Warn("Cannot load stashes")
 	}
-	if reset {
-		// handle if there is no commit, maybe?
-		// set commit pointer for repository
-		if len(r.Commits) > 0 {
-			// select first commit
-			r.State.Commit = r.Commits[0]
-		}
-		// set remote pointer for repository
-		if len(r.Remotes) > 0 {
-			// TODO: tend to take origin/master as default
-			r.State.Remote = r.Remotes[0]
-			// if couldn't find, its ok.
-			r.State.Remote.SyncBranches(r.State.Branch.Name)
-		} else {
-			// if there is no remote, this project is totally useless actually
-			return errors.New("There is no remote for this repository")
-		}
-	}
+
 	return nil
 }
 
@@ -206,12 +216,12 @@ func (r *Repository) Publish(eventName string, data interface{}) error {
 	return nil
 }
 
-// State returns the state of the repository such as queued, failed etc.
+// WorkStatus returns the state of the repository such as queued, failed etc.
 func (r *Repository) WorkStatus() WorkStatus {
 	return r.State.workStatus
 }
 
-// SetState sets the state of repository and sends repository updated event
+// SetWorkStatus sets the state of repository and sends repository updated event
 func (r *Repository) SetWorkStatus(ws WorkStatus) {
 	r.State.workStatus = ws
 	// we could send an event data but we don't need for this topic

@@ -37,7 +37,7 @@ const (
 )
 
 // Config adds or reads config of a repository
-func Config(r *git.Repository, options ConfigOptions) (value string, err error) {
+func Config(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	// here we configure config operation
 	// default mode is go-git (this may be configured)
 	configCmdMode = configCmdModeLegacy
@@ -51,8 +51,8 @@ func Config(r *git.Repository, options ConfigOptions) (value string, err error) 
 	return value, errors.New("Unhandled config operation")
 }
 
-// configWithGit is simply a bare git commit -m <msg> command which is flexible
-func configWithGit(r *git.Repository, options ConfigOptions) (value string, err error) {
+// configWithGit is simply a bare git config --site <option>.<section> command which is flexible
+func configWithGit(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	args := make([]string, 0)
 	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
@@ -61,7 +61,7 @@ func configWithGit(r *git.Repository, options ConfigOptions) (value string, err 
 	args = append(args, "--get")
 	args = append(args, options.Section+"."+options.Option)
 	// parse options to command line arguments
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		return out, err
 	}
@@ -70,7 +70,7 @@ func configWithGit(r *git.Repository, options ConfigOptions) (value string, err 
 }
 
 // commitWithGoGit is the primary commit method
-func configWithGoGit(r *git.Repository, options ConfigOptions) (value string, err error) {
+func configWithGoGit(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	// TODO: add global search
 	config, err := r.Repo.Config()
 	if err != nil {
@@ -80,13 +80,13 @@ func configWithGoGit(r *git.Repository, options ConfigOptions) (value string, er
 }
 
 // AddConfig adds an entry on the ConfigOptions field.
-func AddConfig(r *git.Repository, options ConfigOptions, value string) (err error) {
+func AddConfig(r *git.Repository, options *ConfigOptions, value string) (err error) {
 	return addConfigWithGit(r, options, value)
 
 }
 
 // addConfigWithGit is simply a bare git config --add <option> command which is flexible
-func addConfigWithGit(r *git.Repository, options ConfigOptions, value string) (err error) {
+func addConfigWithGit(r *git.Repository, options *ConfigOptions, value string) (err error) {
 	args := make([]string, 0)
 	args = append(args, configCommand)
 	if len(string(options.Site)) > 0 {
@@ -97,7 +97,7 @@ func addConfigWithGit(r *git.Repository, options ConfigOptions, value string) (e
 	if len(value) > 0 {
 		args = append(args, value)
 	}
-	if err := GenericGitCommand(r.AbsPath, args); err != nil {
+	if _, err := Run(r.AbsPath, "git", args); err != nil {
 		log.Warn("Error at git command (config)")
 		return err
 	}

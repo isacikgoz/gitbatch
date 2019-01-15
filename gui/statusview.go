@@ -2,161 +2,265 @@ package gui
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/isacikgoz/gitbatch/core/command"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/jroimartin/gocui"
 )
 
-var (
-	statusHeaderViewFeature = viewFeature{Name: "status-header", Title: " Status Header "}
-	stageViewFeature        = viewFeature{Name: "staged", Title: " Staged "}
-	unstageViewFeature      = viewFeature{Name: "unstaged", Title: " Not Staged "}
-	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
-
-	statusViews = []viewFeature{stageViewFeature, unstageViewFeature, stashViewFeature}
-
-	commitMesageReturnView string
-	stagedFiles            []*command.File
-	unstagedFiles          []*command.File
-)
-
-// open the status layout
-func (gui *Gui) openStatusView(g *gocui.Gui, v *gocui.View) error {
-	if err := populateFileLists(gui.getSelectedRepository()); err != nil {
+// there is no AI, only too much if clauses
+func (gui *Gui) initFocusStat(r *git.Repository) error {
+	v, err := gui.g.View(dynamicViewFeature.Name)
+	if err != nil {
 		return err
 	}
-	gui.openStatusHeaderView(g)
-	gui.openStageView(g)
-	gui.openUnStagedView(g)
-	gui.openStashView(g)
+	v.Clear()
+	v.Title = string(StatusMode)
+	if err := gui.updateDynamicKeybindings(); err != nil {
+		return err
+	}
+	fmt.Fprintln(v, "On branch "+cyan.Sprint(r.State.Branch.Name))
+	ps, err := strconv.Atoi(r.State.Branch.Pushables)
+	pl, er2 := strconv.Atoi(r.State.Branch.Pullables)
+	// TODO: move to text-render
+	if err != nil || er2 != nil || r.State.Branch.Upstream == nil {
+		fmt.Fprintln(v, "Your branch is not tracking a remote branch.")
+	} else {
+		if ps == 0 && pl == 0 {
+			fmt.Fprintln(v, "Your branch is up to date with "+cyan.Sprint(r.State.Branch.Upstream.Name))
+		} else {
+			if ps > 0 && pl > 0 {
+				fmt.Fprintln(v, "Your branch and "+cyan.Sprint(r.State.Branch.Upstream.Name)+" have diverged,")
+				fmt.Fprintln(v, "and have "+yellow.Sprint(r.State.Branch.Pushables)+" and "+yellow.Sprint(r.State.Branch.Pullables)+" different commits each, respectively.")
+				fmt.Fprintln(v, "(\"pull\" to merge the remote branch into yours)")
+			} else if pl > 0 && ps == 0 {
+				fmt.Fprintln(v, "Your branch is behind "+cyan.Sprint(r.State.Branch.Upstream.Name)+" by "+yellow.Sprint(r.State.Branch.Pullables)+" commit(s).")
+				fmt.Fprintln(v, "(\"pull\" to update your local branch)")
+			} else if ps > 0 && pl == 0 {
+				fmt.Fprintln(v, "Your branch is ahead of "+cyan.Sprint(r.State.Branch.Upstream.Name)+" by "+yellow.Sprint(r.State.Branch.Pushables)+" commit(s).")
+				fmt.Fprintln(v, "(\"push\" to publish your local commits)")
+			}
+		}
+	}
+	files, err := command.Status(r)
+	if err != nil {
+		return err
+	}
+	stagedFiles := make([]*git.File, 0)
+	unstagedFiles := make([]*git.File, 0)
+	for _, file := range files {
+		if file.X != git.StatusNotupdated && file.X != git.StatusUntracked && file.X != git.StatusIgnored && file.X != git.StatusUpdated {
+			stagedFiles = append(stagedFiles, file)
+		}
+		if file.Y != git.StatusNotupdated {
+			unstagedFiles = append(unstagedFiles, file)
+		}
+	}
+	if len(stagedFiles) == 0 && len(unstagedFiles) == 0 {
+		fmt.Fprintln(v, "\nNothing to commit, working tree clean")
+	} else {
+		if len(stagedFiles) > 0 {
+			fmt.Fprintln(v, "\nChanges to be committed:")
+			fmt.Fprintln(v, "")
+			for _, f := range stagedFiles {
+				fmt.Fprintln(v, " "+green.Sprint(string(f.X)+" "+f.Name))
+			}
+		}
+		if len(unstagedFiles) > 0 {
+			fmt.Fprintln(v, "\nChanges not staged for commit:")
+			fmt.Fprintln(v, "")
+			for _, f := range unstagedFiles {
+				fmt.Fprintln(v, " "+red.Sprint(string(f.Y)+" "+f.Name))
+			}
+			fmt.Fprintln(v, "\n"+strconv.Itoa(len(stagedFiles))+" change(s) added to commit (consider \"add\")")
+		}
+		_, cy := v.Cursor()
+		if cy == 0 {
+			gui.statusCursorDown(gui.g, v)
+		} else {
+			gui.statusCursorUp(gui.g, v)
+		}
+	}
 	return nil
-}
-
-// focus to next view
-func (gui *Gui) nextStatusView(g *gocui.Gui, v *gocui.View) error {
-	return gui.nextViewOfGroup(g, v, statusViews)
-}
-
-// focus to previous view
-func (gui *Gui) previousStatusView(g *gocui.Gui, v *gocui.View) error {
-	return gui.previousViewOfGroup(g, v, statusViews)
 }
 
 // moves the cursor downwards for the main view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) statusCursorDown(g *gocui.Gui, v *gocui.View) error {
-	if v == nil {
-		return nil
-	}
+	if v != nil {
+		_, cy := v.Cursor()
+		ox, oy := v.Origin()
+		ly := v.BufferLines()
 
-	cx, cy := v.Cursor()
-	ox, oy := v.Origin()
-	ly := len(v.BufferLines()) - 2 // why magic number? have no idea
-
-	// if we are at the end we just return
-	if cy+oy == ly {
-		return nil
-	}
-	if err := v.SetCursor(cx, cy+1); err != nil {
-
-		if err := v.SetOrigin(ox, oy+1); err != nil {
-			return err
+		ap := oy + cy
+		// if we are at the end we just return
+		if ap == len(ly)-2 {
+			return nil
 		}
-	}
-	r := gui.getSelectedRepository()
-	return refreshStatusView(v.Name(), g, r, false)
-}
-
-// moves the cursor upwards for the main view
-func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
-	if v == nil {
-		return nil
-	}
-
-	ox, oy := v.Origin()
-	cx, cy := v.Cursor()
-	if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
-		if err := v.SetOrigin(ox, oy-1); err != nil {
-			return err
+		v.EditDelete(true)
+		var next int
+		for i := ap + 1; i < len(ly); i++ {
+			if len(ly[i]) > 0 && ly[i][0] == ' ' {
+				next = i - ap
+				break
+			}
 		}
-	}
-	r := gui.getSelectedRepository()
-	return refreshStatusView(v.Name(), g, r, false)
-}
-
-// header og the status layout
-func (gui *Gui) openStatusHeaderView(g *gocui.Gui) error {
-	maxX, _ := g.Size()
-	r := gui.getSelectedRepository()
-	v, err := g.SetView(statusHeaderViewFeature.Name, 6, 2, maxX-6, 4)
-	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
+		if err := v.SetCursor(0, cy+next); err != nil {
+			if err := v.SetOrigin(ox, oy+next); err != nil {
+				return err
+			}
 		}
-		fmt.Fprintln(v, r.AbsPath)
-		// v.Frame = false
-		v.Wrap = true
+		v.EditWrite('→')
 	}
 	return nil
 }
 
-// close the opened stat views
-func (gui *Gui) closeStatusView(g *gocui.Gui, v *gocui.View) error {
-	for _, view := range statusViews {
-		if err := g.DeleteView(view.Name); err != nil {
-			return err
+// moves the cursor upwards for the main view
+func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		ox, oy := v.Origin()
+		_, cy := v.Cursor()
+		ly := v.BufferLines()
+		v.EditDelete(true)
+		ap := oy + cy
+		var prev int
+		for i := ap - 1; i >= 0; i-- {
+			if i < len(ly) && len(ly[i]) > 0 && ly[i][0] == ' ' {
+				prev = ap - i
+				break
+			}
 		}
+		if err := v.SetCursor(0, cy-prev); err != nil && oy > 0 {
+			if err := v.SetOrigin(ox, oy-prev); err != nil {
+				return err
+			}
+		}
+		v.EditWrite('→')
 	}
-	if err := g.DeleteView(statusHeaderViewFeature.Name); err != nil {
-		return err
-	}
-	stagedFiles = make([]*command.File, 0)
-	unstagedFiles = make([]*command.File, 0)
-
-	return gui.closeViewCleanup(mainViewFeature.Name)
+	return nil
 }
 
-// generate file lists by git status command
-func populateFileLists(r *git.Repository) error {
+func (gui *Gui) statusAddReset(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	line, err := v.Line(cy)
+	if err != nil {
+		return err
+	}
+	r := gui.getSelectedRepository()
 	files, err := command.Status(r)
 	if err != nil {
 		return err
 	}
-	stagedFiles = make([]*command.File, 0)
-	unstagedFiles = make([]*command.File, 0)
-	for _, file := range files {
-		if file.X != command.StatusNotupdated && file.X != command.StatusUntracked && file.X != command.StatusIgnored && file.X != command.StatusUpdated {
-			stagedFiles = append(stagedFiles, file)
-		}
-		if file.Y != command.StatusNotupdated {
-			unstagedFiles = append(unstagedFiles, file)
+	for _, f := range files {
+		if strings.Contains(line, f.Name) {
+			if f.X != git.StatusNotupdated && f.X != git.StatusUntracked && f.X != git.StatusIgnored && f.X != git.StatusUpdated {
+				if err := command.Reset(r, f, &command.ResetOptions{}); err != nil {
+					return err
+				}
+			}
+			if f.Y != git.StatusNotupdated {
+				if err := command.Add(r, f, &command.AddOptions{}); err != nil {
+					return err
+				}
+			}
 		}
 	}
-	return err
+	return gui.initFocusStat(r)
 }
 
-func refreshStatusView(viewName string, g *gocui.Gui, r *git.Repository, reload bool) error {
-	if reload {
-		populateFileLists(r)
+func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
+
+	_, cy := v.Cursor()
+	line, err := v.Line(cy)
+	if err != nil {
+		return err
 	}
-	var err error
-	switch viewName {
-	case stageViewFeature.Name:
-		err = refreshStagedView(g)
-	case unstageViewFeature.Name:
-		err = refreshUnstagedView(g)
-	case stashViewFeature.Name:
-		err = refreshStashView(g, r)
+	r := gui.getSelectedRepository()
+	files, err := command.Status(r)
+	if err != nil {
+		return err
 	}
-	return err
+	for _, f := range files {
+		if strings.Contains(line, f.Name) {
+			out, err := command.DiffFile(f)
+			if err != nil {
+				v.Clear()
+				v.Title = string(FileDiffMode)
+				if err := gui.updateDynamicKeybindings(); err != nil {
+					return err
+				}
+				fmt.Fprintln(v, "Can't get diff")
+				return nil
+			}
+			v.Clear()
+			v.Title = string(FileDiffMode)
+			if err := gui.updateDynamicKeybindings(); err != nil {
+				return err
+			}
+			fmt.Fprintln(v, strings.Join(colorizeDiff(out), "\n"))
+		}
+	}
+	return nil
 }
 
-func refreshAllStatusView(g *gocui.Gui, r *git.Repository, reload bool) error {
-	for _, v := range statusViews {
-		if err := refreshStatusView(v.Name, g, r, reload); err != nil {
+//
+func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
+	r := gui.getSelectedRepository()
+	output, err := r.Stash()
+	if err != nil {
+		if err = gui.openErrorView(g, output,
+			"You should manually resolve this issue",
+			stashViewFeature.Name); err != nil {
 			return err
 		}
+	}
+	if err := gui.focusToRepository(g, v); err != nil {
+		return err
+	}
+	if err := gui.initStashedView(r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) statusStat(g *gocui.Gui, v *gocui.View) error {
+
+	r := gui.getSelectedRepository()
+	if err := gui.initFocusStat(r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) statusAddAll(g *gocui.Gui, v *gocui.View) error {
+
+	r := gui.getSelectedRepository()
+	if err := command.AddAll(r, &command.AddOptions{}); err != nil {
+		return err
+	}
+	if err := gui.initFocusStat(r); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gui *Gui) statusResetAll(g *gocui.Gui, v *gocui.View) error {
+
+	r := gui.getSelectedRepository()
+	ref, err := r.Repo.Head()
+	if err != nil {
+		return err
+	}
+	if err := command.ResetAll(r, &command.ResetOptions{
+		Hash:  ref.Hash().String(),
+		Rtype: command.ResetMixed,
+	}); err != nil {
+		return err
+	}
+	if err := gui.initFocusStat(r); err != nil {
+		return err
 	}
 	return nil
 }

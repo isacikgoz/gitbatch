@@ -2,50 +2,111 @@ package gui
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/isacikgoz/gitbatch/core/command"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/jroimartin/gocui"
 )
 
-// stash view
-func (gui *Gui) openStashView(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-
-	v, err := g.SetView(stashViewFeature.Name, 6, int(0.75*float32(maxY)), maxX-6, maxY-3)
+func (gui *Gui) initStashedView(r *git.Repository) error {
+	v, err := gui.g.View(stashViewFeature.Name)
 	if err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = stashViewFeature.Title
+		return err
 	}
-	r := gui.getSelectedRepository()
-	err = refreshStashView(g, r)
-	return err
+	v.Clear()
+	st := r.Stasheds
+	for _, s := range st {
+		fmt.Fprintf(v, " %d %s: %s\n", s.StashID, cyan.Sprint(s.BranchName), s.Description)
+	}
+	if len(st) > 0 {
+		adjustAnchor(0, len(st), v)
+	}
+	return nil
 }
 
-//
-func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
-	r := gui.getSelectedRepository()
-	output, err := r.Stash()
-	if err != nil {
-		if err = gui.openErrorView(g, output,
-			"You should manually resolve this issue",
-			stashViewFeature.Name); err != nil {
-			return err
+// moves the cursor downwards for the main view and if it goes to bottom it
+// prevents from going further
+func (gui *Gui) stashCursorDown(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		_, cy := v.Cursor()
+		_, oy := v.Origin()
+		ly := len(v.BufferLines()) - 1
+
+		// if we are at the end we just return
+		if cy+oy == ly-1 || ly < 0 {
+			return nil
 		}
+		v.EditDelete(true)
+		pos := cy + oy + 1
+		adjustAnchor(pos, ly, v)
+		gui.renderStashDiff(pos)
 	}
-	err = refreshAllStatusView(g, r, true)
-	return err
+	return nil
 }
 
-//
-func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
+// moves the cursor upwards for the main view
+func (gui *Gui) stashCursorUp(g *gocui.Gui, v *gocui.View) error {
+	if v != nil {
+		_, oy := v.Origin()
+		_, cy := v.Cursor()
+		ly := len(v.BufferLines()) - 1
+		// if we are at the end we just return
+		if ly < 0 {
+			return nil
+		}
+		v.EditDelete(true)
+		pos := cy + oy - 1
+		adjustAnchor(pos, ly, v)
+		if pos >= 0 {
+			gui.renderStashDiff(cy + oy - 1)
+		}
+	}
+	return nil
+}
+
+func (gui *Gui) renderStashDiff(ix int) error {
+	r := gui.getSelectedRepository()
+	st := r.Stasheds
+	if len(st) <= 0 {
+		return nil
+	}
+	v, err := gui.g.View(dynamicViewFeature.Name)
+	if err != nil {
+		return err
+	}
+	v.Title = string(StashDiffMode)
+	if err := gui.updateDynamicKeybindings(); err != nil {
+		return err
+	}
+	v.Clear()
+	d, err := command.StashDiff(r, st[ix].StashID)
+	if err != nil {
+		return err
+	}
+	s := colorizeDiff(d)
+	fmt.Fprintf(v, strings.Join(s, "\n"))
+	return nil
+}
+
+func (gui *Gui) stashDiff(g *gocui.Gui, v *gocui.View) error {
+
+	_, oy := v.Origin()
+	_, cy := v.Cursor()
+
+	return gui.renderStashDiff(oy + cy)
+}
+
+func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	_, oy := v.Origin()
 	_, cy := v.Cursor()
 	if len(r.Stasheds) <= 0 {
 		return nil
 	}
+
+	// since the pop is a func of stashed item, we need to refresh entity here
+	// defer r.Refresh()
 	stashedItem := r.Stasheds[oy+cy]
 	output, err := stashedItem.Pop()
 	if err != nil {
@@ -55,30 +116,12 @@ func (gui *Gui) popStash(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
-	// since the pop is a func of stashed item, we need to refresh entity here
-	if err := r.Refresh(); err != nil {
+	r.Refresh()
+	if err := gui.focusToRepository(g, v); err != nil {
 		return err
 	}
-
-	return refreshAllStatusView(g, r, true)
-}
-
-// refresh the main view and re-render the repository representations
-func refreshStashView(g *gocui.Gui, r *git.Repository) error {
-	stashView, err := g.View(stashViewFeature.Name)
-	if err != nil {
+	if err := gui.initStashedView(r); err != nil {
 		return err
-	}
-	stashView.Clear()
-	_, cy := stashView.Cursor()
-	_, oy := stashView.Origin()
-	stashedItems := r.Stasheds
-	for i, stashedItem := range stashedItems {
-		var prefix string
-		if i == cy+oy {
-			prefix = prefix + selectionIndicator
-		}
-		fmt.Fprintf(stashView, "%s%d %s: %s (%s)\n", prefix, stashedItem.StashID, cyan.Sprint(stashedItem.BranchName), stashedItem.Description, cyan.Sprint(stashedItem.Hash))
 	}
 	return nil
 }

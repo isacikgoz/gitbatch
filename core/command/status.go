@@ -24,7 +24,7 @@ func shortStatus(r *git.Repository, option string) string {
 	args = append(args, statusCommand)
 	args = append(args, option)
 	args = append(args, "--short")
-	out, err := GenericGitCommandWithOutput(r.AbsPath, args)
+	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
 		log.Warn("Error while status command")
 		return "?"
@@ -33,8 +33,8 @@ func shortStatus(r *git.Repository, option string) string {
 }
 
 // Status returns the dirty files
-func Status(r *git.Repository) ([]*File, error) {
-	statusCmdMode = statusCmdModeNative
+func Status(r *git.Repository) ([]*git.File, error) {
+	statusCmdMode = statusCmdModeLegacy
 
 	switch statusCmdMode {
 	case statusCmdModeLegacy:
@@ -45,10 +45,23 @@ func Status(r *git.Repository) ([]*File, error) {
 	return nil, errors.New("Unhandled status operation")
 }
 
+// PlainStatus returns the palin status
+func PlainStatus(r *git.Repository) (string, error) {
+	args := make([]string, 0)
+	args = append(args, "status")
+	output, err := Run(r.AbsPath, "git", args)
+	if err != nil {
+		log.Warn(err)
+	}
+	re := regexp.MustCompile(`\n?\r`)
+	output = re.ReplaceAllString(output, "\n")
+	return output, err
+}
+
 // LoadFiles function simply commands a git status and collects output in a
 // structured way
-func statusWithGit(r *git.Repository) ([]*File, error) {
-	files := make([]*File, 0)
+func statusWithGit(r *git.Repository) ([]*git.File, error) {
+	files := make([]*git.File, 0)
 	output := shortStatus(r, "--untracked-files=all")
 	if len(output) == 0 {
 		return files, nil
@@ -60,19 +73,19 @@ func statusWithGit(r *git.Repository) ([]*File, error) {
 		relativePathRegex := regexp.MustCompile(`[(\w|/|.|\-)]+`)
 		path := relativePathRegex.FindString(file[2:])
 
-		files = append(files, &File{
+		files = append(files, &git.File{
 			Name:    path,
 			AbsPath: r.AbsPath + string(os.PathSeparator) + path,
-			X:       FileStatus(x),
-			Y:       FileStatus(y),
+			X:       git.FileStatus(x),
+			Y:       git.FileStatus(y),
 		})
 	}
-	sort.Sort(filesAlphabetical(files))
+	sort.Sort(git.FilesAlphabetical(files))
 	return files, nil
 }
 
-func statusWithGoGit(r *git.Repository) ([]*File, error) {
-	files := make([]*File, 0)
+func statusWithGoGit(r *git.Repository) ([]*git.File, error) {
+	files := make([]*git.File, 0)
 	w, err := r.Repo.Worktree()
 	if err != nil {
 		return files, err
@@ -82,13 +95,13 @@ func statusWithGoGit(r *git.Repository) ([]*File, error) {
 		return files, err
 	}
 	for k, v := range s {
-		files = append(files, &File{
+		files = append(files, &git.File{
 			Name:    k,
 			AbsPath: r.AbsPath + string(os.PathSeparator) + k,
-			X:       FileStatus(v.Staging),
-			Y:       FileStatus(v.Worktree),
+			X:       git.FileStatus(v.Staging),
+			Y:       git.FileStatus(v.Worktree),
 		})
 	}
-	sort.Sort(filesAlphabetical(files))
+	sort.Sort(git.FilesAlphabetical(files))
 	return files, nil
 }

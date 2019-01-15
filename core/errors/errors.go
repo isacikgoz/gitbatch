@@ -39,8 +39,17 @@ var (
 	ErrUnmergedFiles = errors.New("unmerged files detected")
 	// ErrReferenceBroken thrown when unable to resolve reference
 	ErrReferenceBroken = errors.New("unable to resolve reference")
+	// ErrPermissionDenied is thrown when ssh authentication occurs
+	ErrPermissionDenied = errors.New("permission denied")
+	// ErrOverwrittenByMerge is the thrown when there is untracked files on working tree
+	ErrOverwrittenByMerge = errors.New("move or remove untracked files before merge")
+	// ErrUserEmailNotSet is thrown if there is no configured user email while
+	// commit command
+	ErrUserEmailNotSet = errors.New("user email not configured")
 	// ErrUnclassified is unconsidered error type
 	ErrUnclassified = errors.New("unclassified error")
+	// NoErrIterationHalted is thrown for catching stops in interators
+	NoErrIterationHalted = errors.New("iteration halted")
 )
 
 // ParseGitError takes git output as an input and tries to find some meaningful
@@ -58,6 +67,12 @@ func ParseGitError(out string, err error) error {
 		return ErrUnmergedFiles
 	} else if strings.Contains(out, "unable to resolve reference") {
 		return ErrReferenceBroken
+	} else if strings.Contains(out, "git config --global add user.email") {
+		return ErrUserEmailNotSet
+	} else if strings.Contains(out, "Permission denied (publickey)") {
+		return ErrPermissionDenied
+	} else if strings.Contains(out, "would be overwritten by merge") {
+		return ErrOverwrittenByMerge
 	}
 	return ErrUnclassified
 }
