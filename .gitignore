@@ -3,3 +3,4 @@ build.sh
 test.go
 .vscode
 build/
+coverage.txt
