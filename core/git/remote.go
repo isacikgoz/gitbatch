@@ -1,6 +1,8 @@
 package git
 
 import (
+	"errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -38,6 +40,9 @@ func (r *Repository) initRemotes() error {
 	if err != nil {
 		log.Warn("Cannot find remotes " + err.Error())
 		return err
+	}
+	if len(r.Remotes) <= 0 {
+		return errors.New("no remote for repository: " + r.Name)
 	}
 	r.State.Remote = r.Remotes[0]
 	return err
