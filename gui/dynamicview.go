@@ -7,17 +7,26 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// DynamicViewMode is a indicator of dynamic view mode and it is also used as
+// the views title
 type DynamicViewMode string
 
 const (
+	// CommitStatMode when dynamic mode morphed into commit stat mode
 	CommitStatMode DynamicViewMode = " Commit Stats "
+	// CommitDiffMode when dynamic mode morphed into commit diff mode
 	CommitDiffMode DynamicViewMode = " Diffs "
-	StashStatMode  DynamicViewMode = " Stash Stats "
-	StashDiffMode  DynamicViewMode = " Stash Diffs "
-	StatusMode     DynamicViewMode = " Repository Status "
-	FileDiffMode   DynamicViewMode = " File Diffs "
+	// StashStatMode when dynamic mode morphed into stash status mode
+	StashStatMode DynamicViewMode = " Stash Stats "
+	// StashDiffMode when dynamic mode morphed into stash diff mode
+	StashDiffMode DynamicViewMode = " Stash Diffs "
+	// StatusMode when dynamic mode morphed into repository status mode
+	StatusMode DynamicViewMode = " Repository Status "
+	// FileDiffMode when dynamic mode morphed into file diff mode
+	FileDiffMode DynamicViewMode = " File Diffs "
 )
 
+// shows the stats of current commit
 func (gui *Gui) commitStat(g *gocui.Gui, v *gocui.View) error {
 	vc, err := gui.g.View(commitViewFeature.Name)
 	if err != nil {
@@ -32,6 +41,7 @@ func (gui *Gui) commitStat(g *gocui.Gui, v *gocui.View) error {
 
 }
 
+// render the commit stats of the give index
 func (gui *Gui) commitStats(ix int) error {
 
 	v, err := gui.g.View(dynamicViewFeature.Name)
@@ -80,6 +90,7 @@ func (gui *Gui) commitStats(ix int) error {
 	return nil
 }
 
+// show the diff of current commit
 func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
 	v, err := gui.g.View(dynamicViewFeature.Name)
 	if err != nil {

@@ -18,20 +18,11 @@ func (gui *Gui) updateDynamicKeybindings() error {
 	keybindings := []*KeyBinding{
 		{
 			View:        dynamicViewFeature.Name,
-			Key:         'q',
-			Modifier:    gocui.ModNone,
-			Handler:     gui.focusBackToMain,
-			Display:     "q",
-			Description: "Back to Overview",
-			// buggy and messy
-			Vital: false,
-		}, {
-			View:        dynamicViewFeature.Name,
 			Key:         gocui.KeyTab,
 			Modifier:    gocui.ModNone,
-			Handler:     gui.nextFocusView,
+			Handler:     gui.focusBackToMain,
 			Display:     "tab",
-			Description: "Next Panel",
+			Description: "Back to Overivew",
 			Vital:       false,
 		}, {
 			View:        dynamicViewFeature.Name,
@@ -86,7 +77,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageUp,
 				Display:     "pg up",
 				Description: "Page up",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
@@ -94,7 +85,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageDown,
 				Display:     "pg down",
 				Description: "Page Down",
-				Vital:       false,
+				Vital:       true,
 			},
 		}
 		keybindings = append(keybindings, caseBindings...)
@@ -115,7 +106,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageUp,
 				Display:     "pg up",
 				Description: "Page up",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
@@ -123,7 +114,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageDown,
 				Display:     "pg down",
 				Description: "Page Down",
-				Vital:       false,
+				Vital:       true,
 			},
 		}
 		keybindings = append(keybindings, caseBindings...)
@@ -144,7 +135,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageUp,
 				Display:     "pg up",
 				Description: "Page up",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
@@ -152,7 +143,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageDown,
 				Display:     "pg down",
 				Description: "Page Down",
-				Vital:       false,
+				Vital:       true,
 			},
 		}
 		keybindings = append(keybindings, caseBindings...)
@@ -173,7 +164,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageUp,
 				Display:     "pg up",
 				Description: "Page up",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
@@ -181,7 +172,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageDown,
 				Display:     "pg down",
 				Description: "Page Down",
-				Vital:       false,
+				Vital:       true,
 			},
 		}
 		keybindings = append(keybindings, caseBindings...)
@@ -229,6 +220,22 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Vital:       false,
 			}, {
 				View:        dynamicViewFeature.Name,
+				Key:         'j',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorDown,
+				Display:     "j",
+				Description: "Down",
+				Vital:       false,
+			}, {
+				View:        dynamicViewFeature.Name,
+				Key:         'k',
+				Modifier:    gocui.ModNone,
+				Handler:     gui.statusCursorUp,
+				Display:     "k",
+				Description: "Up",
+				Vital:       false,
+			}, {
+				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeySpace,
 				Modifier:    gocui.ModNone,
 				Handler:     gui.statusAddReset,
@@ -271,7 +278,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageUp,
 				Display:     "pg up",
 				Description: "Page up",
-				Vital:       false,
+				Vital:       true,
 			}, {
 				View:        dynamicViewFeature.Name,
 				Key:         gocui.KeyPgdn,
@@ -279,7 +286,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 				Handler:     gui.dpageDown,
 				Display:     "pg down",
 				Description: "Page Down",
-				Vital:       false,
+				Vital:       true,
 			},
 		}
 		keybindings = append(keybindings, caseBindings...)

@@ -49,6 +49,7 @@ type mode struct {
 // ModeID is the mode indicator for the gui
 type ModeID string
 
+// Layout tells the gui how to order views
 type Layout int
 
 const (
@@ -60,8 +61,7 @@ const (
 	MergeMode ModeID = "merge"
 
 	overview Layout = 0
-
-	focus Layout = 1
+	focus    Layout = 1
 )
 
 var (
@@ -144,9 +144,9 @@ func (gui *Gui) Run() error {
 	return nil
 }
 
+// add repository to gui's own slice and register listeners
 func (gui *Gui) loadRepository(r *git.Repository) {
 	rs := gui.State.Repositories
-
 	// insertion sort implementation
 	index := sort.Search(len(rs), func(i int) bool { return git.Less(r, rs[i]) })
 	rs = append(rs, &git.Repository{})
@@ -172,6 +172,7 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 	}()
 }
 
+// render title with loaded repository count
 func (gui *Gui) renderTitle() error {
 	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {

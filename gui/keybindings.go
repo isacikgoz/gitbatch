@@ -26,20 +26,12 @@ func (gui *Gui) generateKeybindings() error {
 		focusKeybindings := []*KeyBinding{
 			{
 				View:        view.Name,
-				Key:         'q',
-				Modifier:    gocui.ModNone,
-				Handler:     gui.focusBackToMain,
-				Display:     "q",
-				Description: "Back to Overview",
-				Vital:       true,
-			}, {
-				View:        view.Name,
 				Key:         gocui.KeyTab,
 				Modifier:    gocui.ModNone,
-				Handler:     gui.nextFocusView,
+				Handler:     gui.focusBackToMain,
 				Display:     "tab",
-				Description: "Next Panel",
-				Vital:       false,
+				Description: "Back to Overivew",
+				Vital:       true,
 			}, {
 				View:        view.Name,
 				Key:         gocui.KeyArrowRight,
@@ -84,7 +76,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.sideCursorDown,
 				Display:     "↓",
-				Description: "Iterate over branches",
+				Description: "Cursor Down",
 				Vital:       false,
 			}, {
 				View:        view.Name,
@@ -92,7 +84,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.sideCursorUp,
 				Display:     "↑",
-				Description: "Iterate over branches",
+				Description: "Cursor Up",
 				Vital:       false,
 			}, {
 				View:        view.Name,
@@ -100,7 +92,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.sideCursorDown,
 				Display:     "j",
-				Description: "Down",
+				Description: "Cursor Down",
 				Vital:       false,
 			}, {
 				View:        view.Name,
@@ -108,7 +100,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.sideCursorUp,
 				Display:     "k",
-				Description: "Up",
+				Description: "Cursor Up",
 				Vital:       false,
 			}, {
 				View:        view.Name,
@@ -238,7 +230,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorUp,
 			Display:     "↑",
-			Description: "Up",
+			Description: "Cursor Up",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
@@ -278,7 +270,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorDown,
 			Display:     "↓",
-			Description: "Down",
+			Description: "Cursor Down",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
@@ -286,7 +278,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorUp,
 			Display:     "k",
-			Description: "Up",
+			Description: "Cursor Up",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
@@ -294,7 +286,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.cursorDown,
 			Display:     "j",
-			Description: "Down",
+			Description: "Cursor Down",
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
@@ -416,7 +408,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorDown,
 			Display:     "↓",
-			Description: "Iterate over commits",
+			Description: "Cursor Down",
 			Vital:       false,
 		}, {
 			View:        commitViewFeature.Name,
@@ -424,7 +416,23 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitCursorUp,
 			Display:     "↑",
-			Description: "Iterate over commits",
+			Description: "Cursor Up",
+			Vital:       false,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         'j',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitCursorDown,
+			Display:     "j",
+			Description: "Cursor Down",
+			Vital:       false,
+		}, {
+			View:        commitViewFeature.Name,
+			Key:         'k',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.commitCursorUp,
+			Display:     "k",
+			Description: "Cursor Up",
 			Vital:       false,
 		}, {
 			View:        commitViewFeature.Name,
@@ -447,7 +455,7 @@ func (gui *Gui) generateKeybindings() error {
 			Key:         gocui.KeyPgup,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitPageUp,
-			Display:     "page up",
+			Display:     "pg up",
 			Description: "Page up",
 			Vital:       false,
 		}, {
@@ -463,7 +471,7 @@ func (gui *Gui) generateKeybindings() error {
 			Key:         gocui.KeyPgdn,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.commitPageDown,
-			Display:     "page down",
+			Display:     "pg down",
 			Description: "Page Down",
 			Vital:       false,
 		},
@@ -474,7 +482,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.stashCursorDown,
 			Display:     "↓",
-			Description: "Iterate over branches",
+			Description: "Cursor Down",
 			Vital:       false,
 		}, {
 			View:        stashViewFeature.Name,
@@ -482,7 +490,23 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.stashCursorUp,
 			Display:     "↑",
-			Description: "Iterate over branches",
+			Description: "Cursor Up",
+			Vital:       false,
+		}, {
+			View:        stashViewFeature.Name,
+			Key:         'j',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.stashCursorDown,
+			Display:     "j",
+			Description: "Cursor Down",
+			Vital:       false,
+		}, {
+			View:        stashViewFeature.Name,
+			Key:         'k',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.stashCursorUp,
+			Display:     "k",
+			Description: "Cursor Up",
 			Vital:       false,
 		}, {
 			View:        stashViewFeature.Name,
@@ -534,7 +558,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorUp,
 			Display:     "↑",
-			Description: "Up",
+			Description: "Cursor Up",
 			Vital:       true,
 		}, {
 			View:        cheatSheetViewFeature.Name,
@@ -542,7 +566,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorDown,
 			Display:     "↓",
-			Description: "Down",
+			Description: "Cursor Down",
 			Vital:       true,
 		}, {
 			View:        cheatSheetViewFeature.Name,
@@ -550,7 +574,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorUp,
 			Display:     "k",
-			Description: "Up",
+			Description: "Cursor Up",
 			Vital:       false,
 		}, {
 			View:        cheatSheetViewFeature.Name,
@@ -558,7 +582,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorDown,
 			Display:     "j",
-			Description: "Down",
+			Description: "Cursor Down",
 			Vital:       false,
 		},
 		// Error View
@@ -576,7 +600,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorUp,
 			Display:     "↑",
-			Description: "Up",
+			Description: "Cursor Up",
 			Vital:       true,
 		}, {
 			View:        errorViewFeature.Name,
@@ -584,7 +608,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorDown,
 			Display:     "↓",
-			Description: "Down",
+			Description: "Cursor Down",
 			Vital:       true,
 		}, {
 			View:        errorViewFeature.Name,
@@ -592,7 +616,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorUp,
 			Display:     "k",
-			Description: "Up",
+			Description: "Cursor Up",
 			Vital:       false,
 		}, {
 			View:        errorViewFeature.Name,
@@ -600,7 +624,7 @@ func (gui *Gui) generateKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.fastCursorDown,
 			Display:     "j",
-			Description: "Down",
+			Description: "Cursor Down",
 			Vital:       false,
 		},
 	}
