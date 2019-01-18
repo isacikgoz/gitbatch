@@ -162,7 +162,8 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 	r.SetWorkStatus(git.Success)
 
 	ref, _ := r.Repo.Head()
-
+	// TODO: fix this, refresh two times not cool
+	r.Refresh()
 	uref := "origin/HEAD"
 	if r.State.Branch != nil && r.State.Branch.Upstream != nil {
 		uref = r.State.Branch.Upstream.Reference.Hash().String()[:7]
