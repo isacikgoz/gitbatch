@@ -82,6 +82,7 @@ func (gui *Gui) repositoryLabel(r *git.Repository) string {
 	return line
 }
 
+// render repo name, print green if cursor is on the repository
 func (gui *Gui) renderRepoName(r *git.Repository, rule *RepositoryDecorationRules) string {
 	var repoName string
 	sr := gui.getSelectedRepository()
@@ -93,6 +94,7 @@ func (gui *Gui) renderRepoName(r *git.Repository, rule *RepositoryDecorationRule
 	return repoName
 }
 
+// render branch, add x if it is dirty
 func renderBranchName(r *git.Repository, rule *RepositoryDecorationRules) string {
 	b := r.State.Branch
 	branch := cyan.Sprint(b.Name)
@@ -104,6 +106,7 @@ func renderBranchName(r *git.Repository, rule *RepositoryDecorationRules) string
 	return branch
 }
 
+// render ahead and behind info
 func renderRevCount(r *git.Repository, rule *RepositoryDecorationRules) string {
 	var revCount string
 	b := r.State.Branch
@@ -117,6 +120,7 @@ func renderRevCount(r *git.Repository, rule *RepositoryDecorationRules) string {
 	return revCount
 }
 
+// render working status of the repository
 func (gui *Gui) renderStatus(r *git.Repository) string {
 	var status string
 	if r.WorkStatus() == git.Queued {
@@ -135,6 +139,7 @@ func (gui *Gui) renderStatus(r *git.Repository) string {
 	return status
 }
 
+// render header of the table layout
 func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
@@ -149,6 +154,7 @@ func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 	fmt.Fprintln(v, header)
 }
 
+// print queued item with the mode color
 func printQueued(r *git.Repository, jt job.JobType) string {
 	var info string
 	switch jt {
@@ -164,6 +170,7 @@ func printQueued(r *git.Repository, jt job.JobType) string {
 	return info
 }
 
+// render commit lable according to its status(local/even/remote)
 func commitLabel(c *git.Commit, sel bool) string {
 	re := regexp.MustCompile(`\r?\n`)
 	msg := re.ReplaceAllString(c.Message, " ")
@@ -261,6 +268,8 @@ type DiffStatItem struct {
 	Changes     string
 }
 
+// get output of "git show <commit> --shortstat" and convert it to DiffStatItem
+// slice and generate rules
 func genDiffStat(in string) (*DiffStatDecorationRules, []*DiffStatItem) {
 	rules := &DiffStatDecorationRules{}
 	stats := make([]*DiffStatItem, 0)
@@ -295,6 +304,7 @@ func genDiffStat(in string) (*DiffStatDecorationRules, []*DiffStatItem) {
 	return rules, stats
 }
 
+// colorize diff stat
 func decorateDiffStat(in string, sum bool) string {
 	var d string
 
@@ -323,6 +333,7 @@ func decorateDiffStat(in string, sum bool) string {
 	return d
 }
 
+// align text with whitespaces
 func align(in string, max int, direction, trim bool) string {
 	realmax := 50
 	il := len(in)
@@ -342,6 +353,7 @@ func align(in string, max int, direction, trim bool) string {
 	return in
 }
 
+// colorize commit info
 func decorateCommit(in string) string {
 	var d string
 	lines := strings.Split(in, "\n")
@@ -355,6 +367,7 @@ func decorateCommit(in string) string {
 	return d
 }
 
+// repository render rules
 func (gui *Gui) renderRules() *RepositoryDecorationRules {
 	rules := &RepositoryDecorationRules{}
 
