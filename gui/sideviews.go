@@ -95,7 +95,10 @@ func (gui *Gui) renderRemotes(r *git.Repository) error {
 	rc := r.State.Remote
 	si := 0
 	for i, rb := range rs {
-		_, shortURL := trimRemoteURL(rb.URL[0])
+		shortURL := "URL not found."
+		if len(rb.URL) > 0 {
+			_, shortURL = trimRemoteURL(rb.URL[0])
+		}
 		if rb.Name == rc.Name {
 			si = i
 			fmt.Fprintln(v, ws+green.Sprint(rb.Name+": "+shortURL))

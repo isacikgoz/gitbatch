@@ -104,6 +104,7 @@ func FastInitializeRepo(dir string) (r *Repository, err error) {
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 	// get status of the file
 	fstat, _ := f.Stat()
 	rp, err := git.PlainOpen(dir)

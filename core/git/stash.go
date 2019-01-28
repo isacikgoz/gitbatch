@@ -42,6 +42,10 @@ func (r *Repository) loadStashedItems() error {
 		// trim id section
 		trimmed := stashIDRegex.Split(stashitem, 2)[1]
 
+		// let's ignore autostash
+		if trimmed[1:] == "autostash" {
+			continue
+		}
 		// find branch
 		stashBranchRegexMatch := stashBranchRegex.FindString(trimmed)
 		branchName := stashBranchRegexMatch[:len(stashBranchRegexMatch)-2]
