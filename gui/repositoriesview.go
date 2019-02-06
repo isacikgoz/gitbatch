@@ -250,6 +250,9 @@ func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	// maybe, failed entities may be added to queue again
+	if r == nil {
+		return nil
+	}
 	if r.WorkStatus().Ready {
 		if err := gui.addToQueue(r); err != nil {
 			return err
