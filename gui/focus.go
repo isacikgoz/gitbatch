@@ -89,6 +89,9 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	// mainViews = focusViews
 	r := gui.getSelectedRepository()
+	if r == nil {
+    		return nil
+	}
 	gui.order = focus
 
 	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
