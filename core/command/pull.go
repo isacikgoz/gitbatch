@@ -11,7 +11,7 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
-	"gopkg.in/src-d/go-git.v4/storage/memory"
+	"gopkg.in/src-d/go-git.v4/storage"
 )
 
 var (
@@ -124,7 +124,7 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 			log.Warn(err.Error())
 			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
-		} else if err == memory.ErrRefHasChanged && pullTryCount < pullMaxTry {
+		} else if err == storage.ErrReferenceHasChanged && pullTryCount < pullMaxTry {
 			pullTryCount++
 			log.Error("trying to fetch")
 			if err := Fetch(r, &FetchOptions{
