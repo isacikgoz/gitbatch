@@ -11,6 +11,12 @@ To install with go, run the following command;
 ```bash
 go get -u github.com/isacikgoz/gitbatch
 ```
+
+### MacOS using homebrew
+```bash
+brew tap isacikgoz/taps
+brew install gitbatch
+```
 For other options see [installation page](https://github.com/isacikgoz/gitbatch/wiki/Installation)
 
 ## Use
@@ -21,6 +27,7 @@ For more information see the [wiki pages](https://github.com/isacikgoz/gitbatch/
 ## Further goals
 - improve testing
 - add push
+- add batch checkout
 - full src-d/go-git integration (*having some performance issues in large repos*)
   - fetch, config, rev-list, add, reset, commit, status and diff commands are supported but not fully utilized, still using git occasionally
   - merge, stash are not supported yet by go-git
@@ -31,6 +38,5 @@ For more information see the [wiki pages](https://github.com/isacikgoz/gitbatch/
 - [logrus](https://github.com/sirupsen/logrus) for logging
 - [viper](https://github.com/spf13/viper) for configuration management
 - [color](https://github.com/fatih/color) for colored text
-- [lazygit](https://github.com/jesseduffield/lazygit) for inspiration
 - [kingpin](https://github.com/alecthomas/kingpin) for command-line flag&options
 
