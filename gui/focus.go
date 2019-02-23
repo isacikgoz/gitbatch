@@ -84,9 +84,14 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 	return nil
 }
 
+// evolve the layout to focus layout and focus to commitview also initialize
+// some stuff
 func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	// mainViews = focusViews
 	r := gui.getSelectedRepository()
+	if r == nil {
+    		return nil
+	}
 	gui.order = focus
 
 	if _, err := g.SetCurrentView(commitViewFeature.Name); err != nil {
@@ -115,8 +120,8 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// return back to overview layout
 func (gui *Gui) focusBackToMain(g *gocui.Gui, v *gocui.View) error {
-	// mainViews = overviewViews
 	gui.order = overview
 
 	if _, err := g.SetCurrentView(mainViewFeature.Name); err != nil {
@@ -139,6 +144,7 @@ func (gui *Gui) previousFocusView(g *gocui.Gui, v *gocui.View) error {
 	return gui.previousViewOfGroup(g, v, focusViews)
 }
 
+// send view to bottom so that view won't block others
 func (gui *Gui) sendFocusViewsToBottom(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetViewOnBottom(branchViewFeature.Name); err != nil {
 		return err
@@ -146,6 +152,7 @@ func (gui *Gui) sendFocusViewsToBottom(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// send view to bottom so that view won't block others
 func (gui *Gui) sendOverviewViewsToBottom(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetViewOnTop(branchViewFeature.Name); err != nil {
 		return err

@@ -142,6 +142,7 @@ func (gui *Gui) statusCursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// add or reset file
 func (gui *Gui) statusAddReset(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 	line, err := v.Line(cy)
@@ -170,6 +171,7 @@ func (gui *Gui) statusAddReset(g *gocui.Gui, v *gocui.View) error {
 	return gui.initFocusStat(r)
 }
 
+// show diff of the file
 func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
 
 	_, cy := v.Cursor()
@@ -205,7 +207,7 @@ func (gui *Gui) statusDiff(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-//
+// stash uncommitted changes of the working directory
 func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	output, err := r.Stash()
@@ -225,6 +227,7 @@ func (gui *Gui) stashChanges(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// stats of current status, basically emulates "git status"
 func (gui *Gui) statusStat(g *gocui.Gui, v *gocui.View) error {
 
 	r := gui.getSelectedRepository()
@@ -234,6 +237,7 @@ func (gui *Gui) statusStat(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// add all items to index
 func (gui *Gui) statusAddAll(g *gocui.Gui, v *gocui.View) error {
 
 	r := gui.getSelectedRepository()
@@ -246,6 +250,7 @@ func (gui *Gui) statusAddAll(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// reset all indexed items
 func (gui *Gui) statusResetAll(g *gocui.Gui, v *gocui.View) error {
 
 	r := gui.getSelectedRepository()

@@ -9,6 +9,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+// intialize stashed items
 func (gui *Gui) initStashedView(r *git.Repository) error {
 	v, err := gui.g.View(stashViewFeature.Name)
 	if err != nil {
@@ -25,7 +26,7 @@ func (gui *Gui) initStashedView(r *git.Repository) error {
 	return nil
 }
 
-// moves the cursor downwards for the main view and if it goes to bottom it
+// moves the cursor downwards for the stash view and if it goes to bottom it
 // prevents from going further
 func (gui *Gui) stashCursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
@@ -45,7 +46,7 @@ func (gui *Gui) stashCursorDown(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// moves the cursor upwards for the main view
+// moves the cursor upwards for the stash view
 func (gui *Gui) stashCursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		_, oy := v.Origin()
@@ -65,6 +66,7 @@ func (gui *Gui) stashCursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
+// open stashed item diff which given with index
 func (gui *Gui) renderStashDiff(ix int) error {
 	r := gui.getSelectedRepository()
 	st := r.Stasheds
@@ -89,6 +91,7 @@ func (gui *Gui) renderStashDiff(ix int) error {
 	return nil
 }
 
+// open stash item diff
 func (gui *Gui) stashDiff(g *gocui.Gui, v *gocui.View) error {
 
 	_, oy := v.Origin()
@@ -97,6 +100,7 @@ func (gui *Gui) stashDiff(g *gocui.Gui, v *gocui.View) error {
 	return gui.renderStashDiff(oy + cy)
 }
 
+// pop out the stash
 func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()
 	_, oy := v.Origin()
@@ -104,9 +108,6 @@ func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 	if len(r.Stasheds) <= 0 {
 		return nil
 	}
-
-	// since the pop is a func of stashed item, we need to refresh entity here
-	// defer r.Refresh()
 	stashedItem := r.Stasheds[oy+cy]
 	output, err := stashedItem.Pop()
 	if err != nil {
@@ -116,6 +117,7 @@ func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
+	// since the pop is a func of stashed item, we need to refresh entity here
 	r.Refresh()
 	if err := gui.focusToRepository(g, v); err != nil {
 		return err

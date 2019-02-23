@@ -265,7 +265,7 @@ func getUpstream(r *Repository, branchName string) (*RemoteBranch, error) {
 	}
 
 	for _, rm := range r.Remotes {
-		if rm.Name == trimTrailingNewline(string(cr)) {
+		if rm.Name == strings.TrimSpace(string(cr)) {
 			r.State.Remote = rm
 		}
 	}

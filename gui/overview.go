@@ -103,6 +103,9 @@ func (gui *Gui) openBranchesView(g *gocui.Gui, v *gocui.View) error {
 
 // close confirmation view
 func (gui *Gui) closeBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if gui.order == focus {
+		return nil
+	}
 	if _, err := g.SetViewOnBottom(branchViewFeature.Name); err != nil {
 		return err
 	}
