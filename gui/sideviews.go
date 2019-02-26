@@ -44,6 +44,9 @@ func (gui *Gui) sideCursorUp(g *gocui.Gui, v *gocui.View) error {
 }
 
 func (gui *Gui) renderSideViews(r *git.Repository) error {
+	if r == nil {
+		return nil
+	}
 	if err := gui.resetSideCursors(); err != nil {
 		return err
 	}
