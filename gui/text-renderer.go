@@ -39,9 +39,10 @@ var (
 	pauseSymbol   = "॥"
 	failSymbol    = "✗"
 
-	fetchSymbol = "↓"
-	pullSymbol  = "↓↳"
-	mergeSymbol = "↳"
+	fetchSymbol    = "↓"
+	pullSymbol     = "↓↳"
+	mergeSymbol    = "↳"
+	checkoutSymbol = "↱"
 
 	keySymbol = ws + yellow.Sprint("🔑") + ws
 
