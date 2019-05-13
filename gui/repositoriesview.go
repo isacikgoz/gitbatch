@@ -7,7 +7,7 @@ import (
 	gerr "github.com/isacikgoz/gitbatch/core/errors"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 	log "github.com/sirupsen/logrus"
 )
 

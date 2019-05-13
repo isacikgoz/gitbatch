@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 )
 
 func (gui *Gui) updateDynamicKeybindings() error {

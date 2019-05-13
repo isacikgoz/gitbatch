@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/isacikgoz/gitbatch/core/git"
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 )
 
 // listens the event -> "branch.updated"

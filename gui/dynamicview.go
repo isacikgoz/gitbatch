@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 )
 
 // DynamicViewMode is a indicator of dynamic view mode and it is also used as

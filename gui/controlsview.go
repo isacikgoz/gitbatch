@@ -3,7 +3,7 @@ package gui
 import (
 	"fmt"
 
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 )
 
 // open the application controls

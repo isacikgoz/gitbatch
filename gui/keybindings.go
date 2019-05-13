@@ -3,7 +3,7 @@ package gui
 import (
 	"fmt"
 
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 )
 
 // KeyBinding structs is helpful for not re-writinh the same function over and

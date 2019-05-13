@@ -5,7 +5,7 @@ import (
 
 	"github.com/isacikgoz/gitbatch/core/command"
 	"github.com/isacikgoz/gitbatch/core/git"
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 )
 
 var (

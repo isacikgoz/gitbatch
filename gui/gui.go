@@ -8,7 +8,7 @@ import (
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
 	"github.com/isacikgoz/gitbatch/core/load"
-	"github.com/jroimartin/gocui"
+	"github.com/isacikgoz/gocui"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -112,7 +112,7 @@ func NewGui(mode string, directoies []string) (*Gui, error) {
 
 // Run function runs the main loop with initial values
 func (gui *Gui) Run() error {
-	g, err := gocui.NewGui(gocui.OutputNormal)
+	g, err := gocui.NewGui(gocui.OutputGrayscale)
 	if err != nil {
 		return err
 	}
