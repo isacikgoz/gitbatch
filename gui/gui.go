@@ -112,7 +112,7 @@ func NewGui(mode string, directoies []string) (*Gui, error) {
 
 // Run function runs the main loop with initial values
 func (gui *Gui) Run() error {
-	g, err := gocui.NewGui(gocui.OutputGrayscale)
+	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
 		return err
 	}
