@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/isacikgoz/gitbatch/core/command"
 	gerr "github.com/isacikgoz/gitbatch/core/errors"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
@@ -174,27 +175,31 @@ func (gui *Gui) getSelectedRepository() *git.Repository {
 
 // adds given entity to job queue
 func (gui *Gui) addToQueue(r *git.Repository) error {
-	var jt job.JobType
+	j := &job.Job{
+		Repository: r,
+	}
 	switch mode := gui.State.Mode.ModeID; mode {
 	case FetchMode:
-		jt = job.FetchJob
+		j.JobType = job.FetchJob
 	case PullMode:
 		if r.State.Branch.Upstream == nil {
 			return nil
 		}
-		jt = job.PullJob
+		j.JobType = job.PullJob
 	case MergeMode:
 		if r.State.Branch.Upstream == nil {
 			return nil
 		}
-		jt = job.MergeJob
+		j.JobType = job.MergeJob
+	case CheckoutMode:
+		j.JobType = job.CheckoutJob
+		j.Options = &command.CheckoutOptions{
+			TargetRef: "master",
+		}
 	default:
 		return nil
 	}
-	err := gui.State.Queue.AddJob(&job.Job{
-		JobType:    jt,
-		Repository: r,
-	})
+	err := gui.State.Queue.AddJob(j)
 	if err != nil {
 		return err
 	}

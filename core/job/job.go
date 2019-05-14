@@ -27,6 +27,9 @@ const (
 
 	// MergeJob is wrapper of git merge command
 	MergeJob JobType = "merge"
+
+	// CheckoutJob is wrapper of git merge command
+	CheckoutJob JobType = "checkout"
 )
 
 // starts the job
@@ -82,6 +85,22 @@ func (j *Job) start() error {
 		if err := command.Merge(j.Repository, &command.MergeOptions{
 			BranchName: j.Repository.State.Branch.Upstream.Name,
 		}); err != nil {
+			j.Repository.SetWorkStatus(git.Fail)
+			j.Repository.State.Message = err.Error()
+			return err
+		}
+	case CheckoutJob:
+		j.Repository.State.Message = "switching to.."
+		var opts *command.CheckoutOptions
+		if j.Options != nil {
+			opts = j.Options.(*command.CheckoutOptions)
+		} else {
+			opts = &command.CheckoutOptions{
+				TargetRef:   "master",
+				CommandMode: command.ModeNative,
+			}
+		}
+		if err := command.Checkout(j.Repository, opts); err != nil {
 			j.Repository.SetWorkStatus(git.Fail)
 			j.Repository.State.Message = err.Error()
 			return err

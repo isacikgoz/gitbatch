@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/isacikgoz/gitbatch/core/command"
 	"github.com/isacikgoz/gitbatch/core/git"
 	"github.com/isacikgoz/gitbatch/core/job"
 	log "github.com/sirupsen/logrus"
@@ -126,7 +127,7 @@ func (gui *Gui) renderStatus(r *git.Repository) string {
 	var status string
 	if r.WorkStatus() == git.Queued {
 		if inQueue, j := gui.State.Queue.IsInTheQueue(r); inQueue {
-			status = printQueued(r, j.JobType)
+			status = printQueued(r, j)
 		}
 	} else if r.WorkStatus() == git.Working {
 		status = green.Sprint(workingSymbol) + ws + r.State.Message
@@ -156,15 +157,18 @@ func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 }
 
 // print queued item with the mode color
-func printQueued(r *git.Repository, jt job.JobType) string {
+func printQueued(r *git.Repository, j *job.Job) string {
 	var info string
-	switch jt {
+	switch jt := j.JobType; jt {
 	case job.FetchJob:
 		info = blue.Sprint(queuedSymbol) + ws + "(" + blue.Sprint("fetch") + ws + r.State.Remote.Name + ")"
 	case job.PullJob:
 		info = magenta.Sprint(queuedSymbol) + ws + "(" + magenta.Sprint("pull") + ws + r.State.Remote.Name + ")"
 	case job.MergeJob:
 		info = cyan.Sprint(queuedSymbol) + ws + "(" + cyan.Sprint("merge") + ws + r.State.Branch.Upstream.Name + ")"
+	case job.CheckoutJob:
+		refName := j.Options.(*command.CheckoutOptions).TargetRef
+		info = green.Sprint(queuedSymbol) + ws + "(" + cyan.Sprint("switch branch to") + ws + refName + ")"
 	default:
 		info = green.Sprint(queuedSymbol)
 	}
