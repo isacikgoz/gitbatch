@@ -42,7 +42,8 @@ func (j *Job) start() error {
 			opts = j.Options.(*command.FetchOptions)
 		} else {
 			opts = &command.FetchOptions{
-				RemoteName: j.Repository.State.Remote.Name,
+				RemoteName:  j.Repository.State.Remote.Name,
+				CommandMode: command.ModeNative,
 			}
 		}
 		if err := command.Fetch(j.Repository, opts); err != nil {
@@ -62,7 +63,8 @@ func (j *Job) start() error {
 			opts = j.Options.(*command.PullOptions)
 		} else {
 			opts = &command.PullOptions{
-				RemoteName: j.Repository.State.Remote.Name,
+				RemoteName:  j.Repository.State.Remote.Name,
+				CommandMode: command.ModeNative,
 			}
 		}
 		if err := command.Pull(j.Repository, opts); err != nil {
