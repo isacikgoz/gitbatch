@@ -9,20 +9,14 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
-var (
-	resetCmdMode string
-
-	resetCommand       = "reset"
-	resetCmdModeLegacy = "git"
-	resetCmdModeNative = "go-git"
-)
-
 // ResetOptions defines the rules of git reset command
 type ResetOptions struct {
 	// Hash is the reference to be resetted
 	Hash string
 	// Type is the mode of a reset operation
 	Rtype ResetType
+	// Mode is the command mode
+	CommandMode Mode
 }
 
 // ResetType defines a string type for reset git command.
@@ -53,14 +47,14 @@ const (
 )
 
 // Reset is the wrapper of "git reset" command
-func Reset(r *git.Repository, file *git.File, option *ResetOptions) error {
-	resetCmdMode = resetCmdModeLegacy
+func Reset(r *git.Repository, file *git.File, o *ResetOptions) error {
+	mode := o.CommandMode
 
-	switch resetCmdMode {
-	case resetCmdModeLegacy:
-		err := resetWithGit(r, file, option)
+	switch mode {
+	case ModeLegacy:
+		err := resetWithGit(r, file, o)
 		return err
-	case resetCmdModeNative:
+	case ModeNative:
 
 	}
 	return errors.New("Unhandled reset operation")
@@ -68,7 +62,7 @@ func Reset(r *git.Repository, file *git.File, option *ResetOptions) error {
 
 func resetWithGit(r *git.Repository, file *git.File, option *ResetOptions) error {
 	args := make([]string, 0)
-	args = append(args, resetCommand)
+	args = append(args, "reset")
 
 	args = append(args, "--")
 	args = append(args, file.Name)
@@ -84,15 +78,14 @@ func resetWithGit(r *git.Repository, file *git.File, option *ResetOptions) error
 }
 
 // ResetAll resets the changes in a repository, should be used wise
-func ResetAll(r *git.Repository, option *ResetOptions) error {
-	resetCmdMode = addCmdModeNative
+func ResetAll(r *git.Repository, o *ResetOptions) error {
 
-	switch resetCmdMode {
-	case resetCmdModeLegacy:
-		err := resetAllWithGit(r, option)
+	switch o.CommandMode {
+	case ModeLegacy:
+		err := resetAllWithGit(r, o)
 		return err
-	case resetCmdModeNative:
-		err := resetAllWithGoGit(r, option)
+	case ModeNative:
+		err := resetAllWithGoGit(r, o)
 		return err
 	}
 	return errors.New("Unhandled reset operation")
@@ -100,7 +93,7 @@ func ResetAll(r *git.Repository, option *ResetOptions) error {
 
 func resetAllWithGit(r *git.Repository, option *ResetOptions) error {
 	args := make([]string, 0)
-	args = append(args, resetCommand)
+	args = append(args, "reset")
 	if len(option.Rtype) > 0 {
 		args = append(args, "--"+string(option.Rtype))
 	}

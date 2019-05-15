@@ -7,6 +7,17 @@ import (
 	"syscall"
 )
 
+// Mode indicates that wheter command should run native code or use git
+// command to operate.
+type Mode uint8
+
+const (
+	// ModeLegacy uses traditional git command line tool to operate
+	ModeLegacy = iota
+	// ModeNative uses native implementation of given git command
+	ModeNative
+)
+
 // Run runs the OS command and return its output. If the output
 // returns error it also encapsulates it as a golang.error which is a return code
 // of the command except zero

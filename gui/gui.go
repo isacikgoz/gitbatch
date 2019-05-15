@@ -30,6 +30,8 @@ type guiState struct {
 	Mode          mode
 	Queue         *job.JobQueue
 	FailoverQueue *job.JobQueue
+	targetBranch  string
+	totalBranches []*branchCountMap
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
@@ -46,6 +48,11 @@ type mode struct {
 	CommandString string
 }
 
+type branchCountMap struct {
+	BranchName string
+	Count      int
+}
+
 // ModeID is the mode indicator for the gui
 type ModeID string
 
@@ -56,9 +63,11 @@ const (
 	// FetchMode puts the gui in fetch state
 	FetchMode ModeID = "fetch"
 	// PullMode puts the gui in pull state
-	PullMode ModeID = "pull"
+	PullMode = "pull"
 	// MergeMode puts the gui in merge state
-	MergeMode ModeID = "merge"
+	MergeMode = "merge"
+	// CheckoutMode checkout selected repositories
+	CheckoutMode = "checkout"
 
 	overview Layout = 0
 	focus    Layout = 1
@@ -69,6 +78,7 @@ var (
 	mainViewFrameFeature    = viewFeature{Name: "mainframe", Title: " Matched Repositories "}
 	loadingViewFeature      = viewFeature{Name: "loading", Title: " Loading in Progress "}
 	branchViewFeature       = viewFeature{Name: "branch", Title: " Branches "}
+	batchBranchViewFeature  = viewFeature{Name: "batch-branch", Title: " Select Branch "}
 	remoteViewFeature       = viewFeature{Name: "remotes", Title: " Remotes "}
 	remoteBranchViewFeature = viewFeature{Name: "remotebranches", Title: " Remote Branches "}
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}
@@ -80,9 +90,10 @@ var (
 	dynamicViewFeature      = viewFeature{Name: "dynamic", Title: " Dynamic "}
 	stashViewFeature        = viewFeature{Name: "stash", Title: " Stash "}
 
-	fetchMode = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
-	pullMode  = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
-	mergeMode = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
+	fetchMode    = mode{ModeID: FetchMode, DisplayString: "Fetch", CommandString: "fetch"}
+	pullMode     = mode{ModeID: PullMode, DisplayString: "Pull", CommandString: "pull"}
+	mergeMode    = mode{ModeID: MergeMode, DisplayString: "Merge", CommandString: "merge"}
+	checkoutMode = mode{ModeID: CheckoutMode, DisplayString: "Checkout", CommandString: "checkout"}
 
 	modes = []mode{fetchMode, pullMode, mergeMode}
 	// mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}

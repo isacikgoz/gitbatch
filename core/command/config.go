@@ -7,14 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	configCmdMode string
-
-	configCommand       = "config"
-	configCmdModeLegacy = "git"
-	configCmdModeNative = "go-git"
-)
-
 // ConfigOptions defines the rules for commit operation
 type ConfigOptions struct {
 	// Section
@@ -23,6 +15,8 @@ type ConfigOptions struct {
 	Option string
 	// Site should be Global or Local
 	Site ConfigSite
+	// Mode is the command mode
+	CommandMode Mode
 }
 
 // ConfigSite defines a string type for the site.
@@ -37,16 +31,14 @@ const (
 )
 
 // Config adds or reads config of a repository
-func Config(r *git.Repository, options *ConfigOptions) (value string, err error) {
+func Config(r *git.Repository, o *ConfigOptions) (value string, err error) {
 	// here we configure config operation
-	// default mode is go-git (this may be configured)
-	configCmdMode = configCmdModeLegacy
 
-	switch configCmdMode {
-	case configCmdModeLegacy:
-		return configWithGit(r, options)
-	case configCmdModeNative:
-		return configWithGoGit(r, options)
+	switch o.CommandMode {
+	case ModeLegacy:
+		return configWithGit(r, o)
+	case ModeNative:
+		return configWithGoGit(r, o)
 	}
 	return value, errors.New("Unhandled config operation")
 }
@@ -54,7 +46,7 @@ func Config(r *git.Repository, options *ConfigOptions) (value string, err error)
 // configWithGit is simply a bare git config --site <option>.<section> command which is flexible
 func configWithGit(r *git.Repository, options *ConfigOptions) (value string, err error) {
 	args := make([]string, 0)
-	args = append(args, configCommand)
+	args = append(args, "config")
 	if len(string(options.Site)) > 0 {
 		args = append(args, "--"+string(options.Site))
 	}
@@ -88,7 +80,7 @@ func AddConfig(r *git.Repository, options *ConfigOptions, value string) (err err
 // addConfigWithGit is simply a bare git config --add <option> command which is flexible
 func addConfigWithGit(r *git.Repository, options *ConfigOptions, value string) (err error) {
 	args := make([]string, 0)
-	args = append(args, configCommand)
+	args = append(args, "config")
 	if len(string(options.Site)) > 0 {
 		args = append(args, "--"+string(options.Site))
 	}

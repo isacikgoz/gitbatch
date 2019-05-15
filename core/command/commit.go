@@ -11,14 +11,6 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-var (
-	commitCmdMode string
-
-	commitCommand       = "commit"
-	commitCmdModeLegacy = "git"
-	commitCmdModeNative = "go-git"
-)
-
 // CommitOptions defines the rules for commit operation
 type CommitOptions struct {
 	// CommitMsg
@@ -27,19 +19,19 @@ type CommitOptions struct {
 	User string
 	// Email
 	Email string
+	// Mode is the command mode
+	CommandMode Mode
 }
 
 // Commit defines which commit command to use.
-func Commit(r *git.Repository, opt *CommitOptions) (err error) {
+func Commit(r *git.Repository, o *CommitOptions) (err error) {
 	// here we configure commit operation
-	// default mode is go-git (this may be configured)
-	commitCmdMode = commitCmdModeNative
 
-	switch commitCmdMode {
-	case commitCmdModeLegacy:
-		return commitWithGit(r, opt)
-	case commitCmdModeNative:
-		return commitWithGoGit(r, opt)
+	switch o.CommandMode {
+	case ModeLegacy:
+		return commitWithGit(r, o)
+	case ModeNative:
+		return commitWithGoGit(r, o)
 	}
 	return errors.New("Unhandled commit operation")
 }
@@ -47,7 +39,7 @@ func Commit(r *git.Repository, opt *CommitOptions) (err error) {
 // commitWithGit is simply a bare git commit -m <msg> command which is flexible
 func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 	args := make([]string, 0)
-	args = append(args, commitCommand)
+	args = append(args, "commit")
 	args = append(args, "-m")
 	// parse options to command line arguments
 	if len(opt.CommitMsg) > 0 {

@@ -11,7 +11,6 @@ import (
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-	"gopkg.in/src-d/go-git.v4/plumbing/revlist"
 )
 
 // Branch is the wrapper of go-git's Reference struct. In addition to that, it
@@ -180,28 +179,34 @@ type RevListOptions struct {
 	Ref2 string
 }
 
-// RevList is native implemetation of git rev-list command
-func RevList(r *Repository, opts RevListOptions) ([]*object.Commit, error) {
-
+// RevList is the legacy implementation of "git rev-list" command.
+func RevList(r *Repository, options RevListOptions) ([]*object.Commit, error) {
+	args := make([]string, 0)
+	args = append(args, revlistCommand)
+	if len(options.Ref1) > 0 && len(options.Ref2) > 0 {
+		arg1 := options.Ref1 + ".." + options.Ref2
+		args = append(args, arg1)
+	}
+	cmd := exec.Command("git", args...)
+	cmd.Dir = r.AbsPath
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	s := string(out)
+	hashes := strings.Split(s, "\n")
 	commits := make([]*object.Commit, 0)
-	ref1hist, err := revlist.Objects(r.Repo.Storer, []plumbing.Hash{plumbing.NewHash(opts.Ref1)}, nil)
-	if err != nil {
-		return nil, err
-	}
-	ref2hist, err := revlist.Objects(r.Repo.Storer, []plumbing.Hash{plumbing.NewHash(opts.Ref2)}, ref1hist)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, h := range ref2hist {
-		c, err := r.Repo.CommitObject(h)
-		if err != nil {
-			continue
+	for _, hash := range hashes {
+		if len(hash) == hashLength {
+			c, err := r.Repo.CommitObject(plumbing.NewHash(hash))
+			if err != nil {
+				continue
+			}
+			commits = append(commits, c)
 		}
-		commits = append(commits, c)
 	}
 	sort.Sort(CommitTime(commits))
-	return commits, err
+	return commits, nil
 }
 
 // SyncRemoteAndBranch is essegin ziki
