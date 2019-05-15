@@ -31,7 +31,7 @@ type guiState struct {
 	Queue         *job.JobQueue
 	FailoverQueue *job.JobQueue
 	targetBranch  string
-	totalBranches []string
+	totalBranches []*branchCountMap
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
@@ -46,6 +46,11 @@ type mode struct {
 	ModeID        ModeID
 	DisplayString string
 	CommandString string
+}
+
+type branchCountMap struct {
+	BranchName string
+	Count      int
 }
 
 // ModeID is the mode indicator for the gui

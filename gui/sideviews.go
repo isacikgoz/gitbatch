@@ -155,8 +155,8 @@ func (gui *Gui) selectSideItem(g *gocui.Gui, v *gocui.View) error {
 		r.Refresh()
 		err = gui.renderRemotes(r)
 	} else if v.Name() == batchBranchViewFeature.Name {
-		gui.State.targetBranch = gui.State.totalBranches[ix]
-		err = gui.renderBatchBranches()
+		gui.State.targetBranch = gui.State.totalBranches[ix].BranchName
+		err = gui.renderBatchBranches(false)
 	}
 	return err
 }

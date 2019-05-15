@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"sort"
+	"unicode"
 
 	"github.com/jroimartin/gocui"
 )
@@ -12,7 +13,7 @@ func (gui *Gui) openBatchBranchView(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetViewOnTop(batchBranchViewFeature.Name); err != nil {
 		return err
 	}
-	gui.renderBatchBranches()
+	gui.renderBatchBranches(true)
 	return gui.focusToView(batchBranchViewFeature.Name)
 }
 
@@ -28,7 +29,7 @@ func (gui *Gui) closeBatchBranchesView(g *gocui.Gui, v *gocui.View) error {
 }
 
 // updates the renderBatchBranches for given entity
-func (gui *Gui) renderBatchBranches() error {
+func (gui *Gui) renderBatchBranches(calculate bool) error {
 	v, err := gui.g.View(batchBranchViewFeature.Name)
 	if err != nil {
 		return err
@@ -43,34 +44,67 @@ func (gui *Gui) renderBatchBranches() error {
 			branchMap[b.Name] = branchMap[b.Name] + 1
 		}
 	}
-	type kv struct {
-		Key   string
-		Value int
-	}
-	var ss []kv
+
+	ss := make([]*branchCountMap, 0)
 	for k, v := range branchMap {
-		ss = append(ss, kv{k, v})
+		ss = append(ss, &branchCountMap{k, v})
 	}
 	var vals []int
 	for _, val := range branchMap {
 		vals = append(vals, val)
 	}
 	sort.Slice(ss, func(i, j int) bool {
-		return ss[i].Value > ss[j].Value
+		if ss[i].Count == ss[j].Count {
+			return lessAlphabetical(ss, i, j)
+		}
+		return ss[i].Count > ss[j].Count
 	})
+	if calculate {
+		gui.State.totalBranches = ss
+	}
 	si := 0
 	if len(gui.State.targetBranch) == 0 {
-		gui.State.targetBranch = ss[0].Key
+		gui.State.targetBranch = ss[0].BranchName
 	}
-	for i, kv := range ss {
-		if kv.Key == gui.State.targetBranch {
+	for i, kv := range gui.State.totalBranches {
+		rule := gui.renderRules()
+		branch := align(kv.BranchName, rule.MaxBranch, true, true)
+		if kv.BranchName == gui.State.targetBranch {
 			si = i
-			fmt.Fprintf(v, "%s%s %d\n", ws, green.Sprint(kv.Key), kv.Value)
+			fmt.Fprintf(v, "%s%s%s%d\n", ws, green.Sprint(branch), sep, kv.Count)
 		} else {
-			fmt.Fprintf(v, "%s%s %d\n", tab, kv.Key, kv.Value)
+			fmt.Fprintf(v, "%s%s%s%d\n", tab, branch, sep, kv.Count)
 		}
-		gui.State.totalBranches = append(gui.State.totalBranches, kv.Key)
 	}
-	adjustAnchor(si, len(ss), v)
+	adjustAnchor(si, len(gui.State.totalBranches), v)
 	return nil
+}
+
+// Less is the interface implementation for Alphabetical sorting function
+func lessAlphabetical(s []*branchCountMap, i, j int) bool {
+	iRunes := []rune(s[i].BranchName)
+	jRunes := []rune(s[j].BranchName)
+
+	max := len(iRunes)
+	if max > len(jRunes) {
+		max = len(jRunes)
+	}
+
+	for idx := 0; idx < max; idx++ {
+		ir := iRunes[idx]
+		jr := jRunes[idx]
+
+		lir := unicode.ToLower(ir)
+		ljr := unicode.ToLower(jr)
+
+		if lir != ljr {
+			return lir < ljr
+		}
+
+		// the lowercase runes are the same, so compare the original
+		if ir != jr {
+			return ir < jr
+		}
+	}
+	return false
 }
