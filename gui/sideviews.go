@@ -10,7 +10,7 @@ import (
 
 var (
 	confirmationViewFeature = viewFeature{Name: "confirmation", Title: " Confirmation "}
-	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature}
+	sideViews               = []viewFeature{remoteViewFeature, remoteBranchViewFeature, branchViewFeature, batchBranchViewFeature}
 )
 
 // moves the cursor downwards for the main view and if it goes to bottom it
@@ -154,6 +154,9 @@ func (gui *Gui) selectSideItem(g *gocui.Gui, v *gocui.View) error {
 		r.State.Remote = r.Remotes[ix]
 		r.Refresh()
 		err = gui.renderRemotes(r)
+	} else if v.Name() == batchBranchViewFeature.Name {
+		gui.State.targetBranch = gui.State.totalBranches[ix]
+		err = gui.renderBatchBranches()
 	}
 	return err
 }

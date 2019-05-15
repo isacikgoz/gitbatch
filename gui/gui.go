@@ -30,6 +30,8 @@ type guiState struct {
 	Mode          mode
 	Queue         *job.JobQueue
 	FailoverQueue *job.JobQueue
+	targetBranch  string
+	totalBranches []string
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
@@ -71,6 +73,7 @@ var (
 	mainViewFrameFeature    = viewFeature{Name: "mainframe", Title: " Matched Repositories "}
 	loadingViewFeature      = viewFeature{Name: "loading", Title: " Loading in Progress "}
 	branchViewFeature       = viewFeature{Name: "branch", Title: " Branches "}
+	batchBranchViewFeature  = viewFeature{Name: "batch-branch", Title: " Select Branch "}
 	remoteViewFeature       = viewFeature{Name: "remotes", Title: " Remotes "}
 	remoteBranchViewFeature = viewFeature{Name: "remotebranches", Title: " Remote Branches "}
 	commitViewFeature       = viewFeature{Name: "commits", Title: " Commits "}

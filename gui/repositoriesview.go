@@ -194,7 +194,7 @@ func (gui *Gui) addToQueue(r *git.Repository) error {
 	case CheckoutMode:
 		j.JobType = job.CheckoutJob
 		j.Options = &command.CheckoutOptions{
-			TargetRef: "master",
+			TargetRef: gui.State.targetBranch,
 		}
 	default:
 		return nil

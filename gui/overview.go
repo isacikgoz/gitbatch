@@ -57,6 +57,15 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Autoscroll = false
 		g.SetViewOnBottom(v.Name())
 	}
+	if v, err := g.SetView(batchBranchViewFeature.Name, int(0.25*float32(maxX)), int(0.25*float32(maxY)), int(0.75*float32(maxX)), int(0.75*float32(maxY))); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = batchBranchViewFeature.Title
+		v.Wrap = false
+		v.Autoscroll = false
+		g.SetViewOnBottom(v.Name())
+	}
 	if v, err := g.SetView(stashViewFeature.Name, -1*int(0.20*float32(maxX)), 0, -1, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
