@@ -1,6 +1,10 @@
 package command
 
-import "github.com/isacikgoz/gitbatch/core/git"
+import (
+	"os/exec"
+
+	"github.com/isacikgoz/gitbatch/core/git"
+)
 
 // CheckoutOptions defines the rules of checkout command
 type CheckoutOptions struct {
@@ -18,15 +22,26 @@ func Checkout(r *git.Repository, o *CheckoutOptions) error {
 			break
 		}
 	}
-	if branch == nil && o.CreateIfAbsent {
-
-	}
-	var msg string
+	msg := "checkout in progress"
 	if branch != nil {
-		r.SetWorkStatus(git.Success)
-		msg = "switched to " + o.TargetRef
 		if err := r.Checkout(branch); err != nil {
+			r.SetWorkStatus(git.Fail)
 			msg = err.Error()
+		} else {
+			r.SetWorkStatus(git.Success)
+			msg = "switched to " + o.TargetRef
+		}
+	} else if o.CreateIfAbsent {
+		args := []string{"checkout", "-b", o.TargetRef}
+		cmd := exec.Command("git", args...)
+		cmd.Dir = r.AbsPath
+		_, err := cmd.CombinedOutput()
+		if err != nil {
+			r.SetWorkStatus(git.Fail)
+			msg = err.Error()
+		} else {
+			r.SetWorkStatus(git.Success)
+			msg = "switched to " + o.TargetRef
 		}
 	}
 	r.State.Message = msg
