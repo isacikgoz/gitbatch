@@ -66,6 +66,16 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Autoscroll = false
 		g.SetViewOnBottom(v.Name())
 	}
+	if v, err := g.SetView(suggestBranchViewFeature.Name, int(0.30*float32(maxX)), int(0.45*float32(maxY)), int(0.70*float32(maxX)), int(0.55*float32(maxY))); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Title = suggestBranchViewFeature.Title
+		v.Editable = true
+		v.Wrap = false
+		v.Autoscroll = false
+		g.SetViewOnBottom(v.Name())
+	}
 	if v, err := g.SetView(stashViewFeature.Name, -1*int(0.20*float32(maxX)), 0, -1, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err

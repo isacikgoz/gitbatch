@@ -424,6 +424,30 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "q",
 			Description: "close/cancel",
 			Vital:       true,
+		}, {
+			View:        batchBranchViewFeature.Name,
+			Key:         'a',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openSuggestBranchView,
+			Display:     "a",
+			Description: "add new branch",
+			Vital:       true,
+		}, {
+			View:        suggestBranchViewFeature.Name,
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeSuggestBranchesView,
+			Display:     "esc",
+			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        suggestBranchViewFeature.Name,
+			Key:         gocui.KeyEnter,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeSuggestBranchesViewWithAdd,
+			Display:     "enter",
+			Description: "add",
+			Vital:       true,
 		},
 		// CommitView
 		{

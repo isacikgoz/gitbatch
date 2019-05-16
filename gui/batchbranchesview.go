@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"unicode"
 
 	"github.com/jroimartin/gocui"
@@ -107,4 +108,37 @@ func lessAlphabetical(s []*branchCountMap, i, j int) bool {
 		}
 	}
 	return false
+}
+
+// close confirmation view
+func (gui *Gui) openSuggestBranchView(g *gocui.Gui, v *gocui.View) error {
+	if _, err := g.SetViewOnTop(suggestBranchViewFeature.Name); err != nil {
+		return err
+	}
+	return gui.focusToView(suggestBranchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) closeSuggestBranchesView(g *gocui.Gui, v *gocui.View) error {
+	if gui.order == focus {
+		return nil
+	}
+	if _, err := g.SetViewOnBottom(suggestBranchViewFeature.Name); err != nil {
+		return err
+	}
+	gui.renderBatchBranches(false)
+	return gui.focusToView(batchBranchViewFeature.Name)
+}
+
+// close confirmation view
+func (gui *Gui) closeSuggestBranchesViewWithAdd(g *gocui.Gui, v *gocui.View) error {
+	newBranch := strings.TrimSpace(v.ViewBuffer())
+	if len(newBranch) <= 0 {
+		return gui.closeSuggestBranchesView(g, v)
+	}
+	nm := &branchCountMap{BranchName: newBranch}
+	gui.State.totalBranches = append(gui.State.totalBranches, nm)
+	gui.State.targetBranch = nm.BranchName
+	gui.renderBatchBranches(false)
+	return gui.closeSuggestBranchesView(g, v)
 }
