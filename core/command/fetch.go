@@ -15,13 +15,8 @@ import (
 )
 
 var (
-	fetchCmdMode  string
 	fetchTryCount int
-
-	fetchCommand       = "fetch"
-	fetchCmdModeLegacy = "git"
-	fetchCmdModeNative = "go-git"
-	fetchMaxTry        = 1
+	fetchMaxTry   = 1
 )
 
 // FetchOptions defines the rules for fetch operation
@@ -40,25 +35,27 @@ type FetchOptions struct {
 	// Force allows the fetch to update a local branch even when the remote
 	// branch does not descend from it.
 	Force bool
+	// Mode is the command mode
+	CommandMode Mode
 	// There should be more room for authentication, tags and progress
 }
 
 // Fetch branches refs from one or more other repositories, along with the
 // objects necessary to complete their histories
-func Fetch(r *git.Repository, options *FetchOptions) (err error) {
+func Fetch(r *git.Repository, o *FetchOptions) (err error) {
 	// here we configure fetch operation
 	// default mode is go-git (this may be configured)
-	fetchCmdMode = fetchCmdModeNative
+	mode := o.CommandMode
 	fetchTryCount = 0
 	// prune and dry run is not supported from go-git yet, rely on old friend
-	if options.Prune || options.DryRun {
-		fetchCmdMode = fetchCmdModeLegacy
+	if o.Prune || o.DryRun {
+		mode = ModeLegacy
 	}
-	switch fetchCmdMode {
-	case fetchCmdModeLegacy:
-		err = fetchWithGit(r, options)
+	switch mode {
+	case ModeLegacy:
+		err = fetchWithGit(r, o)
 		return err
-	case fetchCmdModeNative:
+	case ModeNative:
 		// this should be the refspec as default, let's give it a try
 		// TODO: Fix for quick mode, maybe better read config file
 		var refspec string
@@ -67,7 +64,7 @@ func Fetch(r *git.Repository, options *FetchOptions) (err error) {
 		} else {
 			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Name + "/" + r.State.Branch.Name
 		}
-		err = fetchWithGoGit(r, options, refspec)
+		err = fetchWithGoGit(r, o, refspec)
 		return err
 	}
 	return nil
@@ -78,7 +75,7 @@ func Fetch(r *git.Repository, options *FetchOptions) (err error) {
 // tool. To avoid that, using native implementation is preferred.
 func fetchWithGit(r *git.Repository, options *FetchOptions) (err error) {
 	args := make([]string, 0)
-	args = append(args, fetchCommand)
+	args = append(args, "fetch")
 	// parse options to command line arguments
 	if len(options.RemoteName) > 0 {
 		args = append(args, options.RemoteName)

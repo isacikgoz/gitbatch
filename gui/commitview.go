@@ -75,8 +75,9 @@ func (gui *Gui) openCommitUserNameView(g *gocui.Gui) error {
 			return err
 		}
 		name, err := command.Config(r, &command.ConfigOptions{
-			Section: "user",
-			Option:  "name",
+			Section:     "user",
+			Option:      "name",
+			CommandMode: command.ModeLegacy,
 		})
 		if err != nil {
 			// possibly could not get the user name
@@ -109,8 +110,9 @@ func (gui *Gui) openCommitUserEmailView(g *gocui.Gui) error {
 			return err
 		}
 		email, err := command.Config(r, &command.ConfigOptions{
-			Section: "user",
-			Option:  "email",
+			Section:     "user",
+			Option:      "email",
+			CommandMode: command.ModeLegacy,
 		})
 		if err != nil {
 			// possibly could not get the user email
@@ -154,9 +156,10 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	err = command.Commit(r, &command.CommitOptions{
-		CommitMsg: msg,
-		User:      name,
-		Email:     email,
+		CommitMsg:   msg,
+		User:        name,
+		Email:       email,
+		CommandMode: command.ModeNative,
 	})
 	if err != nil {
 		return err

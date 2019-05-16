@@ -7,8 +7,6 @@ import (
 	"github.com/isacikgoz/gitbatch/core/git"
 )
 
-var mergeCommand = "merge"
-
 // MergeOptions defines the rules of a merge operation
 type MergeOptions struct {
 	// Name of the branch to merge with.
@@ -17,6 +15,8 @@ type MergeOptions struct {
 	Verbose bool
 	// With true do not show a diffstat at the end of the merge.
 	NoStat bool
+	// Mode is the command mode
+	CommandMode Mode
 }
 
 // Merge incorporates changes from the named commits or branches into the
@@ -24,7 +24,7 @@ type MergeOptions struct {
 func Merge(r *git.Repository, options *MergeOptions) error {
 
 	args := make([]string, 0)
-	args = append(args, mergeCommand)
+	args = append(args, "merge")
 	if len(options.BranchName) > 0 {
 		args = append(args, options.BranchName)
 	}

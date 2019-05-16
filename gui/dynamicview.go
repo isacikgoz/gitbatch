@@ -59,6 +59,9 @@ func (gui *Gui) commitStats(ix int) error {
 	if err := gui.updateDynamicKeybindings(); err != nil {
 		return err
 	}
+	if len(r.State.Branch.Commits) <= 0 {
+		return nil
+	}
 	c := r.State.Branch.Commits[ix-1]
 	done := make(chan bool)
 	var stat string

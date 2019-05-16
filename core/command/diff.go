@@ -12,24 +12,17 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
 
-var (
-	diffCmdMode string
-
-	diffCommand       = "diff"
-	diffCmdModeLegacy = "git"
-	diffCmdModeNative = "go-git"
-)
-
 // Diff is a wrapper function for "git diff" command
 // Diff function returns the diff to previous commit detail of the given has
 // of a specific commit
 func Diff(r *git.Repository, hash string) (diff string, err error) {
-	diffCmdMode = diffCmdModeNative
+	// in case we want to configure diff options
+	mode := ModeNative
 
-	switch diffCmdMode {
-	case diffCmdModeLegacy:
+	switch mode {
+	case ModeLegacy:
 		return diffWithGit(r, hash)
-	case diffCmdModeNative:
+	case ModeNative:
 		return diffWithGoGit(r, hash)
 	}
 	return diff, errors.New("Unhandled diff operation")

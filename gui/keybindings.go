@@ -210,6 +210,14 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
+			Key:         'c',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.switchToCheckoutMode,
+			Display:     "c",
+			Description: "Checkout mode",
+			Vital:       false,
+		}, {
+			View:        mainViewFeature.Name,
 			Key:         gocui.KeyTab,
 			Modifier:    gocui.ModNone,
 			Handler:     gui.focusToRepository,
@@ -322,11 +330,11 @@ func (gui *Gui) generateKeybindings() error {
 			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
-			Key:         'c',
+			Key:         'h',
 			Modifier:    gocui.ModNone,
 			Handler:     gui.openCheatSheetView,
-			Display:     "c",
-			Description: "Controls",
+			Display:     "h",
+			Description: "Help",
 			Vital:       true,
 		}, {
 			View:        mainViewFeature.Name,
@@ -336,6 +344,14 @@ func (gui *Gui) generateKeybindings() error {
 			Display:     "b",
 			Description: "branches",
 			Vital:       true,
+		}, {
+			View:        mainViewFeature.Name,
+			Key:         gocui.KeyCtrlB,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openBatchBranchView,
+			Display:     "ctrl + b",
+			Description: "Batch branch checkout selection",
+			Vital:       false,
 		}, {
 			View:        mainViewFeature.Name,
 			Key:         'n',
@@ -399,6 +415,38 @@ func (gui *Gui) generateKeybindings() error {
 			Handler:     gui.closeBranchesView,
 			Display:     "q",
 			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        batchBranchViewFeature.Name,
+			Key:         'q',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeBatchBranchesView,
+			Display:     "q",
+			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        batchBranchViewFeature.Name,
+			Key:         'a',
+			Modifier:    gocui.ModNone,
+			Handler:     gui.openSuggestBranchView,
+			Display:     "a",
+			Description: "add new branch",
+			Vital:       true,
+		}, {
+			View:        suggestBranchViewFeature.Name,
+			Key:         gocui.KeyEsc,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeSuggestBranchesView,
+			Display:     "esc",
+			Description: "close/cancel",
+			Vital:       true,
+		}, {
+			View:        suggestBranchViewFeature.Name,
+			Key:         gocui.KeyEnter,
+			Modifier:    gocui.ModNone,
+			Handler:     gui.closeSuggestBranchesViewWithAdd,
+			Display:     "enter",
+			Description: "add",
 			Vital:       true,
 		},
 		// CommitView
@@ -665,6 +713,9 @@ func (gui *Gui) updateKeyBindingsView(g *gocui.Gui, viewName string) error {
 	case MergeMode:
 		v.BgColor = gocui.ColorCyan
 		modeLabel = mergeSymbol + ws + "MERGE"
+	case CheckoutMode:
+		v.BgColor = gocui.ColorGreen
+		modeLabel = checkoutSymbol + ws + "CHECKOUT"
 	default:
 		modeLabel = "No mode selected"
 	}

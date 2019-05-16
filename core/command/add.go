@@ -7,14 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	addCmdMode string
-
-	addCommand       = "add"
-	addCmdModeLegacy = "git"
-	addCmdModeNative = "go-git"
-)
-
 // AddOptions defines the rules for "git add" command
 type AddOptions struct {
 	// Update
@@ -23,19 +15,21 @@ type AddOptions struct {
 	Force bool
 	// DryRun
 	DryRun bool
+	// Mode is the command mode
+	CommandMode Mode
 }
 
 // Add is a wrapper function for "git add" command
 func Add(r *git.Repository, f *git.File, o *AddOptions) error {
-	addCmdMode = addCmdModeNative
+	mode := o.CommandMode
 	if o.Update || o.Force || o.DryRun {
-		addCmdMode = addCmdModeLegacy
+		mode = ModeLegacy
 	}
-	switch addCmdMode {
-	case addCmdModeLegacy:
+	switch mode {
+	case ModeLegacy:
 		err := addWithGit(r, f, o)
 		return err
-	case addCmdModeNative:
+	case ModeNative:
 		err := addWithGoGit(r, f)
 		return err
 	}
@@ -45,7 +39,7 @@ func Add(r *git.Repository, f *git.File, o *AddOptions) error {
 // AddAll function is the wrapper of "git add ." command
 func AddAll(r *git.Repository, o *AddOptions) error {
 	args := make([]string, 0)
-	args = append(args, addCommand)
+	args = append(args, "add")
 	if o.DryRun {
 		args = append(args, "--dry-run")
 	}
@@ -60,7 +54,7 @@ func AddAll(r *git.Repository, o *AddOptions) error {
 
 func addWithGit(r *git.Repository, f *git.File, o *AddOptions) error {
 	args := make([]string, 0)
-	args = append(args, addCommand)
+	args = append(args, "add")
 	args = append(args, f.Name)
 	if o.Update {
 		args = append(args, "--update")

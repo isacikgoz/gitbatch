@@ -15,13 +15,8 @@ import (
 )
 
 var (
-	pullCmdMode  string
 	pullTryCount int
-
-	pullCommand       = "pull"
-	pullCmdModeLegacy = "git"
-	pullCmdModeNative = "go-git"
-	pullMaxTry        = 1
+	pullMaxTry   = 1
 )
 
 // PullOptions defines the rules for pull operation
@@ -39,21 +34,21 @@ type PullOptions struct {
 	// Force allows the pull to update a local branch even when the remote
 	// branch does not descend from it.
 	Force bool
+	// Mode is the command mode
+	CommandMode Mode
 }
 
 // Pull ncorporates changes from a remote repository into the current branch.
-func Pull(r *git.Repository, options *PullOptions) (err error) {
-	// here we configure pull operation
-	// default mode is go-git (this may be configured)
-	pullCmdMode = pullCmdModeNative
+func Pull(r *git.Repository, o *PullOptions) (err error) {
 	pullTryCount = 0
 
-	switch pullCmdMode {
-	case pullCmdModeLegacy:
-		err = pullWithGit(r, options)
+	// here we configure pull operation
+	switch o.CommandMode {
+	case ModeLegacy:
+		err = pullWithGit(r, o)
 		return err
-	case pullCmdModeNative:
-		err = pullWithGoGit(r, options)
+	case ModeNative:
+		err = pullWithGoGit(r, o)
 		return err
 	}
 	return nil
@@ -61,7 +56,7 @@ func Pull(r *git.Repository, options *PullOptions) (err error) {
 
 func pullWithGit(r *git.Repository, options *PullOptions) (err error) {
 	args := make([]string, 0)
-	args = append(args, pullCommand)
+	args = append(args, "pull")
 	// parse options to command line arguments
 	if len(options.RemoteName) > 0 {
 		args = append(args, options.RemoteName)

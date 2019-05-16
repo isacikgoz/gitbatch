@@ -75,6 +75,12 @@ func (gui *Gui) switchToMergeMode(g *gocui.Gui, v *gocui.View) error {
 	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
+// siwtch the app's mode to checkout
+func (gui *Gui) switchToCheckoutMode(g *gocui.Gui, v *gocui.View) error {
+	gui.State.Mode = checkoutMode
+	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
+}
+
 // bring the view on the top by its name
 func (gui *Gui) setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
 	if _, err := g.SetCurrentView(name); err != nil {

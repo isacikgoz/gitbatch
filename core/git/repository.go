@@ -230,3 +230,7 @@ func (r *Repository) SetWorkStatus(ws WorkStatus) {
 		log.Warnf("Cannot publish on %s topic.\n", RepositoryUpdated)
 	}
 }
+
+func (r *Repository) String() string {
+	return r.Name
+}

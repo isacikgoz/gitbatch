@@ -14,14 +14,13 @@ import (
 var (
 	statusCmdMode string
 
-	statusCommand       = "status"
 	statusCmdModeLegacy = "git"
 	statusCmdModeNative = "go-git"
 )
 
 func shortStatus(r *git.Repository, option string) string {
 	args := make([]string, 0)
-	args = append(args, statusCommand)
+	args = append(args, "status")
 	args = append(args, option)
 	args = append(args, "--short")
 	out, err := Run(r.AbsPath, "git", args)
@@ -34,12 +33,13 @@ func shortStatus(r *git.Repository, option string) string {
 
 // Status returns the dirty files
 func Status(r *git.Repository) ([]*git.File, error) {
-	statusCmdMode = statusCmdModeLegacy
+	// in case we want configure Satus command externally
+	mode := ModeLegacy
 
-	switch statusCmdMode {
-	case statusCmdModeLegacy:
+	switch mode {
+	case ModeLegacy:
 		return statusWithGit(r)
-	case statusCmdModeNative:
+	case ModeNative:
 		return statusWithGoGit(r)
 	}
 	return nil, errors.New("Unhandled status operation")
