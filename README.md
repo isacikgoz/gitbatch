@@ -27,7 +27,6 @@ For more information see the [wiki pages](https://github.com/isacikgoz/gitbatch/
 ## Further goals
 - improve testing
 - add push
-- add batch checkout
 - full src-d/go-git integration (*having some performance issues in large repos*)
   - fetch, config, rev-list, add, reset, commit, status and diff commands are supported but not fully utilized, still using git occasionally
   - merge, stash are not supported yet by go-git
