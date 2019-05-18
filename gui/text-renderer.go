@@ -215,16 +215,22 @@ func colorizeDiff(original string) (colorized []string) {
 	re := regexp.MustCompile(`@@ .+ @@`)
 	for i, line := range colorized {
 		if len(line) > 0 {
-			if line[0] == '-' {
+			switch rn := line[0]; rn {
+			case '-':
 				colorized[i] = red.Sprint(line)
-			} else if line[0] == '+' {
+				continue
+			case '+':
 				colorized[i] = green.Sprint(line)
-			} else if re.MatchString(line) {
+				continue
+			default:
+			}
+
+			if re.MatchString(line) {
 				s := re.FindString(line)
 				colorized[i] = cyan.Sprint(s) + line[len(s):]
-			} else {
-				continue
 			}
+			continue
+
 		} else {
 			continue
 		}
@@ -325,11 +331,12 @@ func decorateDiffStat(in string, sum bool) string {
 		d = d + cyan.Sprint(align(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + align(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
 		sr := []rune(stat.Changes)
 		for _, r := range sr {
-			if r == '+' {
+			switch r {
+			case '+':
 				d = d + green.Sprint(string(r))
-			} else if r == '-' {
+			case '-':
 				d = d + red.Sprint(string(r))
-			} else {
+			default:
 				d = d + string(r)
 			}
 		}
