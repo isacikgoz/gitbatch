@@ -63,12 +63,6 @@ func Setup(argConfig *Config) (*App, error) {
 	return app, nil
 }
 
-// Close function will handle if any cleanup is required. e.g. closing streams
-// or cleaning temproray files so on and so forth
-func (app *App) Close() error {
-	return nil
-}
-
 // set the level of logging it is fatal by default
 func setLogLevel(logLevel string) {
 	switch logLevel {

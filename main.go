@@ -43,11 +43,10 @@ func run(dirs []string, log string, depth int, quick bool, mode string) error {
 		return err
 	}
 
+	// if app is nil and there is no err, probably app ran w/o gui
 	if app == nil {
 		return nil
 	}
-	// good citizens always clean up their mess
-	defer app.Close()
 
 	// execute the app and wait its routine
 	return app.Gui.Run()
