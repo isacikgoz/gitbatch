@@ -42,12 +42,10 @@ func run(dirs []string, log string, depth int, quick bool, mode string) error {
 	if err != nil {
 		return err
 	}
-
+	// app may finished in headless mode
 	if app == nil {
 		return nil
 	}
-	// good citizens always clean up their mess
-	defer app.Close()
 
 	// execute the app and wait its routine
 	return app.Gui.Run()

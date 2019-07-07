@@ -55,13 +55,6 @@ func TestSetup(t *testing.T) {
 	}
 }
 
-func TestClose(t *testing.T) {
-	mockApp := &App{}
-	if err := mockApp.Close(); err != nil {
-		t.Errorf("Test")
-	}
-}
-
 func TestSetLogLevel(t *testing.T) {
 	var tests = []struct {
 		input string
