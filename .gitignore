@@ -4,3 +4,4 @@ test.go
 .vscode
 build/
 coverage.txt
+.DS_Store
