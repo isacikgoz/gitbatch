@@ -42,8 +42,7 @@ func run(dirs []string, log string, depth int, quick bool, mode string) error {
 	if err != nil {
 		return err
 	}
-
-	// if app is nil and there is no err, probably app ran w/o gui
+	// app may finished in headless mode
 	if app == nil {
 		return nil
 	}
