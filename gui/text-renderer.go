@@ -23,39 +23,37 @@ var (
 	white   = color.New(color.FgWhite)
 	magenta = color.New(color.FgMagenta)
 
-	bold = color.New(color.Bold)
+	keySymbol = " " + yellow.Sprint("🔑") + ws
+	sep       = " " + yellow.Sprint("|") + ws
 
-	maxBranchLength     = 15
-	maxRepositoryLength = 20
-	hashLength          = 7
-
-	ws       = " "
 	pushable = string(blue.Sprint("↖"))
 	pullable = string(blue.Sprint("↘"))
 	dirty    = string(yellow.Sprint("✗"))
 
+	bold = color.New(color.Bold)
+)
+
+const (
+	maxBranchLength     = 15
+	maxRepositoryLength = 20
+	hashLength          = 7
+
+	ws            = " "
 	queuedSymbol  = "•"
 	workingSymbol = "•"
 	successSymbol = "✔"
 	pauseSymbol   = "॥"
 	failSymbol    = "✗"
 
-	fetchSymbol    = "↓"
-	pullSymbol     = "↓↳"
-	mergeSymbol    = "↳"
-	checkoutSymbol = "↱"
-
-	keySymbol = ws + yellow.Sprint("🔑") + ws
-
-	sep = ws + yellow.Sprint("|") + ws
-
+	fetchSymbol         = "↓"
+	pullSymbol          = "↓↳"
+	mergeSymbol         = "↳"
+	checkoutSymbol      = "↱"
 	modeSeperator       = ""
 	keyBindingSeperator = "░"
 
 	selectionIndicator = "→" + ws
 	tab                = ws
-
-	renderRules = &RepositoryDecorationRules{}
 )
 
 // RepositoryDecorationRules is a rule set for creating repositry labels
@@ -70,7 +68,7 @@ type RepositoryDecorationRules struct {
 // this function handles the render and representation of the repository
 // TODO: cleanup is required, right now it looks too complicated
 func (gui *Gui) repositoryLabel(r *git.Repository) string {
-	renderRules = gui.renderRules()
+	renderRules := gui.renderRules()
 
 	gui.renderTableHeader(renderRules)
 
@@ -151,8 +149,8 @@ func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 	var header string
 	revlen := 2 + rule.MaxPullables + 2 + rule.MaxPushables + 1
 	header = ws + magenta.Sprint(align("revs", revlen, true, true)) + sep
-	header = header + align(magenta.Sprint("branch"), renderRules.MaxBranch, true, true) + sep
-	header = header + magenta.Sprint(align("name", renderRules.MaxName+2, true, true)) + sep
+	header = header + align(magenta.Sprint("branch"), rule.MaxBranch, true, true) + sep
+	header = header + magenta.Sprint(align("name", rule.MaxName+2, true, true)) + sep
 	fmt.Fprintln(v, header)
 }
 
