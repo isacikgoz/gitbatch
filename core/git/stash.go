@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var stashCommand = "stash"
+const stashCommand = "stash"
 
 // StashedItem holds the required fields for a stashed change
 type StashedItem struct {

@@ -9,25 +9,6 @@ import (
 	git "gopkg.in/src-d/go-git.v4"
 )
 
-// RepositoryInterface is interface to repositorty
-type RepositoryInterface interface {
-	loadComponents(bool) error
-	Refresh() error
-	On(string, RepositoryListener)
-	Publish(string, interface{}) error
-	WorkStatus() WorkStatus
-	SetWorkStatus(WorkStatus)
-
-	initBranches() error
-	Checkout(*Branch) error
-	isClean() bool
-
-	initRemotes() error
-
-	loadStashedItems() error
-	Stash() (string, error)
-}
-
 // Reference is the interface for commits, remotes and branches
 type Reference interface {
 	Next() *Reference

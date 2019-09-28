@@ -1,31 +1,26 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/isacikgoz/gitbatch/app"
-	log "github.com/sirupsen/logrus"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
-)
-
-var (
-	dirs         = kingpin.Flag("directory", "Directory(s) to roam for git repositories.").Short('d').Strings()
-	mode         = kingpin.Flag("mode", "Application start mode, more sensible with quick run.").Short('m').String()
-	recurseDepth = kingpin.Flag("recursive-depth", "Find directories recursively.").Default("0").Short('r').Int()
-	logLevel     = kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
-	quick        = kingpin.Flag("quick", "runs without gui and fetches/pull remote upstream.").Short('q').Bool()
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.5.0")
+	kingpin.Version("gitbatch version 0.5.2")
+	dirs := kingpin.Flag("directory", "Directory(s) to roam for git repositories.").Short('d').Strings()
+	mode := kingpin.Flag("mode", "Application start mode, more sensible with quick run.").Short('m').String()
+	recursionDepth := kingpin.Flag("recursive-depth", "Find directories recursively.").Default("0").Short('r').Int()
+	logLevel := kingpin.Flag("log-level", "Logging level; trace,debug,info,warn,error").Default("error").Short('l').String()
+	quick := kingpin.Flag("quick", "runs without gui and fetches/pull remote upstream.").Short('q').Bool()
 
 	// parse the command line flag and options
 	kingpin.Parse()
 
-	if err := run(*dirs, *logLevel, *recurseDepth, *quick, *mode); err != nil {
-		log.WithFields(log.Fields{
-			"error": err.Error(),
-		}).Error("application quitted with an unhandled error.")
+	if err := run(*dirs, *logLevel, *recursionDepth, *quick, *mode); err != nil {
+		fmt.Fprintf(os.Stderr, "application quitted with an unhandled error: %v", err)
 		os.Exit(1)
 	}
 }
