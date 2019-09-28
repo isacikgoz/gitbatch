@@ -15,7 +15,7 @@ type File struct {
 // FileStatus is the short representation of state of a file
 type FileStatus byte
 
-var (
+const (
 	// StatusNotupdated says file not updated
 	StatusNotupdated FileStatus = ' '
 	// StatusModified says file is modifed

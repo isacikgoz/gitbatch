@@ -28,11 +28,12 @@ type Branch struct {
 	Clean     bool
 }
 
+// BranchState hold the ref commit
 type BranchState struct {
 	Commit *Commit
 }
 
-var (
+const (
 	revlistCommand = "rev-list"
 	hashLength     = 40
 )
