@@ -1,56 +1,62 @@
 package errors
 
 import (
-	"errors"
 	"strings"
 )
 
-var (
+// GitError is the errors from git package
+type GitError string
+
+const (
 	// ErrGitCommand is thrown when git command returned an error code
-	ErrGitCommand = errors.New("git command returned error code")
+	ErrGitCommand GitError = "git command returned error code"
 	// ErrAuthenticationRequired is thrown when an authentication required on
 	// a remote operation
-	ErrAuthenticationRequired = errors.New("authentication required")
+	ErrAuthenticationRequired GitError = "authentication required"
 	// ErrAuthorizationFailed is thrown when authorization failed while trying
 	// to authenticate with remote
-	ErrAuthorizationFailed = errors.New("authorization failed")
+	ErrAuthorizationFailed GitError = "authorization failed"
 	// ErrInvalidAuthMethod is thrown when invalid auth method is invoked
-	ErrInvalidAuthMethod = errors.New("invalid auth method")
+	ErrInvalidAuthMethod GitError = "invalid auth method"
 	// ErrAlreadyUpToDate is thrown when a repository is already up to date
 	// with its src on merge/fetch/pull
-	ErrAlreadyUpToDate = errors.New("already up to date")
+	ErrAlreadyUpToDate GitError = "already up to date"
 	// ErrCouldNotFindRemoteRef is thrown when trying to fetch/pull cannot
 	// find suitable remote reference
-	ErrCouldNotFindRemoteRef = errors.New("could not find remote ref")
+	ErrCouldNotFindRemoteRef GitError = "could not find remote ref"
 	// ErrMergeAbortedTryCommit indicates that the repositort is not clean and
 	// some changes may conflict with the merge
-	ErrMergeAbortedTryCommit = errors.New("stash/commit changes. aborted")
+	ErrMergeAbortedTryCommit GitError = "stash/commit changes. aborted"
 	// ErrRemoteBranchNotSpecified means that default remote branch is not set
 	// for the current branch. can be setted with "git config --local --add
 	// branch.<your branch name>.remote=<your remote name> "
-	ErrRemoteBranchNotSpecified = errors.New("upstream not set")
+	ErrRemoteBranchNotSpecified GitError = ("upstream not set")
 	// ErrRemoteNotFound is thrown when the remote is not reachable. It may be
 	// caused by the deletion of the remote or coneectivty problems
-	ErrRemoteNotFound = errors.New("remote not found")
+	ErrRemoteNotFound GitError = ("remote not found")
 	// ErrConflictAfterMerge is thrown when a conflict occurs at merging two
 	// references
-	ErrConflictAfterMerge = errors.New("conflict while merging")
+	ErrConflictAfterMerge GitError = ("conflict while merging")
 	// ErrUnmergedFiles possibly occurs after a conflict
-	ErrUnmergedFiles = errors.New("unmerged files detected")
+	ErrUnmergedFiles GitError = ("unmerged files detected")
 	// ErrReferenceBroken thrown when unable to resolve reference
-	ErrReferenceBroken = errors.New("unable to resolve reference")
+	ErrReferenceBroken GitError = ("unable to resolve reference")
 	// ErrPermissionDenied is thrown when ssh authentication occurs
-	ErrPermissionDenied = errors.New("permission denied")
+	ErrPermissionDenied GitError = ("permission denied")
 	// ErrOverwrittenByMerge is the thrown when there is untracked files on working tree
-	ErrOverwrittenByMerge = errors.New("move or remove untracked files before merge")
+	ErrOverwrittenByMerge GitError = ("move or remove untracked files before merge")
 	// ErrUserEmailNotSet is thrown if there is no configured user email while
 	// commit command
-	ErrUserEmailNotSet = errors.New("user email not configured")
+	ErrUserEmailNotSet GitError = ("user email not configured")
 	// ErrUnclassified is unconsidered error type
-	ErrUnclassified = errors.New("unclassified error")
+	ErrUnclassified GitError = ("unclassified error")
 	// NoErrIterationHalted is thrown for catching stops in interators
-	NoErrIterationHalted = errors.New("iteration halted")
+	NoErrIterationHalted GitError = ("iteration halted")
 )
+
+func (e GitError) Error() string {
+	return string(e)
+}
 
 // ParseGitError takes git output as an input and tries to find some meaningful
 // errors can be used by the app
