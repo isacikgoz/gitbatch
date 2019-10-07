@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -26,7 +25,6 @@ var (
 	modeKeyDefault      = "fetch"
 	pathsKey            = "paths"
 	pathsKeyDefault     = []string{"."}
-	logLevelKey         = "loglevel"
 	logLevelKeyDefault  = "error"
 	qucikKey            = "quick"
 	qucikKeyDefault     = false
@@ -54,7 +52,6 @@ func LoadConfiguration() (*Config, error) {
 	}
 	config := &Config{
 		Directories: directories,
-		LogLevel:    viper.GetString(logLevelKey),
 		Depth:       viper.GetInt(recursionKey),
 		QuickMode:   viper.GetBool(qucikKey),
 		Mode:        viper.GetString(modeKey),
@@ -64,7 +61,6 @@ func LoadConfiguration() (*Config, error) {
 
 // set default configuration parameters
 func setDefaults() error {
-	viper.SetDefault(logLevelKey, logLevelKeyDefault)
 	viper.SetDefault(qucikKey, qucikKeyDefault)
 	viper.SetDefault(recursionKey, recursionKeyDefault)
 	viper.SetDefault(modeKey, modeKeyDefault)
@@ -116,8 +112,6 @@ func osConfigDirectory(osname string) (osConfigDirectory string) {
 		osConfigDirectory = os.Getenv("HOME") + "/Library/Application Support"
 	case "linux":
 		osConfigDirectory = os.Getenv("HOME") + "/.config"
-	default:
-		log.Warn("Operating system couldn't be recognized")
 	}
 	return osConfigDirectory
 }

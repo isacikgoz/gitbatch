@@ -7,7 +7,6 @@ import (
 
 	gerr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
@@ -132,7 +131,6 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 	if err := r.Repo.Fetch(opt); err != nil {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// Already up-to-date
-			log.Warn(err.Error())
 			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
@@ -149,10 +147,8 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 			// The env variable SSH_AUTH_SOCK is not defined, maybe git can handle this
 			return fetchWithGit(r, options)
 		} else if err == transport.ErrAuthenticationRequired {
-			log.Warn(err.Error())
 			return gerr.ErrAuthenticationRequired
 		} else {
-			log.Warn(err.Error())
 			return fetchWithGit(r, options)
 		}
 	}

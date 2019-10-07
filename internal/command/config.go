@@ -1,10 +1,9 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 )
 
 // ConfigOptions defines the rules for commit operation
@@ -40,7 +39,7 @@ func Config(r *git.Repository, o *ConfigOptions) (value string, err error) {
 	case ModeNative:
 		return configWithGoGit(r, o)
 	}
-	return value, errors.New("Unhandled config operation")
+	return value, fmt.Errorf("unhandled config operation")
 }
 
 // configWithGit is simply a bare git config --site <option>.<section> command which is flexible
@@ -90,7 +89,6 @@ func addConfigWithGit(r *git.Repository, options *ConfigOptions, value string) (
 		args = append(args, value)
 	}
 	if _, err := Run(r.AbsPath, "git", args); err != nil {
-		log.Warn("Error at git command (config)")
 		return err
 	}
 	// till this step everything should be ok

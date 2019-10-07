@@ -4,8 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	log "github.com/sirupsen/logrus"
 )
 
 // generateDirectories returns poosible git repositories to pipe into git pkg's
@@ -31,9 +29,6 @@ func walkRecursive(search, appendant []string) ([]string, []string) {
 		// find possible repositories and remaining ones, b slice is possible ones
 		a, b, err := seperateDirectories(search[i])
 		if err != nil {
-			log.WithFields(log.Fields{
-				"directory": search[i],
-			}).WithError(err).Trace("Can't read directory")
 			continue
 		}
 		// since we started to search let's get rid of it and remove from search
@@ -55,9 +50,6 @@ func seperateDirectories(directory string) ([]string, []string, error) {
 	files, err := ioutil.ReadDir(directory)
 	// can we read the directory?
 	if err != nil {
-		log.WithFields(log.Fields{
-			"directory": directory,
-		}).Trace("Can't read directory")
 		return nil, nil, nil
 	}
 	for _, f := range files {
@@ -65,10 +57,6 @@ func seperateDirectories(directory string) ([]string, []string, error) {
 		file, err := os.Open(repo)
 		// if we cannot open it, simply continue to iteration and don't consider
 		if err != nil {
-			log.WithFields(log.Fields{
-				"file":      file,
-				"directory": repo,
-			}).WithError(err).Trace("Failed to open file in the directory")
 			file.Close()
 			continue
 		}

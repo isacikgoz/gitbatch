@@ -2,34 +2,33 @@ package job
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"runtime"
 	"sync"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
 )
 
-// JobQueue holds the slice of Jobs
-type JobQueue struct {
+// Queue holds the slice of Jobs
+type Queue struct {
 	series []*Job
 }
 
 // CreateJobQueue creates a jobqueue struct and initialize its slice then return
 // its pointer
-func CreateJobQueue() (jq *JobQueue) {
+func CreateJobQueue() (jq *Queue) {
 	s := make([]*Job, 0)
-	return &JobQueue{
+	return &Queue{
 		series: s,
 	}
 }
 
 // AddJob adds a job to the queue
-func (jq *JobQueue) AddJob(j *Job) error {
+func (jq *Queue) AddJob(j *Job) error {
 	for _, job := range jq.series {
 		if job.Repository.RepoID == j.Repository.RepoID && job.JobType == j.JobType {
-			return errors.New("Same job already is in the queue")
+			return fmt.Errorf("same job already is in the queue")
 		}
 	}
 	jq.series = append(jq.series, nil)
@@ -39,7 +38,7 @@ func (jq *JobQueue) AddJob(j *Job) error {
 }
 
 // StartNext starts the next job in the queue
-func (jq *JobQueue) StartNext() (j *Job, finished bool, err error) {
+func (jq *Queue) StartNext() (j *Job, finished bool, err error) {
 	finished = false
 	if len(jq.series) < 1 {
 		finished = true
@@ -56,7 +55,7 @@ func (jq *JobQueue) StartNext() (j *Job, finished bool, err error) {
 
 // RemoveFromQueue deletes the given entity and its job from the queue
 // TODO: it is not safe if the job has been started
-func (jq *JobQueue) RemoveFromQueue(r *git.Repository) error {
+func (jq *Queue) RemoveFromQueue(r *git.Repository) error {
 	removed := false
 	for i, job := range jq.series {
 		if job.Repository.RepoID == r.RepoID {
@@ -65,7 +64,7 @@ func (jq *JobQueue) RemoveFromQueue(r *git.Repository) error {
 		}
 	}
 	if !removed {
-		return errors.New("There is no job with given repoID")
+		return fmt.Errorf("there is no job with given repoID")
 	}
 	return nil
 }
@@ -73,7 +72,7 @@ func (jq *JobQueue) RemoveFromQueue(r *git.Repository) error {
 // IsInTheQueue function; since the job and entity is not tied with its own
 // struct, this function returns true if that entity is in the queue along with
 // the jobs type
-func (jq *JobQueue) IsInTheQueue(r *git.Repository) (inTheQueue bool, j *Job) {
+func (jq *Queue) IsInTheQueue(r *git.Repository) (inTheQueue bool, j *Job) {
 	inTheQueue = false
 	for _, job := range jq.series {
 		if job.Repository.RepoID == r.RepoID {
@@ -85,7 +84,7 @@ func (jq *JobQueue) IsInTheQueue(r *git.Repository) (inTheQueue bool, j *Job) {
 }
 
 // StartJobsAsync start he jobs in the queue asynchronously
-func (jq *JobQueue) StartJobsAsync() map[*Job]error {
+func (jq *Queue) StartJobsAsync() map[*Job]error {
 
 	ctx := context.TODO()
 
@@ -99,7 +98,6 @@ func (jq *JobQueue) StartJobsAsync() map[*Job]error {
 	for range jq.series {
 
 		if err := sem.Acquire(ctx, 1); err != nil {
-			log.Errorf("Failed to acquire semaphore: %v", err)
 			break
 		}
 
@@ -114,14 +112,6 @@ func (jq *JobQueue) StartJobsAsync() map[*Job]error {
 			}
 		}()
 	}
-
-	// Acquire all of the tokens to wait for any remaining workers to finish.
-	//
-	// If you are already waiting for the workers by some other means (such as an
-	// errgroup.Group), you can omit this final Acquire call.
-	if err := sem.Acquire(ctx, int64(maxWorkers)); err != nil {
-		log.Errorf("Failed to acquire semaphore: %v", err)
-	}
-
+	sem.Acquire(ctx, int64(maxWorkers))
 	return fails
 }

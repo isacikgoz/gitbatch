@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	ggit "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 var (
@@ -23,12 +23,12 @@ func TestInitializeRepo(t *testing.T) {
 
 func testRepo() (*Repository, error) {
 	testRepoURL := "https://gitlab.com/isacikgoz/dirty-repo.git"
-	_, err := ggit.PlainClone(testRepoDir, false, &ggit.CloneOptions{
+	_, err := git.PlainClone(testRepoDir, false, &git.CloneOptions{
 		URL:               testRepoURL,
-		RecurseSubmodules: ggit.DefaultSubmoduleRecursionDepth,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 	})
 	time.Sleep(time.Second)
-	if err != nil && err != ggit.NoErrAlreadyUpToDate {
+	if err != nil && err != git.NoErrAlreadyUpToDate {
 		return nil, err
 	}
 	return InitializeRepo(testRepoDir)

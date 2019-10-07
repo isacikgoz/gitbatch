@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	ggit "gopkg.in/src-d/go-git.v4"
 )
 
@@ -52,21 +51,6 @@ func TestSetup(t *testing.T) {
 			t.Errorf("Test Failed.")
 		}
 
-	}
-}
-
-func TestSetLogLevel(t *testing.T) {
-	var tests = []struct {
-		input string
-	}{
-		{"debug"},
-		{"info"},
-	}
-	for _, test := range tests {
-		setLogLevel(test.input)
-		if test.input != log.GetLevel().String() {
-			t.Errorf("Test Failed: %s inputted, actual: %s", test.input, log.GetLevel().String())
-		}
 	}
 }
 

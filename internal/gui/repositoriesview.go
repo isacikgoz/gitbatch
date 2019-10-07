@@ -9,7 +9,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/jroimartin/gocui"
-	log "github.com/sirupsen/logrus"
 )
 
 // refresh the main view and re-render the repository representations
@@ -240,7 +239,6 @@ func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 			gui.State.FailoverQueue.RemoveFromQueue(j.Repository)
 			err := gui.openAuthenticationView(g, gui.State.Queue, j, v.Name())
 			if err != nil {
-				log.Warn(err.Error())
 				return err
 			}
 			if isnt, _ := gui.State.Queue.IsInTheQueue(j.Repository); !isnt {

@@ -9,7 +9,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/isacikgoz/gitbatch/internal/load"
 	"github.com/jroimartin/gocui"
-	log "github.com/sirupsen/logrus"
 )
 
 // Gui struct hold the gocui struct along with the gui's state, also keybindings
@@ -28,8 +27,8 @@ type guiState struct {
 	Repositories  []*git.Repository
 	Directories   []string
 	Mode          mode
-	Queue         *job.JobQueue
-	FailoverQueue *job.JobQueue
+	Queue         *job.Queue
+	FailoverQueue *job.Queue
 	targetBranch  string
 	totalBranches []*branchCountMap
 }
@@ -141,16 +140,13 @@ func (gui *Gui) Run() error {
 	go load.AsyncLoad(gui.State.Directories, gui.loadRepository, loaded)
 
 	if err := gui.generateKeybindings(); err != nil {
-		log.Error("Keybindings could not be created.")
 		return err
 	}
 	if err := gui.keybindings(g); err != nil {
-		log.Error("Keybindings could not be set.")
 		return err
 	}
 	// mainViews = overviewViews
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Error("Error in the main loop. " + err.Error())
 		return err
 	}
 	return nil
@@ -176,7 +172,6 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 		if <-loaded {
 			v, err := gui.g.View(mainViewFrameFeature.Name)
 			if err != nil {
-				log.Warn(err.Error())
 				return
 			}
 			v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
@@ -188,7 +183,6 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 func (gui *Gui) renderTitle() error {
 	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
-		log.Warn(err.Error())
 		return err
 	}
 	v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))

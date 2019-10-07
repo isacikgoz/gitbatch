@@ -1,10 +1,9 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 )
 
 // AddOptions defines the rules for "git add" command
@@ -33,7 +32,7 @@ func Add(r *git.Repository, f *git.File, o *AddOptions) error {
 		err := addWithGoGit(r, f)
 		return err
 	}
-	return errors.New("Unhandled add operation")
+	return fmt.Errorf("unhandled add operation")
 }
 
 // AddAll function is the wrapper of "git add ." command
@@ -44,10 +43,9 @@ func AddAll(r *git.Repository, o *AddOptions) error {
 		args = append(args, "--dry-run")
 	}
 	args = append(args, ".")
-	out, err := Run(r.AbsPath, "git", args)
+	_, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn("Error while add command")
-		return errors.New(out + "\n" + err.Error())
+		return fmt.Errorf("could not run add function: %v", err)
 	}
 	return nil
 }
@@ -65,10 +63,9 @@ func addWithGit(r *git.Repository, f *git.File, o *AddOptions) error {
 	if o.DryRun {
 		args = append(args, "--dry-run")
 	}
-	out, err := Run(r.AbsPath, "git", args)
+	_, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn("Error while add command")
-		return errors.New(out + "\n" + err.Error())
+		return fmt.Errorf("could not add %s: %v", f.AbsPath, err)
 	}
 	return nil
 }

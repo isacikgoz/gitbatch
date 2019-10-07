@@ -1,13 +1,12 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
@@ -25,7 +24,7 @@ func Diff(r *git.Repository, hash string) (diff string, err error) {
 	case ModeNative:
 		return diffWithGoGit(r, hash)
 	}
-	return diff, errors.New("Unhandled diff operation")
+	return diff, fmt.Errorf("unhandled diff operation")
 }
 
 // DiffFile is a wrapper of "git diff" command for a file to compare with HEAD rev
@@ -36,7 +35,7 @@ func DiffFile(f *git.File) (output string, err error) {
 	args = append(args, f.Name)
 	output, err = Run(strings.TrimSuffix(f.AbsPath, f.Name), "git", args)
 	if err != nil {
-		log.Warn(err)
+		return "", err
 	}
 	return output, err
 }
@@ -48,7 +47,7 @@ func DiffStat(r *git.Repository) (string, error) {
 	args = append(args, "--stat")
 	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn(err)
+		return "", err
 	}
 	re := regexp.MustCompile(`\n?\r`)
 	output = re.ReplaceAllString(output, "\n")
@@ -63,7 +62,7 @@ func DiffStatRefs(r *git.Repository, ref1, ref2 string) (string, error) {
 	args = append(args, "--shortstat")
 	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn(err)
+		return "", err
 	}
 	re := regexp.MustCompile(`\n?\r`)
 	output = re.ReplaceAllString(output, "\n")
@@ -76,7 +75,7 @@ func PlainDiff(r *git.Repository) (string, error) {
 	args = append(args, "diff")
 	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn(err)
+		return "", err
 	}
 	re := regexp.MustCompile(`\n?\r`)
 	output = re.ReplaceAllString(output, "\n")
@@ -90,7 +89,7 @@ func StashDiff(r *git.Repository, id int) (string, error) {
 	args = append(args, "stash@{"+strconv.Itoa(id)+"}")
 	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn(err)
+		return "", err
 	}
 	re := regexp.MustCompile(`\n?\r`)
 	output = re.ReplaceAllString(output, "\n")

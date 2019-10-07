@@ -5,8 +5,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 // Reference is the interface for commits, remotes and branches
@@ -132,10 +131,7 @@ func (r *Repository) loadComponents(reset bool) error {
 	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
 		return err
 	}
-
-	if err := r.loadStashedItems(); err != nil {
-		log.Warn("Cannot load stashes")
-	}
+	r.loadStashedItems()
 
 	return nil
 }
@@ -207,9 +203,7 @@ func (r *Repository) WorkStatus() WorkStatus {
 func (r *Repository) SetWorkStatus(ws WorkStatus) {
 	r.State.workStatus = ws
 	// we could send an event data but we don't need for this topic
-	if err := r.Publish(RepositoryUpdated, nil); err != nil {
-		log.Warnf("Cannot publish on %s topic.\n", RepositoryUpdated)
-	}
+	r.Publish(RepositoryUpdated, nil)
 }
 
 func (r *Repository) String() string {

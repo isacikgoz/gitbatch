@@ -10,7 +10,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/command"
 	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/isacikgoz/gitbatch/internal/job"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -143,7 +142,7 @@ func (gui *Gui) renderStatus(r *git.Repository) string {
 func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
-		log.Warn(err.Error())
+		return
 	}
 	v.Clear()
 	var header string

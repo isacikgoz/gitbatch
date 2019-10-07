@@ -4,7 +4,6 @@ import (
 	"regexp"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
@@ -53,7 +52,6 @@ func (b *Branch) initCommits(r *Repository) error {
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
-		log.Trace("git log failed " + err.Error())
 		return err
 	}
 	defer cIter.Close()
