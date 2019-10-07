@@ -16,7 +16,7 @@ type Reference interface {
 
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
-// repository entity along with critic entites such as remote/branches and commits
+// repository entity along with critic entities such as remote/branches and commits
 type Repository struct {
 	RepoID   string
 	Name     string
@@ -136,7 +136,7 @@ func (r *Repository) loadComponents(reset bool) error {
 	return nil
 }
 
-// Refresh the belongings of a repositoriy, this function is called right after
+// Refresh the belongings of a repository, this function is called right after
 // fetch/pull/merge operations
 func (r *Repository) Refresh() error {
 	var err error

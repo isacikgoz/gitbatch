@@ -9,7 +9,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// intialize stashed items
+// initialize stashed items
 func (gui *Gui) initStashedView(r *git.Repository) error {
 	v, err := gui.g.View(stashViewFeature.Name)
 	if err != nil {

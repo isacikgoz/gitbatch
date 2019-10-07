@@ -39,7 +39,7 @@ const (
 
 // search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
-// git cammand and its output
+// git command and its output
 func (r *Repository) initBranches() error {
 	lbs := make([]*Branch, 0)
 	bs, err := r.Repo.Branches()
@@ -98,14 +98,10 @@ func (r *Repository) initBranches() error {
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (r *Repository) Checkout(b *Branch) error {
-	// var reinit bool
 	if b.Name == r.State.Branch.Name {
 		return nil
 	}
-	// if it already loaded its commits, consider reload again
-	// if len(b.Commits) > 0 {
-	// 	reinit = true
-	// }
+
 	w, err := r.Repo.Worktree()
 	if err != nil {
 		return err
@@ -121,12 +117,8 @@ func (r *Repository) Checkout(b *Branch) error {
 	if err == nil {
 		r.State.Branch.Upstream = rb
 	}
-	// if reinit {
 	b.initCommits(r)
-	// }
-	// if err := r.Refresh(); err != nil {
-	// 	return err
-	// }
+
 	if err := r.Publish(BranchUpdated, nil); err != nil {
 		return err
 	}
@@ -202,7 +194,7 @@ func RevList(r *Repository, options RevListOptions) ([]*object.Commit, error) {
 	return commits, nil
 }
 
-// SyncRemoteAndBranch is essegin ziki
+// SyncRemoteAndBranch synchronizes remote branch with current branch
 func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	headRef, err := r.Repo.Head()
 	if err != nil {
@@ -214,11 +206,11 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 		return nil
 	}
 
-	headd := headRef.Hash().String()
+	head := headRef.Hash().String()
 	var push, pull string
 	pushables, err := RevList(r, RevListOptions{
 		Ref1: b.Upstream.Reference.Hash().String(),
-		Ref2: headd,
+		Ref2: head,
 	})
 	if err != nil {
 		push = "?"
@@ -226,7 +218,7 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 		push = strconv.Itoa(len(pushables))
 	}
 	pullables, err := RevList(r, RevListOptions{
-		Ref1: headd,
+		Ref1: head,
 		Ref2: b.Upstream.Reference.Hash().String(),
 	})
 	if err != nil {
@@ -236,7 +228,6 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	}
 	b.Pullables = pull
 	b.Pushables = push
-	// return b.initCommits(r)
 	return nil
 }
 

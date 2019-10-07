@@ -10,7 +10,7 @@ import (
 
 // Commit is the lightweight version of go-git's Reference struct. it holds
 // hash of the commit, author's e-mail address, Message (subject and body
-// combined) commit date and commit type wheter it is local commit or a remote
+// combined) commit date and commit type whether it is local commit or a remote
 type Commit struct {
 	Hash       string
 	Author     *Contributor

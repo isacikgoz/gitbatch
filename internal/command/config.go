@@ -25,8 +25,8 @@ const (
 	// ConfigSiteLocal defines a local config.
 	ConfigSiteLocal ConfigSite = "local"
 
-	// ConfgiSiteGlobal defines a global config.
-	ConfgiSiteGlobal ConfigSite = "global"
+	// ConfigSiteGlobal defines a global config.
+	ConfigSiteGlobal ConfigSite = "global"
 )
 
 // Config adds or reads config of a repository

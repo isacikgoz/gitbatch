@@ -22,7 +22,7 @@ var (
 type FetchOptions struct {
 	// Name of the remote to fetch from. Defaults to origin.
 	RemoteName string
-	// Credentials holds the user and pswd information
+	// Credentials holds the user and password information
 	Credentials *git.Credentials
 	// Before fetching, remove any remote-tracking references that no longer
 	// exist on the remote.
@@ -134,7 +134,7 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
-			// we dont have remote ref, so lets pull other things.. maybe it'd be useful
+			// we don't have remote ref, so lets pull other things.. maybe it'd be useful
 			rp := r.State.Remote.RefSpecs[0]
 			if fetchTryCount < fetchMaxTry {
 				fetchTryCount++
@@ -157,12 +157,12 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 	ref, _ := r.Repo.Head()
 	// TODO: fix this, refresh two times not cool
 	r.Refresh()
-	uref := "origin/HEAD"
+	uRef := "origin/HEAD"
 	if r.State.Branch != nil && r.State.Branch.Upstream != nil {
-		uref = r.State.Branch.Upstream.Reference.Hash().String()[:7]
+		uRef = r.State.Branch.Upstream.Reference.Hash().String()[:7]
 	}
 
-	msg, err = getFetchMessage(r, ref.Hash().String()[:7], uref)
+	msg, err = getFetchMessage(r, ref.Hash().String()[:7], uRef)
 	if err != nil {
 		msg = "couldn't get stat"
 	}

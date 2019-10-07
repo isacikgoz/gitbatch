@@ -21,7 +21,7 @@ type Gui struct {
 	order       Layout
 }
 
-// guiState struct holds the repositories, directiories, mode and queue of the
+// guiState struct holds the repositories, directories, mode and queue of the
 // gui object. These values are not static
 type guiState struct {
 	Repositories  []*git.Repository
@@ -34,7 +34,7 @@ type guiState struct {
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
-// passed around so much it is added so that I don't need to wirte names again
+// passed around so much it is added so that I don't need to write names again
 type viewFeature struct {
 	Name  string
 	Title string
@@ -100,10 +100,10 @@ var (
 	loaded = make(chan bool)
 )
 
-// NewGui creates a Gui opject and fill it's state related entites
-func NewGui(mode string, directoies []string) (*Gui, error) {
+// NewGui creates a Gui object and fill it's state related entities
+func NewGui(mode string, directories []string) (*Gui, error) {
 	initialState := guiState{
-		Directories:   directoies,
+		Directories:   directories,
 		Mode:          fetchMode,
 		Queue:         job.CreateJobQueue(),
 		FailoverQueue: job.CreateJobQueue(),

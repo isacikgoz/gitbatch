@@ -50,25 +50,25 @@ func (gui *Gui) previousViewOfGroup(g *gocui.Gui, v *gocui.View, group []viewFea
 	return gui.updateKeyBindingsView(g, focusedViewName)
 }
 
-// siwtch the app's mode to fetch
+// switch the app's mode to fetch
 func (gui *Gui) switchToFetchMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = fetchMode
 	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
-// siwtch the app's mode to pull
+// switch the app's mode to pull
 func (gui *Gui) switchToPullMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = pullMode
 	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
-// siwtch the app's mode to merge
+// switch the app's mode to merge
 func (gui *Gui) switchToMergeMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = mergeMode
 	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
-// siwtch the app's mode to checkout
+// switch the app's mode to checkout
 func (gui *Gui) switchToCheckoutMode(g *gocui.Gui, v *gocui.View) error {
 	gui.State.Mode = checkoutMode
 	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
@@ -143,7 +143,7 @@ func (gui *Gui) fastCursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// closeViewCleanup both updates the keybidings view and focuses to returning view
+// closeViewCleanup both updates the keybindings view and focuses to returning view
 func (gui *Gui) closeViewCleanup(returningViewName string) (err error) {
 	if _, err = gui.g.SetCurrentView(returningViewName); err != nil {
 		return err

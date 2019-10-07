@@ -6,7 +6,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// KeyBinding structs is helpful for not re-writinh the same function over and
+// KeyBinding struct is helpful for not re-writing the same function over and
 // over again. it hold useful values to generate a controls view
 type KeyBinding struct {
 	View        string
@@ -30,7 +30,7 @@ func (gui *Gui) generateKeybindings() error {
 				Modifier:    gocui.ModNone,
 				Handler:     gui.focusBackToMain,
 				Display:     "tab",
-				Description: "Back to Overivew",
+				Description: "Back to Overview",
 				Vital:       true,
 			}, {
 				View:        view.Name,
@@ -680,7 +680,6 @@ func (gui *Gui) generateKeybindings() error {
 	return nil
 }
 
-// set the guis by iterating over a slice of the gui's keybindings struct
 func (gui *Gui) keybindings(g *gocui.Gui) error {
 	for _, k := range gui.KeyBindings {
 		if err := g.SetKeybinding(k.View, k.Key, k.Modifier, k.Handler); err != nil {

@@ -55,7 +55,7 @@ const (
 	tab                = ws
 )
 
-// RepositoryDecorationRules is a rule set for creating repositry labels
+// RepositoryDecorationRules is a rule set for creating repository labels
 type RepositoryDecorationRules struct {
 	MaxName        int
 	MaxPushables   int
@@ -172,7 +172,7 @@ func printQueued(r *git.Repository, j *job.Job) string {
 	return info
 }
 
-// render commit lable according to its status(local/even/remote)
+// render commit label according to its status(local/even/remote)
 func commitLabel(c *git.Commit, sel bool) string {
 	re := regexp.MustCompile(`\r?\n`)
 	msg := re.ReplaceAllString(c.Message, " ")

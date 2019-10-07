@@ -26,8 +26,8 @@ var (
 	pathsKey            = "paths"
 	pathsKeyDefault     = []string{"."}
 	logLevelKeyDefault  = "error"
-	qucikKey            = "quick"
-	qucikKeyDefault     = false
+	quickKey            = "quick"
+	quickKeyDefault     = false
 	recursionKey        = "recursion"
 	recursionKeyDefault = 1
 )
@@ -53,7 +53,7 @@ func LoadConfiguration() (*Config, error) {
 	config := &Config{
 		Directories: directories,
 		Depth:       viper.GetInt(recursionKey),
-		QuickMode:   viper.GetBool(qucikKey),
+		QuickMode:   viper.GetBool(quickKey),
 		Mode:        viper.GetString(modeKey),
 	}
 	return config, nil
@@ -61,7 +61,7 @@ func LoadConfiguration() (*Config, error) {
 
 // set default configuration parameters
 func setDefaults() error {
-	viper.SetDefault(qucikKey, qucikKeyDefault)
+	viper.SetDefault(quickKey, quickKeyDefault)
 	viper.SetDefault(recursionKey, recursionKeyDefault)
 	viper.SetDefault(modeKey, modeKeyDefault)
 	// viper.SetDefault(pathsKey, pathsKeyDefault)
@@ -104,8 +104,8 @@ func initializeConfigurationManager() error {
 }
 
 // returns OS dependent config directory
-func osConfigDirectory(osname string) (osConfigDirectory string) {
-	switch osname {
+func osConfigDirectory(osName string) (osConfigDirectory string) {
+	switch osName {
 	case "windows":
 		osConfigDirectory = os.Getenv("APPDATA")
 	case "darwin":

@@ -75,8 +75,8 @@ func TestResetAllWithGoGit(t *testing.T) {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	opt := &ResetOptions{
-		Hash:  ref.Hash().String(),
-		Rtype: ResetMixed,
+		Hash:      ref.Hash().String(),
+		ResetType: ResetMixed,
 	}
 	var tests = []struct {
 		inp1 *git.Repository

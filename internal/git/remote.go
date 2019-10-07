@@ -13,7 +13,7 @@ type Remote struct {
 }
 
 // search for remotes in go-git way. It is the short way to get remotes but it
-// does not give any insght about remote branches
+// does not give any insight about remote branches
 func (r *Repository) initRemotes() error {
 	rp := r.Repo
 	r.Remotes = make([]*Remote, 0)

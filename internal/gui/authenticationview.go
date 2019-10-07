@@ -80,7 +80,7 @@ func (gui *Gui) closeAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 	g.Cursor = false
 
-	// in order to read buffer of the views, first we need to find'em
+	// in order to read buffer of the views, first we need to find them
 	vUser, err := g.View(authUserFeature.Name)
 	if err != nil {
 		return err // should return??

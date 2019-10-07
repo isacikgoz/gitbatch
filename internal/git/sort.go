@@ -60,7 +60,7 @@ func (s LastModified) Less(i, j int) bool {
 	return s[i].ModTime.Unix() > s[j].ModTime.Unix()
 }
 
-// Less returns a comparison between to repos by name
+// Less returns a comparison between to repositories by name
 func Less(ri, rj *Repository) bool {
 	iRunes := []rune(ri.Name)
 	jRunes := []rune(rj.Name)

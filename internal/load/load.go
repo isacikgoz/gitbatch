@@ -13,7 +13,7 @@ import (
 // AsyncAdd is interface to caller
 type AsyncAdd func(r *git.Repository)
 
-// SyncLoad initializes the go-git's repository obejcts with given
+// SyncLoad initializes the go-git's repository objects with given
 // slice of paths. since this job is done parallel, the order of the directories
 // is not kept
 func SyncLoad(directories []string) (entities []*git.Repository, err error) {

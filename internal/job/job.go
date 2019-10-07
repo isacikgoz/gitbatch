@@ -35,8 +35,7 @@ const (
 // starts the job
 func (j *Job) start() error {
 	j.Repository.SetWorkStatus(git.Working)
-	// TODO: Handle errors?
-	// TOOD: Better implementation required
+	// TODO: Better implementation required
 	switch mode := j.JobType; mode {
 	case FetchJob:
 		j.Repository.State.Message = "fetching.."

@@ -13,7 +13,7 @@ type ResetOptions struct {
 	// Hash is the reference to be resetted
 	Hash string
 	// Type is the mode of a reset operation
-	Rtype ResetType
+	ResetType ResetType
 	// Mode is the command mode
 	CommandMode Mode
 }
@@ -65,8 +65,8 @@ func resetWithGit(r *git.Repository, file *git.File, option *ResetOptions) error
 
 	args = append(args, "--")
 	args = append(args, file.Name)
-	if len(option.Rtype) > 0 {
-		args = append(args, "--"+string(option.Rtype))
+	if len(option.ResetType) > 0 {
+		args = append(args, "--"+string(option.ResetType))
 	}
 	_, err := Run(r.AbsPath, "git", args)
 	if err != nil {
@@ -92,8 +92,8 @@ func ResetAll(r *git.Repository, o *ResetOptions) error {
 func resetAllWithGit(r *git.Repository, option *ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, "reset")
-	if len(option.Rtype) > 0 {
-		args = append(args, "--"+string(option.Rtype))
+	if len(option.ResetType) > 0 {
+		args = append(args, "--"+string(option.ResetType))
 	}
 	_, err := Run(r.AbsPath, "git", args)
 	if err != nil {
@@ -108,7 +108,7 @@ func resetAllWithGoGit(r *git.Repository, option *ResetOptions) error {
 		return err
 	}
 	var mode gogit.ResetMode
-	switch option.Rtype {
+	switch option.ResetType {
 	case ResetHard:
 		mode = gogit.HardReset
 	case ResetMixed:

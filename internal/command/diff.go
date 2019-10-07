@@ -111,7 +111,7 @@ func diffWithGoGit(r *git.Repository, hash string) (diff string, err error) {
 		return "there is no diff", nil
 	}
 
-	// maybe we dont need to log the repo again?
+	// maybe we don't need to log the repo again?
 	commits, err := r.Repo.Log(&gogit.LogOptions{
 		From:  plumbing.NewHash(r.State.Branch.State.Commit.Hash),
 		Order: gogit.LogOrderCommitterTime,

@@ -115,7 +115,7 @@ func (stashedItem *StashedItem) Show() (string, error) {
 	return string(output), err
 }
 
-// Stash is the wrapper of convetional "git stash" command
+// Stash is the wrapper of conventional "git stash" command
 func (r *Repository) Stash() (string, error) {
 	args := make([]string, 0)
 	args = append(args, "stash")

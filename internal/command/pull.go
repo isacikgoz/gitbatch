@@ -26,7 +26,7 @@ type PullOptions struct {
 	ReferenceName string
 	// Fetch only ReferenceName if true.
 	SingleBranch bool
-	// Credentials holds the user and pswd information
+	// Credentials holds the user and password information
 	Credentials *git.Credentials
 	// Process logs the output to stdout
 	Progress bool
@@ -37,7 +37,7 @@ type PullOptions struct {
 	CommandMode Mode
 }
 
-// Pull ncorporates changes from a remote repository into the current branch.
+// Pull incorporates changes from a remote repository into the current branch.
 func Pull(r *git.Repository, o *PullOptions) (err error) {
 	pullTryCount = 0
 
