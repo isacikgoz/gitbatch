@@ -84,7 +84,7 @@ func TestStartJobsAsync(t *testing.T) {
 	j := &Job{Repository: r}
 	q.AddJob(j)
 	var tests = []struct {
-		input *JobQueue
+		input *Queue
 	}{
 		{q},
 	}

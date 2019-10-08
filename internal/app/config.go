@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -26,10 +25,9 @@ var (
 	modeKeyDefault      = "fetch"
 	pathsKey            = "paths"
 	pathsKeyDefault     = []string{"."}
-	logLevelKey         = "loglevel"
 	logLevelKeyDefault  = "error"
-	qucikKey            = "quick"
-	qucikKeyDefault     = false
+	quickKey            = "quick"
+	quickKeyDefault     = false
 	recursionKey        = "recursion"
 	recursionKeyDefault = 1
 )
@@ -54,9 +52,8 @@ func LoadConfiguration() (*Config, error) {
 	}
 	config := &Config{
 		Directories: directories,
-		LogLevel:    viper.GetString(logLevelKey),
 		Depth:       viper.GetInt(recursionKey),
-		QuickMode:   viper.GetBool(qucikKey),
+		QuickMode:   viper.GetBool(quickKey),
 		Mode:        viper.GetString(modeKey),
 	}
 	return config, nil
@@ -64,8 +61,7 @@ func LoadConfiguration() (*Config, error) {
 
 // set default configuration parameters
 func setDefaults() error {
-	viper.SetDefault(logLevelKey, logLevelKeyDefault)
-	viper.SetDefault(qucikKey, qucikKeyDefault)
+	viper.SetDefault(quickKey, quickKeyDefault)
 	viper.SetDefault(recursionKey, recursionKeyDefault)
 	viper.SetDefault(modeKey, modeKeyDefault)
 	// viper.SetDefault(pathsKey, pathsKeyDefault)
@@ -108,16 +104,14 @@ func initializeConfigurationManager() error {
 }
 
 // returns OS dependent config directory
-func osConfigDirectory(osname string) (osConfigDirectory string) {
-	switch osname {
+func osConfigDirectory(osName string) (osConfigDirectory string) {
+	switch osName {
 	case "windows":
 		osConfigDirectory = os.Getenv("APPDATA")
 	case "darwin":
 		osConfigDirectory = os.Getenv("HOME") + "/Library/Application Support"
 	case "linux":
 		osConfigDirectory = os.Getenv("HOME") + "/.config"
-	default:
-		log.Warn("Operating system couldn't be recognized")
 	}
 	return osConfigDirectory
 }

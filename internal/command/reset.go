@@ -1,10 +1,9 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 )
@@ -14,7 +13,7 @@ type ResetOptions struct {
 	// Hash is the reference to be resetted
 	Hash string
 	// Type is the mode of a reset operation
-	Rtype ResetType
+	ResetType ResetType
 	// Mode is the command mode
 	CommandMode Mode
 }
@@ -57,7 +56,7 @@ func Reset(r *git.Repository, file *git.File, o *ResetOptions) error {
 	case ModeNative:
 
 	}
-	return errors.New("Unhandled reset operation")
+	return fmt.Errorf("unhandled reset operation")
 }
 
 func resetWithGit(r *git.Repository, file *git.File, option *ResetOptions) error {
@@ -66,13 +65,12 @@ func resetWithGit(r *git.Repository, file *git.File, option *ResetOptions) error
 
 	args = append(args, "--")
 	args = append(args, file.Name)
-	if len(option.Rtype) > 0 {
-		args = append(args, "--"+string(option.Rtype))
+	if len(option.ResetType) > 0 {
+		args = append(args, "--"+string(option.ResetType))
 	}
-	out, err := Run(r.AbsPath, "git", args)
+	_, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn("Error while reset command")
-		return errors.New(out + "\n" + err.Error())
+		return fmt.Errorf("could not reset file %s: %v", file.AbsPath, err)
 	}
 	return nil
 }
@@ -88,19 +86,18 @@ func ResetAll(r *git.Repository, o *ResetOptions) error {
 		err := resetAllWithGoGit(r, o)
 		return err
 	}
-	return errors.New("Unhandled reset operation")
+	return fmt.Errorf("unhandled reset operation")
 }
 
 func resetAllWithGit(r *git.Repository, option *ResetOptions) error {
 	args := make([]string, 0)
 	args = append(args, "reset")
-	if len(option.Rtype) > 0 {
-		args = append(args, "--"+string(option.Rtype))
+	if len(option.ResetType) > 0 {
+		args = append(args, "--"+string(option.ResetType))
 	}
-	out, err := Run(r.AbsPath, "git", args)
+	_, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn("Error while add command")
-		return errors.New(out + "\n" + err.Error())
+		return fmt.Errorf("could not reset all: %v", err)
 	}
 	return nil
 }
@@ -111,7 +108,7 @@ func resetAllWithGoGit(r *git.Repository, option *ResetOptions) error {
 		return err
 	}
 	var mode gogit.ResetMode
-	switch option.Rtype {
+	switch option.ResetType {
 	case ResetHard:
 		mode = gogit.HardReset
 	case ResetMixed:

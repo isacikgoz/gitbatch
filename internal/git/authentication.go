@@ -10,10 +10,11 @@ import (
 type Credentials struct {
 	// User is the user id for authentication
 	User string
-	// Password is the secret information required for authetntication
+	// Password is the secret information required for authentication
 	Password string
 }
 
+// Schemes for authentication
 const (
 	AuthProtocolHTTP  = "http"
 	AuthProtocolHTTPS = "https"

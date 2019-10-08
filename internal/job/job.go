@@ -8,35 +8,34 @@ import (
 // Job relates the type of the operation and the entity
 type Job struct {
 	// JobType is to select operation type that will be applied to repository
-	JobType JobType
+	JobType Type
 	// Repository points to the repository that will be used for operation
 	Repository *git.Repository
 	// Options is a placeholder for operation options
 	Options interface{}
 }
 
-// JobType is the a git operation supported
-type JobType string
+// Type is the a git operation supported
+type Type string
 
 const (
 	// FetchJob is wrapper of git fetch command
-	FetchJob JobType = "fetch"
+	FetchJob Type = "fetch"
 
 	// PullJob is wrapper of git pull command
-	PullJob JobType = "pull"
+	PullJob Type = "pull"
 
 	// MergeJob is wrapper of git merge command
-	MergeJob JobType = "merge"
+	MergeJob Type = "merge"
 
 	// CheckoutJob is wrapper of git merge command
-	CheckoutJob JobType = "checkout"
+	CheckoutJob Type = "checkout"
 )
 
 // starts the job
 func (j *Job) start() error {
 	j.Repository.SetWorkStatus(git.Working)
-	// TODO: Handle errors?
-	// TOOD: Better implementation required
+	// TODO: Better implementation required
 	switch mode := j.JobType; mode {
 	case FetchJob:
 		j.Repository.State.Message = "fetching.."

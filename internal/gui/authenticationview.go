@@ -8,7 +8,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/jroimartin/gocui"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -33,7 +32,7 @@ var (
 )
 
 // open an auth view to get user credentials
-func (gui *Gui) openAuthenticationView(g *gocui.Gui, jobQueue *job.JobQueue, job *job.Job, returnViewName string) error {
+func (gui *Gui) openAuthenticationView(g *gocui.Gui, jobQueue *job.Queue, job *job.Job, returnViewName string) error {
 	maxX, maxY := g.Size()
 	// lets add this job since it is removed from the queue
 	// also it is already unsuccessfully finished
@@ -43,7 +42,6 @@ func (gui *Gui) openAuthenticationView(g *gocui.Gui, jobQueue *job.JobQueue, job
 	jobRequiresAuth = job
 	if job.Repository.WorkStatus() != git.Fail {
 		if err := jobQueue.RemoveFromQueue(job.Repository); err != nil {
-			log.Fatal(err.Error())
 			return err
 		}
 	}
@@ -82,16 +80,14 @@ func (gui *Gui) closeAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) submitAuthenticationView(g *gocui.Gui, v *gocui.View) error {
 	g.Cursor = false
 
-	// in order to read buffer of the views, first we need to find'em
+	// in order to read buffer of the views, first we need to find them
 	vUser, err := g.View(authUserFeature.Name)
 	if err != nil {
-		log.Errorln("error while retrieving user from view:", err)
 		return err // should return??
 	}
 
 	vPswd, err := g.View(authPasswordViewFeature.Name)
 	if err != nil {
-		log.Errorln("error while retrieving password from view:", err)
 		return err // should return??
 	}
 

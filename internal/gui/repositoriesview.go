@@ -9,7 +9,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/jroimartin/gocui"
-	log "github.com/sirupsen/logrus"
 )
 
 // refresh the main view and re-render the repository representations
@@ -161,7 +160,7 @@ func (gui *Gui) pageUp(g *gocui.Gui, v *gocui.View) error {
 
 // returns the entity at cursors position by taking its position in the gui's
 // slice of repositories. Since it is not a %100 percent safe methodology it may
-// rrequire a better implementation or the slice's order must be synchronized
+// require a better implementation or the slice's order must be synchronized
 // with the views lines
 func (gui *Gui) getSelectedRepository() *git.Repository {
 	if len(gui.State.Repositories) == 0 {
@@ -240,7 +239,6 @@ func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 			gui.State.FailoverQueue.RemoveFromQueue(j.Repository)
 			err := gui.openAuthenticationView(g, gui.State.Queue, j, v.Name())
 			if err != nil {
-				log.Warn(err.Error())
 				return err
 			}
 			if isnt, _ := gui.State.Queue.IsInTheQueue(j.Repository); !isnt {
@@ -251,7 +249,7 @@ func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-// marking repository is simply adding the repostirory into the queue. the
+// marking repository is simply adding the repository into the queue. the
 // function does take its current state into account before adding it
 func (gui *Gui) markRepository(g *gocui.Gui, v *gocui.View) error {
 	r := gui.getSelectedRepository()

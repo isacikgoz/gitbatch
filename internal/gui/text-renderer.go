@@ -10,7 +10,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/command"
 	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/isacikgoz/gitbatch/internal/job"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -56,7 +55,7 @@ const (
 	tab                = ws
 )
 
-// RepositoryDecorationRules is a rule set for creating repositry labels
+// RepositoryDecorationRules is a rule set for creating repository labels
 type RepositoryDecorationRules struct {
 	MaxName        int
 	MaxPushables   int
@@ -143,7 +142,7 @@ func (gui *Gui) renderStatus(r *git.Repository) string {
 func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
-		log.Warn(err.Error())
+		return
 	}
 	v.Clear()
 	var header string
@@ -173,7 +172,7 @@ func printQueued(r *git.Repository, j *job.Job) string {
 	return info
 }
 
-// render commit lable according to its status(local/even/remote)
+// render commit label according to its status(local/even/remote)
 func commitLabel(c *git.Commit, sel bool) string {
 	re := regexp.MustCompile(`\r?\n`)
 	msg := re.ReplaceAllString(c.Message, " ")

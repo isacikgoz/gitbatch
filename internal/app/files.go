@@ -4,18 +4,16 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	log "github.com/sirupsen/logrus"
 )
 
-// generateDirectories returns poosible git repositories to pipe into git pkg's
+// generateDirectories returns possible git repositories to pipe into git pkg
 // load function
 func generateDirectories(dirs []string, depth int) []string {
 	gitDirs := make([]string, 0)
 	for i := 0; i <= depth; i++ {
-		nonrepos, repos := walkRecursive(dirs, gitDirs)
-		dirs = nonrepos
-		gitDirs = repos
+		directories, repositories := walkRecursive(dirs, gitDirs)
+		dirs = directories
+		gitDirs = repositories
 	}
 	return gitDirs
 }
@@ -29,11 +27,8 @@ func walkRecursive(search, appendant []string) ([]string, []string) {
 			continue
 		}
 		// find possible repositories and remaining ones, b slice is possible ones
-		a, b, err := seperateDirectories(search[i])
+		a, b, err := separateDirectories(search[i])
 		if err != nil {
-			log.WithFields(log.Fields{
-				"directory": search[i],
-			}).WithError(err).Trace("Can't read directory")
 			continue
 		}
 		// since we started to search let's get rid of it and remove from search
@@ -47,17 +42,14 @@ func walkRecursive(search, appendant []string) ([]string, []string) {
 	return search, appendant
 }
 
-// seperateDirectories is to find all the files in given path. This method
+// separateDirectories is to find all the files in given path. This method
 // does not check if the given file is a valid git repositories
-func seperateDirectories(directory string) ([]string, []string, error) {
+func separateDirectories(directory string) ([]string, []string, error) {
 	dirs := make([]string, 0)
 	gitDirs := make([]string, 0)
 	files, err := ioutil.ReadDir(directory)
 	// can we read the directory?
 	if err != nil {
-		log.WithFields(log.Fields{
-			"directory": directory,
-		}).Trace("Can't read directory")
 		return nil, nil, nil
 	}
 	for _, f := range files {
@@ -65,10 +57,6 @@ func seperateDirectories(directory string) ([]string, []string, error) {
 		file, err := os.Open(repo)
 		// if we cannot open it, simply continue to iteration and don't consider
 		if err != nil {
-			log.WithFields(log.Fields{
-				"file":      file,
-				"directory": repo,
-			}).WithError(err).Trace("Failed to open file in the directory")
 			file.Close()
 			continue
 		}
@@ -77,7 +65,7 @@ func seperateDirectories(directory string) ([]string, []string, error) {
 			file.Close()
 			continue
 		}
-		// with this approach, we ignore submodule or sub repositoreis in a git repository
+		// with this approach, we ignore submodule or sub repositories in a git repository
 		ff, err := os.Open(dir + string(os.PathSeparator) + ".git")
 		if err != nil {
 			dirs = append(dirs, dir)

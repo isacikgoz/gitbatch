@@ -6,7 +6,6 @@ import (
 
 	gerr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
@@ -27,7 +26,7 @@ type PullOptions struct {
 	ReferenceName string
 	// Fetch only ReferenceName if true.
 	SingleBranch bool
-	// Credentials holds the user and pswd information
+	// Credentials holds the user and password information
 	Credentials *git.Credentials
 	// Process logs the output to stdout
 	Progress bool
@@ -38,7 +37,7 @@ type PullOptions struct {
 	CommandMode Mode
 }
 
-// Pull ncorporates changes from a remote repository into the current branch.
+// Pull incorporates changes from a remote repository into the current branch.
 func Pull(r *git.Repository, o *PullOptions) (err error) {
 	pullTryCount = 0
 
@@ -116,12 +115,10 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// log.Error("error: " + err.Error())
 			// Already up-to-date
-			log.Warn(err.Error())
 			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if err == storage.ErrReferenceHasChanged && pullTryCount < pullMaxTry {
 			pullTryCount++
-			log.Error("trying to fetch")
 			if err := Fetch(r, &FetchOptions{
 				RemoteName: options.RemoteName,
 			}); err != nil {
@@ -132,10 +129,8 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 			// The env variable SSH_AUTH_SOCK is not defined, maybe git can handle this
 			return pullWithGit(r, options)
 		} else if err == transport.ErrAuthenticationRequired {
-			log.Warn(err.Error())
 			return gerr.ErrAuthenticationRequired
 		} else {
-			log.Warn(err.Error())
 			return pullWithGit(r, options)
 		}
 	}

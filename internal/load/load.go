@@ -1,10 +1,8 @@
 package load
 
 import (
-	log "github.com/sirupsen/logrus"
-
 	"context"
-	"errors"
+	"fmt"
 	"runtime"
 	"sync"
 
@@ -15,7 +13,7 @@ import (
 // AsyncAdd is interface to caller
 type AsyncAdd func(r *git.Repository)
 
-// SyncLoad initializes the go-git's repository obejcts with given
+// SyncLoad initializes the go-git's repository objects with given
 // slice of paths. since this job is done parallel, the order of the directories
 // is not kept
 func SyncLoad(directories []string) (entities []*git.Repository, err error) {
@@ -34,9 +32,6 @@ func SyncLoad(directories []string) (entities []*git.Repository, err error) {
 			defer wg.Done()
 			entity, err := git.InitializeRepo(d)
 			if err != nil {
-				log.WithFields(log.Fields{
-					"directory": d,
-				}).Trace("Cannot load git repository.")
 				return
 			}
 			// lock so we don't get a race if multiple go routines try to add
@@ -50,7 +45,7 @@ func SyncLoad(directories []string) (entities []*git.Repository, err error) {
 	// finished
 	wg.Wait()
 	if len(entities) == 0 {
-		return entities, errors.New("There are no git repositories at given path(s)")
+		return entities, fmt.Errorf("there are no git repositories at given path(s)")
 	}
 	return entities, nil
 }
@@ -69,7 +64,6 @@ func AsyncLoad(directories []string, add AsyncAdd, d chan bool) error {
 	// Compute the output using up to maxWorkers goroutines at a time.
 	for _, dir := range directories {
 		if err := sem.Acquire(ctx, 1); err != nil {
-			log.Errorf("Failed to acquire semaphore: %v", err)
 			break
 		}
 
@@ -78,9 +72,6 @@ func AsyncLoad(directories []string, add AsyncAdd, d chan bool) error {
 			defer sem.Release(1)
 			entity, err := git.InitializeRepo(d)
 			if err != nil {
-				log.WithFields(log.Fields{
-					"directory": d,
-				}).Trace("Cannot load git repository.")
 				return
 			}
 			// lock so we don't get a race if multiple go routines try to add

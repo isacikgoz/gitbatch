@@ -260,7 +260,7 @@ func (gui *Gui) statusResetAll(g *gocui.Gui, v *gocui.View) error {
 	}
 	if err := command.ResetAll(r, &command.ResetOptions{
 		Hash:        ref.Hash().String(),
-		Rtype:       command.ResetMixed,
+		ResetType:   command.ResetMixed,
 		CommandMode: command.ModeNative,
 	}); err != nil {
 		return err

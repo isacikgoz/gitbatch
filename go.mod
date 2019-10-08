@@ -11,7 +11,6 @@ require (
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nsf/termbox-go v0.0.0-20190325093121-288510b9734e // indirect
-	github.com/sirupsen/logrus v1.4.0
 	github.com/spf13/viper v1.3.2
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

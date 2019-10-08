@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-// Mode indicates that wheter command should run native code or use git
+// Mode indicates that whether command should run native code or use git
 // command to operate.
 type Mode uint8
 
@@ -32,7 +32,7 @@ func Run(d string, c string, args []string) (string, error) {
 
 // Return returns if we supposed to get return value as an int of a command
 // this method can be used. It is practical when you use a command and process a
-// failover acoording to a soecific return code
+// failover according to a specific return code
 func Return(d string, c string, args []string) (int, error) {
 	cmd := exec.Command(c, args...)
 	if d != "" {

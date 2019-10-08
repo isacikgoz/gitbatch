@@ -9,7 +9,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/isacikgoz/gitbatch/internal/load"
 	"github.com/jroimartin/gocui"
-	log "github.com/sirupsen/logrus"
 )
 
 // Gui struct hold the gocui struct along with the gui's state, also keybindings
@@ -22,20 +21,20 @@ type Gui struct {
 	order       Layout
 }
 
-// guiState struct holds the repositories, directiories, mode and queue of the
+// guiState struct holds the repositories, directories, mode and queue of the
 // gui object. These values are not static
 type guiState struct {
 	Repositories  []*git.Repository
 	Directories   []string
 	Mode          mode
-	Queue         *job.JobQueue
-	FailoverQueue *job.JobQueue
+	Queue         *job.Queue
+	FailoverQueue *job.Queue
 	targetBranch  string
 	totalBranches []*branchCountMap
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
-// passed around so much it is added so that I don't need to wirte names again
+// passed around so much it is added so that I don't need to write names again
 type viewFeature struct {
 	Name  string
 	Title string
@@ -101,10 +100,10 @@ var (
 	loaded = make(chan bool)
 )
 
-// NewGui creates a Gui opject and fill it's state related entites
-func NewGui(mode string, directoies []string) (*Gui, error) {
+// NewGui creates a Gui object and fill it's state related entities
+func NewGui(mode string, directories []string) (*Gui, error) {
 	initialState := guiState{
-		Directories:   directoies,
+		Directories:   directories,
 		Mode:          fetchMode,
 		Queue:         job.CreateJobQueue(),
 		FailoverQueue: job.CreateJobQueue(),
@@ -141,16 +140,13 @@ func (gui *Gui) Run() error {
 	go load.AsyncLoad(gui.State.Directories, gui.loadRepository, loaded)
 
 	if err := gui.generateKeybindings(); err != nil {
-		log.Error("Keybindings could not be created.")
 		return err
 	}
 	if err := gui.keybindings(g); err != nil {
-		log.Error("Keybindings could not be set.")
 		return err
 	}
 	// mainViews = overviewViews
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Error("Error in the main loop. " + err.Error())
 		return err
 	}
 	return nil
@@ -176,7 +172,6 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 		if <-loaded {
 			v, err := gui.g.View(mainViewFrameFeature.Name)
 			if err != nil {
-				log.Warn(err.Error())
 				return
 			}
 			v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
@@ -188,7 +183,6 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 func (gui *Gui) renderTitle() error {
 	v, err := gui.g.View(mainViewFrameFeature.Name)
 	if err != nil {
-		log.Warn(err.Error())
 		return err
 	}
 	v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))

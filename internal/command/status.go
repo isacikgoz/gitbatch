@@ -1,14 +1,13 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -25,7 +24,6 @@ func shortStatus(r *git.Repository, option string) string {
 	args = append(args, "--short")
 	out, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn("Error while status command")
 		return "?"
 	}
 	return out
@@ -33,7 +31,7 @@ func shortStatus(r *git.Repository, option string) string {
 
 // Status returns the dirty files
 func Status(r *git.Repository) ([]*git.File, error) {
-	// in case we want configure Satus command externally
+	// in case we want configure Status command externally
 	mode := ModeLegacy
 
 	switch mode {
@@ -42,16 +40,16 @@ func Status(r *git.Repository) ([]*git.File, error) {
 	case ModeNative:
 		return statusWithGoGit(r)
 	}
-	return nil, errors.New("Unhandled status operation")
+	return nil, fmt.Errorf("unhandled status operation")
 }
 
-// PlainStatus returns the palin status
+// PlainStatus returns the plain status
 func PlainStatus(r *git.Repository) (string, error) {
 	args := make([]string, 0)
 	args = append(args, "status")
 	output, err := Run(r.AbsPath, "git", args)
 	if err != nil {
-		log.Warn(err)
+		return "", err
 	}
 	re := regexp.MustCompile(`\n?\r`)
 	output = re.ReplaceAllString(output, "\n")

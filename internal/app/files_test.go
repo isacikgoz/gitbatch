@@ -37,7 +37,7 @@ func TestGenerateDirectories(t *testing.T) {
 	}
 	for _, test := range tests {
 		if output := generateDirectories(test.inp1, test.inp2); !testEq(output, test.expected) {
-			t.Errorf("Test Failed: {%s, %d} inputted, recieved: %s, expected: %s", test.inp1, test.inp2, output, test.expected)
+			t.Errorf("Test Failed: {%s, %d} inputted, received: %s, expected: %s", test.inp1, test.inp2, output, test.expected)
 		}
 	}
 }
@@ -63,12 +63,12 @@ func TestWalkRecursive(t *testing.T) {
 	}
 	for _, test := range tests {
 		if out1, out2 := walkRecursive(test.inp1, test.inp2); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) {
-			t.Errorf("Test Failed: {%s, %s} inputted, recieved: {%s, %s}, expected: {%s, %s}", test.inp1, test.inp2, out1, out2, test.exp1, test.exp2)
+			t.Errorf("Test Failed: {%s, %s} inputted, received: {%s, %s}, expected: {%s, %s}", test.inp1, test.inp2, out1, out2, test.exp1, test.exp2)
 		}
 	}
 }
 
-func TestSeperateDirectories(t *testing.T) {
+func TestSeparateDirectories(t *testing.T) {
 	defer cleanRepo()
 	_, err := testRepo()
 	if err != nil {
@@ -91,12 +91,12 @@ func TestSeperateDirectories(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		if out1, out2, err := seperateDirectories(test.input); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) || err != nil {
+		if out1, out2, err := separateDirectories(test.input); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) || err != nil {
 			if err != nil {
 				t.Errorf("Test failed with error: %s ", err.Error())
 				return
 			}
-			t.Errorf("Test Failed: %s inputted, recieved: {%s, %s}, expected: {%s, %s}", test.input, out1, out2, test.exp1, test.exp2)
+			t.Errorf("Test Failed: %s inputted, received: {%s, %s}, expected: {%s, %s}", test.input, out1, out2, test.exp1, test.exp2)
 		}
 	}
 }

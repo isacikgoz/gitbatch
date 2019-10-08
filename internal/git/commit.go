@@ -4,14 +4,13 @@ import (
 	"regexp"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // Commit is the lightweight version of go-git's Reference struct. it holds
 // hash of the commit, author's e-mail address, Message (subject and body
-// combined) commit date and commit type wheter it is local commit or a remote
+// combined) commit date and commit type whether it is local commit or a remote
 type Commit struct {
 	Hash       string
 	Author     *Contributor
@@ -53,7 +52,6 @@ func (b *Branch) initCommits(r *Repository) error {
 		Order: git.LogOrderCommitterTime,
 	})
 	if err != nil {
-		log.Trace("git log failed " + err.Error())
 		return err
 	}
 	defer cIter.Close()

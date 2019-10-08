@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const stashCommand = "stash"
@@ -36,7 +34,6 @@ func (r *Repository) loadStashedItems() error {
 		i, err := strconv.Atoi(id)
 		if err != nil {
 			// probably something isn't right let's continue over this iteration
-			log.Trace("cannot initiate stashed item")
 			continue
 		}
 		// trim id section
@@ -118,7 +115,7 @@ func (stashedItem *StashedItem) Show() (string, error) {
 	return string(output), err
 }
 
-// Stash is the wrapper of convetional "git stash" command
+// Stash is the wrapper of conventional "git stash" command
 func (r *Repository) Stash() (string, error) {
 	args := make([]string, 0)
 	args = append(args, "stash")

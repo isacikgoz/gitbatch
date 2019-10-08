@@ -20,7 +20,7 @@ const (
 	StatusNotupdated FileStatus = ' '
 	// StatusModified says file is modifed
 	StatusModified FileStatus = 'M'
-	// StatusModifiedUntracked says file is modifed and untracked
+	// StatusModifiedUntracked says file is modifed and un-tracked
 	StatusModifiedUntracked FileStatus = 'm'
 	// StatusAdded says file is added to index
 	StatusAdded FileStatus = 'A'

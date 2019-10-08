@@ -5,8 +5,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4"
 )
 
 // Reference is the interface for commits, remotes and branches
@@ -17,7 +16,7 @@ type Reference interface {
 
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
-// repository entity along with critic entites such as remote/branches and commits
+// repository entity along with critic entities such as remote/branches and commits
 type Repository struct {
 	RepoID   string
 	Name     string
@@ -132,15 +131,12 @@ func (r *Repository) loadComponents(reset bool) error {
 	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
 		return err
 	}
-
-	if err := r.loadStashedItems(); err != nil {
-		log.Warn("Cannot load stashes")
-	}
+	r.loadStashedItems()
 
 	return nil
 }
 
-// Refresh the belongings of a repositoriy, this function is called right after
+// Refresh the belongings of a repository, this function is called right after
 // fetch/pull/merge operations
 func (r *Repository) Refresh() error {
 	var err error
@@ -207,9 +203,7 @@ func (r *Repository) WorkStatus() WorkStatus {
 func (r *Repository) SetWorkStatus(ws WorkStatus) {
 	r.State.workStatus = ws
 	// we could send an event data but we don't need for this topic
-	if err := r.Publish(RepositoryUpdated, nil); err != nil {
-		log.Warnf("Cannot publish on %s topic.\n", RepositoryUpdated)
-	}
+	r.Publish(RepositoryUpdated, nil)
 }
 
 func (r *Repository) String() string {

@@ -1,11 +1,10 @@
 package app
 
 import (
-	"errors"
+	"fmt"
 	"os"
 
 	"github.com/isacikgoz/gitbatch/internal/gui"
-	log "github.com/sirupsen/logrus"
 )
 
 // The App struct is responsible to hold app-wide related entities. Currently
@@ -38,12 +37,6 @@ func Setup(argConfig *Config) (*App, error) {
 		return nil, err
 	}
 	appConfig := overrideConfig(presetConfig, argConfig)
-
-	setLogLevel(appConfig.LogLevel)
-
-	// hopefull everything went smooth as butter
-	log.Trace("App configuration completed")
-
 	dirs := generateDirectories(appConfig.Directories, appConfig.Depth)
 
 	if appConfig.QuickMode {
@@ -61,27 +54,6 @@ func Setup(argConfig *Config) (*App, error) {
 		return nil, err
 	}
 	return app, nil
-}
-
-// set the level of logging it is fatal by default
-func setLogLevel(logLevel string) {
-	switch logLevel {
-	case "trace":
-		log.SetLevel(log.TraceLevel)
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	case "info":
-		log.SetLevel(log.InfoLevel)
-	case "warn":
-		log.SetLevel(log.WarnLevel)
-	case "error":
-		log.SetLevel(log.ErrorLevel)
-	default:
-		log.SetLevel(log.FatalLevel)
-	}
-	log.WithFields(log.Fields{
-		"level": logLevel,
-	}).Trace("logging level has been set")
 }
 
 func overrideConfig(appConfig, setupConfig *Config) *Config {
@@ -107,7 +79,7 @@ func execQuickMode(dirs []string, cfg *Config) error {
 	x := cfg.Mode == "fetch"
 	y := cfg.Mode == "pull"
 	if x == y {
-		return errors.New("unrecognized quick mode: " + cfg.Mode)
+		return fmt.Errorf("unrecognized quick mode: " + cfg.Mode)
 	}
 	quick(dirs, cfg.Mode)
 	return nil

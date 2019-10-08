@@ -32,7 +32,7 @@ const (
 	// branch.<your branch name>.remote=<your remote name> "
 	ErrRemoteBranchNotSpecified GitError = ("upstream not set")
 	// ErrRemoteNotFound is thrown when the remote is not reachable. It may be
-	// caused by the deletion of the remote or coneectivty problems
+	// caused by the deletion of the remote or connectivity problems
 	ErrRemoteNotFound GitError = ("remote not found")
 	// ErrConflictAfterMerge is thrown when a conflict occurs at merging two
 	// references
@@ -43,8 +43,8 @@ const (
 	ErrReferenceBroken GitError = ("unable to resolve reference")
 	// ErrPermissionDenied is thrown when ssh authentication occurs
 	ErrPermissionDenied GitError = ("permission denied")
-	// ErrOverwrittenByMerge is the thrown when there is untracked files on working tree
-	ErrOverwrittenByMerge GitError = ("move or remove untracked files before merge")
+	// ErrOverwrittenByMerge is the thrown when there is un-tracked files on working tree
+	ErrOverwrittenByMerge GitError = ("move or remove un-tracked files before merge")
 	// ErrUserEmailNotSet is thrown if there is no configured user email while
 	// commit command
 	ErrUserEmailNotSet GitError = ("user email not configured")

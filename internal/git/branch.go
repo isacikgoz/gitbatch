@@ -1,13 +1,12 @@
 package git
 
 import (
-	"errors"
+	"fmt"
 	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
@@ -40,12 +39,11 @@ const (
 
 // search for branches in go-git way. It is useful to do so that checkout and
 // checkout error handling can be handled by code rather than struggling with
-// git cammand and its output
+// git command and its output
 func (r *Repository) initBranches() error {
 	lbs := make([]*Branch, 0)
 	bs, err := r.Repo.Branches()
 	if err != nil {
-		log.Warn("Cannot load branches " + err.Error())
 		return err
 	}
 	defer bs.Close()
@@ -89,9 +87,7 @@ func (r *Repository) initBranches() error {
 		r.State.Branch = branch
 	}
 	rb, err := getUpstream(r, r.State.Branch.Name)
-	if err != nil {
-		log.Warn("Upstream not set " + r.Name)
-	} else {
+	if err == nil {
 		r.State.Branch.Upstream = rb
 	}
 
@@ -102,39 +98,27 @@ func (r *Repository) initBranches() error {
 // Checkout to given branch. If any errors occur, the method returns it instead
 // of returning nil
 func (r *Repository) Checkout(b *Branch) error {
-	// var reinit bool
 	if b.Name == r.State.Branch.Name {
 		return nil
 	}
-	// if it already loaded its commits, consider reload again
-	// if len(b.Commits) > 0 {
-	// 	reinit = true
-	// }
+
 	w, err := r.Repo.Worktree()
 	if err != nil {
-		log.Warn("Cannot get work tree " + err.Error())
 		return err
 	}
 	if err = w.Checkout(&git.CheckoutOptions{
 		Branch: b.Reference.Name(),
 	}); err != nil {
-		log.Warn("Cannot checkout " + err.Error())
 		return err
 	}
 	r.State.Branch = b
 
 	rb, err := getUpstream(r, r.State.Branch.Name)
-	if err != nil {
-		log.Warn("Upstream not set")
-	} else {
+	if err == nil {
 		r.State.Branch.Upstream = rb
 	}
-	// if reinit {
 	b.initCommits(r)
-	// }
-	// if err := r.Refresh(); err != nil {
-	// 	return err
-	// }
+
 	if err := r.Publish(BranchUpdated, nil); err != nil {
 		return err
 	}
@@ -210,7 +194,7 @@ func RevList(r *Repository, options RevListOptions) ([]*object.Commit, error) {
 	return commits, nil
 }
 
-// SyncRemoteAndBranch is essegin ziki
+// SyncRemoteAndBranch synchronizes remote branch with current branch
 func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	headRef, err := r.Repo.Head()
 	if err != nil {
@@ -222,11 +206,11 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 		return nil
 	}
 
-	headd := headRef.Hash().String()
+	head := headRef.Hash().String()
 	var push, pull string
 	pushables, err := RevList(r, RevListOptions{
 		Ref1: b.Upstream.Reference.Hash().String(),
-		Ref2: headd,
+		Ref2: head,
 	})
 	if err != nil {
 		push = "?"
@@ -234,7 +218,7 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 		push = strconv.Itoa(len(pushables))
 	}
 	pullables, err := RevList(r, RevListOptions{
-		Ref1: headd,
+		Ref1: head,
 		Ref2: b.Upstream.Reference.Hash().String(),
 	})
 	if err != nil {
@@ -244,7 +228,6 @@ func (r *Repository) SyncRemoteAndBranch(b *Branch) error {
 	}
 	b.Pullables = pull
 	b.Pushables = push
-	// return b.initCommits(r)
 	return nil
 }
 
@@ -259,7 +242,7 @@ func getUpstream(r *Repository, branchName string) (*RemoteBranch, error) {
 	cmd.Dir = r.AbsPath
 	cr, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, errors.New("upstream not found")
+		return nil, fmt.Errorf("upstream not found")
 	}
 
 	args = []string{"config", "--get", "branch." + branchName + ".merge"}
@@ -267,7 +250,7 @@ func getUpstream(r *Repository, branchName string) (*RemoteBranch, error) {
 	cmd.Dir = r.AbsPath
 	cm, err := cmd.CombinedOutput()
 	if err != nil || !strings.Contains(string(cm), branchName) {
-		return nil, errors.New("default merge branch found")
+		return nil, fmt.Errorf("default merge branch found")
 	}
 
 	for _, rm := range r.Remotes {
@@ -281,7 +264,7 @@ func getUpstream(r *Repository, branchName string) (*RemoteBranch, error) {
 			return rb, nil
 		}
 	}
-	return nil, errors.New("upstream not found")
+	return nil, fmt.Errorf("upstream not found")
 }
 
 // trimTrailingNewline removes the trailing new line form a string. this method

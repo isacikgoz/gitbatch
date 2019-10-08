@@ -1,12 +1,11 @@
 package command
 
 import (
-	"errors"
+	"fmt"
 	"time"
 
 	giterr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
-	log "github.com/sirupsen/logrus"
 	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
@@ -33,7 +32,7 @@ func Commit(r *git.Repository, o *CommitOptions) (err error) {
 	case ModeNative:
 		return commitWithGoGit(r, o)
 	}
-	return errors.New("Unhandled commit operation")
+	return fmt.Errorf("unhandled commit operation")
 }
 
 // commitWithGit is simply a bare git commit -m <msg> command which is flexible
@@ -46,7 +45,6 @@ func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 		args = append(args, opt.CommitMsg)
 	}
 	if out, err := Run(r.AbsPath, "git", args); err != nil {
-		log.Warn("Error at git command (commit)")
 		r.Refresh()
 		return giterr.ParseGitError(out, err)
 	}
