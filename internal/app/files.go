@@ -10,7 +10,7 @@ import (
 // load function
 func generateDirectories(dirs []string, depth int) []string {
 	gitDirs := make([]string, 0)
-	for i := 0; i <= depth; i++ {
+	for i := 0; i < depth; i++ {
 		directories, repositories := walkRecursive(dirs, gitDirs)
 		dirs = directories
 		gitDirs = repositories
