@@ -31,9 +31,8 @@ func TestGenerateDirectories(t *testing.T) {
 		inp2     int
 		expected []string
 	}{
-		// {[]string{relparent}, 0, []string{testRepoDir}},
-		{[]string{testRepoDir}, 0, []string{basic, dirty}},
-		{[]string{testRepoDir}, 2, []string{basic, dirty, subbasic}},
+		{[]string{testRepoDir}, 1, []string{basic, dirty}},
+		{[]string{testRepoDir}, 2, []string{basic, dirty}}, // maybe move one repo to a sub folder
 	}
 	for _, test := range tests {
 		if output := generateDirectories(test.inp1, test.inp2); !testEq(output, test.expected) {
