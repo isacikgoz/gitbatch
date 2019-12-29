@@ -9,7 +9,7 @@ Check out the screencast of the app:
 ## Installation
 To install with go, run the following command;
 ```bash
-go get -u github.com/isacikgoz/gitbatch
+go get -u github.com/isacikgoz/gitbatch/cmd/gitbatch
 ```
 
 ### MacOS using homebrew
