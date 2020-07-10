@@ -22,7 +22,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 			Modifier:    gocui.ModNone,
 			Handler:     gui.focusBackToMain,
 			Display:     "tab",
-			Description: "Back to Overivew",
+			Description: "Back to Overview",
 			Vital:       false,
 		}, {
 			View:        dynamicViewFeature.Name,
