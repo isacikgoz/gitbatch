@@ -87,12 +87,6 @@ func readConfiguration() error {
 	return nil
 }
 
-// write configuration to a file
-func writeConfiguration() error {
-	err := viper.WriteConfig()
-	return err
-}
-
 // initialize the configuration manager
 func initializeConfigurationManager() error {
 	// config viper
