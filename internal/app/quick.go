@@ -9,24 +9,23 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
-func quick(directories []string, mode string) {
+func quick(directories []string, mode string) error {
 	var wg sync.WaitGroup
 	start := time.Now()
 	for _, dir := range directories {
 		wg.Add(1)
 		go func(d string, mode string) {
 			defer wg.Done()
-			err := operate(d, mode)
-			if err != nil {
-				fmt.Printf("%s: %s\n", d, err.Error())
-			} else {
-				fmt.Printf("%s: successful\n", d)
+			if err := operate(d, mode); err != nil {
+				fmt.Printf("could not perform %s on %s: %s", mode, d, err)
 			}
+			fmt.Printf("%s: successful\n", d)
 		}(dir, mode)
 	}
 	wg.Wait()
 	elapsed := time.Since(start)
 	fmt.Printf("%d repositories finished in: %s\n", len(directories), elapsed)
+	return nil
 }
 
 func operate(directory, mode string) error {

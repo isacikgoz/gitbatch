@@ -6,7 +6,7 @@ import (
 )
 
 func TestLoadConfiguration(t *testing.T) {
-	if _, err := LoadConfiguration(); err != nil {
+	if _, err := loadConfiguration(); err != nil {
 		t.Errorf("Test Failed. error: %s", err.Error())
 	}
 }

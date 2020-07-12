@@ -100,8 +100,8 @@ var (
 	loaded = make(chan bool)
 )
 
-// NewGui creates a Gui object and fill it's state related entities
-func NewGui(mode string, directories []string) (*Gui, error) {
+// New creates a Gui object and fill it's state related entities
+func New(mode string, directories []string) (*Gui, error) {
 	initialState := guiState{
 		Directories:   directories,
 		Mode:          fetchMode,

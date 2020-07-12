@@ -40,7 +40,7 @@ func TestSetup(t *testing.T) {
 	}
 	for _, test := range tests {
 
-		app, err := Setup(test.input)
+		app, err := New(test.input)
 		if err != nil {
 			t.Errorf("Test Failed. error: %s", err.Error())
 		}
@@ -77,12 +77,16 @@ func TestExecQuickMode(t *testing.T) {
 	}
 	var tests = []struct {
 		inp1 []string
-		inp2 *Config
 	}{
-		{[]string{basic}, config1},
+		{[]string{basic}},
+	}
+	a := App{
+		Config: &Config{
+			Mode: "fetch",
+		},
 	}
 	for _, test := range tests {
-		if err := execQuickMode(test.inp1, test.inp2); err != nil {
+		if err := a.execQuickMode(test.inp1); err != nil {
 			t.Errorf("Test Failed: %s", err.Error())
 		}
 	}

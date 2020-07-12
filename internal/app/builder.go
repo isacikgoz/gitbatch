@@ -10,7 +10,6 @@ import (
 // The App struct is responsible to hold app-wide related entities. Currently
 // it has only the gui.Gui pointer for interface entity.
 type App struct {
-	Gui    *gui.Gui
 	Config *Config
 }
 
@@ -23,37 +22,36 @@ type Config struct {
 	Mode        string
 }
 
-// Setup will handle pre-required operations. It is designed to be a wrapper for
+// New will handle pre-required operations. It is designed to be a wrapper for
 // main method right now.
-func Setup(argConfig *Config) (*App, error) {
+func New(argConfig *Config) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
 	if len(argConfig.Directories) <= 0 {
 		d, _ := os.Getwd()
 		argConfig.Directories = []string{d}
 	}
-	presetConfig, err := LoadConfiguration()
+	presetConfig, err := loadConfiguration()
 	if err != nil {
 		return nil, err
 	}
-	appConfig := overrideConfig(presetConfig, argConfig)
-	dirs := generateDirectories(appConfig.Directories, appConfig.Depth)
+	app.Config = overrideConfig(presetConfig, argConfig)
 
-	if appConfig.QuickMode {
-		if err := execQuickMode(dirs, appConfig); err != nil {
-			return nil, err
-		}
-		// we are done here and no need for an app to be configured
-		return nil, nil
-	}
-
-	// create a gui.Gui struct and set it as App's gui
-	app.Gui, err = gui.NewGui(appConfig.Mode, dirs)
-	if err != nil {
-		// the error types and handling is not considered yet
-		return nil, err
-	}
 	return app, nil
+}
+
+// Run starts the application.
+func (a *App) Run() error {
+	dirs := generateDirectories(a.Config.Directories, a.Config.Depth)
+	if a.Config.QuickMode {
+		return a.execQuickMode(dirs)
+	}
+	// create a gui.Gui struct and run the gui
+	gui, err := gui.New(a.Config.Mode, dirs)
+	if err != nil {
+		return err
+	}
+	return gui.Run()
 }
 
 func overrideConfig(appConfig, setupConfig *Config) *Config {
@@ -75,12 +73,10 @@ func overrideConfig(appConfig, setupConfig *Config) *Config {
 	return appConfig
 }
 
-func execQuickMode(dirs []string, cfg *Config) error {
-	x := cfg.Mode == "fetch"
-	y := cfg.Mode == "pull"
-	if x == y {
-		return fmt.Errorf("unrecognized quick mode: " + cfg.Mode)
+func (a *App) execQuickMode(directories []string) error {
+	if a.Config.Mode != "fetch" && a.Config.Mode != "pull" {
+		return fmt.Errorf("unrecognized quick mode: " + a.Config.Mode)
 	}
-	quick(dirs, cfg.Mode)
+	quick(directories, a.Config.Mode)
 	return nil
 }

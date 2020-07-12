@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/src-d/go-git.v4"
+	"github.com/go-git/go-git/v5"
 )
 
 // Reference is the interface for commits, remotes and branches
