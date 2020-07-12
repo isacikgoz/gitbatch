@@ -29,31 +29,6 @@ var (
 	testRepoDir, _ = ioutil.TempDir("", "test-data")
 )
 
-func TestSetup(t *testing.T) {
-	mockApp := &App{Config: config1}
-	var tests = []struct {
-		input    *Config
-		expected *App
-	}{
-		{config2, nil},
-		{config1, mockApp},
-	}
-	for _, test := range tests {
-
-		app, err := New(test.input)
-		if err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
-		q := test.input.QuickMode
-		if q && app != nil {
-			t.Errorf("Test Failed.")
-		} else if !q && app == nil {
-			t.Errorf("Test Failed.")
-		}
-
-	}
-}
-
 func TestOverrideConfig(t *testing.T) {
 	var tests = []struct {
 		inp1     *Config
