@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	ggit "github.com/go-git/go-git/v5"
 	"github.com/isacikgoz/gitbatch/internal/git"
-	ggit "gopkg.in/src-d/go-git.v4"
 )
 
 var (

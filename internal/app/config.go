@@ -32,8 +32,8 @@ var (
 	recursionKeyDefault = 1
 )
 
-// LoadConfiguration returns a Config struct is filled
-func LoadConfiguration() (*Config, error) {
+// loadConfiguration returns a Config struct is filled
+func loadConfiguration() (*Config, error) {
 	if err := initializeConfigurationManager(); err != nil {
 		return nil, err
 	}

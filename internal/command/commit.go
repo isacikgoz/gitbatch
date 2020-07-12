@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	gogit "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	giterr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
-	gogit "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // CommitOptions defines the rules for commit operation

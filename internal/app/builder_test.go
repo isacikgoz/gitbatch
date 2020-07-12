@@ -29,31 +29,6 @@ var (
 	testRepoDir, _ = ioutil.TempDir("", "test-data")
 )
 
-func TestSetup(t *testing.T) {
-	mockApp := &App{Config: config1}
-	var tests = []struct {
-		input    *Config
-		expected *App
-	}{
-		{config2, nil},
-		{config1, mockApp},
-	}
-	for _, test := range tests {
-
-		app, err := Setup(test.input)
-		if err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
-		q := test.input.QuickMode
-		if q && app != nil {
-			t.Errorf("Test Failed.")
-		} else if !q && app == nil {
-			t.Errorf("Test Failed.")
-		}
-
-	}
-}
-
 func TestOverrideConfig(t *testing.T) {
 	var tests = []struct {
 		inp1     *Config
@@ -77,12 +52,16 @@ func TestExecQuickMode(t *testing.T) {
 	}
 	var tests = []struct {
 		inp1 []string
-		inp2 *Config
 	}{
-		{[]string{basic}, config1},
+		{[]string{basic}},
+	}
+	a := App{
+		Config: &Config{
+			Mode: "fetch",
+		},
 	}
 	for _, test := range tests {
-		if err := execQuickMode(test.inp1, test.inp2); err != nil {
+		if err := a.execQuickMode(test.inp1); err != nil {
 			t.Errorf("Test Failed: %s", err.Error())
 		}
 	}

@@ -3,7 +3,7 @@ package git
 import (
 	"unicode"
 
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 // Alphabetical slice is the re-ordered *Repository slice that sorted according
