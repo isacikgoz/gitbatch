@@ -14,7 +14,6 @@ go get -u github.com/isacikgoz/gitbatch/cmd/gitbatch
 
 ### MacOS using homebrew
 ```bash
-brew tap isacikgoz/taps
 brew install gitbatch
 ```
 For other options see [installation page](https://github.com/isacikgoz/gitbatch/wiki/Installation)
