@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-const stashCommand = "stash"
-
 // StashedItem holds the required fields for a stashed change
 type StashedItem struct {
 	StashID     int
@@ -123,6 +121,6 @@ func (r *Repository) Stash() (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = r.AbsPath
 	output, err := cmd.CombinedOutput()
-	r.Refresh()
+	_ = r.Refresh()
 	return string(output), err
 }

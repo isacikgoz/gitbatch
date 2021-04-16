@@ -4,48 +4,43 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStatusWithGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	_, err = testFile("file")
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	_, err := testFile(th.RepoPath, "file")
+	require.NoError(t, err)
+
 	var tests = []struct {
 		input *git.Repository
 	}{
-		{r},
+		{th.Repository},
 	}
 	for _, test := range tests {
-		if output, err := statusWithGit(test.input); err != nil || len(output) <= 0 {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		output, err := statusWithGit(test.input)
+		require.NoError(t, err)
+		require.NotEmpty(t, output)
 	}
 }
 
 func TestStatusWithGoGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	_, err = testFile("file")
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	_, err := testFile(th.RepoPath, "file")
+	require.NoError(t, err)
+
 	var tests = []struct {
 		input *git.Repository
 	}{
-		{r},
+		{th.Repository},
 	}
 	for _, test := range tests {
-		if output, err := statusWithGoGit(test.input); err != nil || len(output) <= 0 {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		output, err := statusWithGoGit(test.input)
+		require.NoError(t, err)
+		require.NotEmpty(t, output)
 	}
 }

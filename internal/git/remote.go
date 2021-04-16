@@ -19,6 +19,9 @@ func (r *Repository) initRemotes() error {
 	r.Remotes = make([]*Remote, 0)
 
 	rms, err := rp.Remotes()
+	if err != nil {
+		return err
+	}
 	for _, rm := range rms {
 		rfs := make([]string, 0)
 		for _, rf := range rm.Config().Fetch {
@@ -29,13 +32,12 @@ func (r *Repository) initRemotes() error {
 			URL:      rm.Config().URLs,
 			RefSpecs: rfs,
 		}
-		remote.loadRemoteBranches(r)
+		if err := remote.loadRemoteBranches(r); err != nil {
+			continue
+		}
 		r.Remotes = append(r.Remotes, remote)
+	}
 
-	}
-	if err != nil {
-		return err
-	}
 	if len(r.Remotes) <= 0 {
 		return fmt.Errorf("no remote for repository: %s", r.Name)
 	}

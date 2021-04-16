@@ -5,12 +5,12 @@ import (
 	"regexp"
 	"strings"
 
-	gerr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	gerr "github.com/isacikgoz/gitbatch/internal/errors"
+	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
 var (
@@ -127,18 +127,16 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 	if options.Progress {
 		opt.Progress = os.Stdout
 	}
-	msg := "fetch complete, focus to see details"
 	if err := r.Repo.Fetch(opt); err != nil {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// Already up-to-date
-			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
 			// we don't have remote ref, so lets pull other things.. maybe it'd be useful
 			rp := r.State.Remote.RefSpecs[0]
 			if fetchTryCount < fetchMaxTry {
 				fetchTryCount++
-				fetchWithGoGit(r, options, rp)
+				_ = fetchWithGoGit(r, options, rp)
 			} else {
 				return err
 			}
@@ -156,13 +154,13 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 
 	ref, _ := r.Repo.Head()
 	// TODO: fix this, refresh two times not cool
-	r.Refresh()
+	_ = r.Refresh()
 	uRef := "origin/HEAD"
 	if r.State.Branch != nil && r.State.Branch.Upstream != nil {
 		uRef = r.State.Branch.Upstream.Reference.Hash().String()[:7]
 	}
 
-	msg, err = getFetchMessage(r, ref.Hash().String()[:7], uRef)
+	msg, err := getFetchMessage(r, ref.Hash().String()[:7], uRef)
 	if err != nil {
 		msg = "couldn't get stat"
 	}

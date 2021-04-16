@@ -38,7 +38,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.Title = remoteBranchViewFeature.Title
 		v.Wrap = false
 		v.Overwrite = false
-		g.SetViewOnBottom(v.Name())
+		_, _ = g.SetViewOnBottom(v.Name())
 	}
 	if v, err := g.SetView(branchViewFeature.Name, rx, int(0.25*float32(maxY)), maxX-1, int(0.75*float32(maxY))-1); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -79,7 +79,7 @@ func (gui *Gui) focusLayout(g *gocui.Gui) error {
 		v.BgColor = gocui.ColorWhite
 		v.FgColor = gocui.ColorBlack
 		v.Frame = false
-		gui.updateKeyBindingsView(g, commitFrameViewFeature.Name)
+		_ = gui.updateKeyBindingsView(g, commitFrameViewFeature.Name)
 	}
 	return nil
 }
@@ -90,7 +90,7 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 	// mainViews = focusViews
 	r := gui.getSelectedRepository()
 	if r == nil {
-    		return nil
+		return nil
 	}
 	gui.order = focus
 
@@ -101,7 +101,7 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	r.State.Branch.InitializeCommits(r)
+	_ = r.State.Branch.InitializeCommits(r)
 
 	if err := gui.renderCommits(r); err != nil {
 		return err
@@ -113,7 +113,7 @@ func (gui *Gui) focusToRepository(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	gui.updateKeyBindingsView(g, commitViewFeature.Name)
+	_ = gui.updateKeyBindingsView(g, commitViewFeature.Name)
 	gui.g.Update(func(g *gocui.Gui) error {
 		return gui.renderMain()
 	})
@@ -130,7 +130,7 @@ func (gui *Gui) focusBackToMain(g *gocui.Gui, v *gocui.View) error {
 	if err := gui.sendFocusViewsToBottom(g, v); err != nil {
 		return err
 	}
-	gui.updateKeyBindingsView(g, mainViewFeature.Name)
+	_ = gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	return nil
 }
 

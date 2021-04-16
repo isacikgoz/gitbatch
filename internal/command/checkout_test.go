@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckout(t *testing.T) {
@@ -17,21 +18,19 @@ func TestCheckout(t *testing.T) {
 		CreateIfAbsent: true,
 		CommandMode:    ModeLegacy,
 	}
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *CheckoutOptions
 	}{
-		{r, opts1},
-		{r, opts2},
+		{th.Repository, opts1},
+		{th.Repository, opts2},
 	}
 	for _, test := range tests {
-		if err := Checkout(test.inp1, test.inp2); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := Checkout(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }

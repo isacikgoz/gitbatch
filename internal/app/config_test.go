@@ -1,26 +1,25 @@
 package app
 
 import (
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoadConfiguration(t *testing.T) {
-	if _, err := loadConfiguration(); err != nil {
-		t.Errorf("Test Failed. error: %s", err.Error())
-	}
+	cfg, err := loadConfiguration()
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
 }
 
 func TestReadConfiguration(t *testing.T) {
-	if err := readConfiguration(); err != nil {
-		t.Errorf("Test Failed. error: %s", err.Error())
-	}
+	err := readConfiguration()
+	require.NoError(t, err)
 }
 
 func TestInitializeConfigurationManager(t *testing.T) {
-	if err := initializeConfigurationManager(); err != nil {
-		t.Errorf("Test Failed. error: %s", err.Error())
-	}
+	err := initializeConfigurationManager()
+	require.NoError(t, err)
 }
 
 func TestOsConfigDirectory(t *testing.T) {
@@ -32,9 +31,7 @@ func TestOsConfigDirectory(t *testing.T) {
 		{"darwin", "Application Support"},
 	}
 	for _, test := range tests {
-		if output := osConfigDirectory(test.input); !strings.Contains(output, test.expected) {
-			t.Errorf("Test Failed. %s inputted, output: %s, expected %s", test.input, output, test.expected)
-		}
+		output := osConfigDirectory(test.input)
+		require.Contains(t, output, test.expected)
 	}
-
 }

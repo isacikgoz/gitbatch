@@ -74,15 +74,8 @@ func (gui *Gui) switchToCheckoutMode(g *gocui.Gui, v *gocui.View) error {
 	return gui.updateKeyBindingsView(g, mainViewFeature.Name)
 }
 
-// bring the view on the top by its name
-func (gui *Gui) setCurrentViewOnTop(g *gocui.Gui, name string) (*gocui.View, error) {
-	if _, err := g.SetCurrentView(name); err != nil {
-		return nil, err
-	}
-	return g.SetViewOnTop(name)
-}
-
 // if the cursor down past the last item, move it to the last line
+// nolint: unused
 func (gui *Gui) correctCursor(v *gocui.View) error {
 	cx, cy := v.Cursor()
 	ox, oy := v.Origin()
@@ -92,20 +85,20 @@ func (gui *Gui) correctCursor(v *gocui.View) error {
 	if oy+cy <= ly {
 		return nil
 	}
+
+	// min finds the minimum value of two int
+	min := func(x, y int) int {
+		if x < y {
+			return x
+		}
+		return y
+	}
 	newCy := min(ly, maxY)
 	if err := v.SetCursor(cx, newCy); err != nil {
 		return err
 	}
 	err := v.SetOrigin(ox, ly-newCy)
 	return err
-}
-
-// min finds the minimum value of two int
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
 }
 
 // cursor down acts like half-page down for faster scrolling

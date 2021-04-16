@@ -2,27 +2,29 @@ package app
 
 import (
 	"testing"
+
+	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 func TestQuick(t *testing.T) {
-	defer cleanRepo()
-	_, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1 []string
 		inp2 string
 	}{
 		{
-			[]string{dirty},
+			[]string{th.DirtyRepoPath()},
 			"fetch",
 		}, {
-			[]string{dirty},
+			[]string{th.DirtyRepoPath()},
 			"pull",
 		},
 	}
 	for _, test := range tests {
-		quick(test.inp1, test.inp2)
+		err := quick(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }

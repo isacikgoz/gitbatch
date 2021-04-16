@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateJobQueue(t *testing.T) {
@@ -13,84 +14,78 @@ func TestCreateJobQueue(t *testing.T) {
 }
 
 func TestAddJob(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	q := CreateJobQueue()
 	var tests = []struct {
 		input *Job
-		same  bool
 	}{
-		{&Job{Repository: r}, false},
+		{&Job{Repository: th.Repository}},
 	}
 	for _, test := range tests {
-		if err := q.AddJob(test.input); err != nil && !test.same {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := q.AddJob(test.input)
+		require.NoError(t, err)
 	}
 }
 
 func TestRemoveFromQueue(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	q := CreateJobQueue()
-	j := &Job{Repository: r}
-	q.AddJob(j)
+	j := &Job{Repository: th.Repository}
+	err := q.AddJob(j)
+	require.NoError(t, err)
+
 	var tests = []struct {
 		input *git.Repository
 	}{
-		{r},
+		{th.Repository},
 	}
 	for _, test := range tests {
-		if err := q.RemoveFromQueue(test.input); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := q.RemoveFromQueue(test.input)
+		require.NoError(t, err)
 	}
 }
 
 func TestIsInTheQueue(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	q := CreateJobQueue()
-	j := &Job{Repository: r}
-	q.AddJob(j)
+	j := &Job{Repository: th.Repository}
+	err := q.AddJob(j)
+	require.NoError(t, err)
+
 	var tests = []struct {
 		input *git.Repository
 	}{
-		{r},
+		{th.Repository},
 	}
 	for _, test := range tests {
-		if out1, out2 := q.IsInTheQueue(test.input); !out1 || j != out2 {
-			t.Errorf("Test Failed. output: {%t, %s}", out1, out2.Repository.Name)
-		}
+		out1, out2 := q.IsInTheQueue(test.input)
+		require.True(t, out1)
+		require.Equal(t, j, out2)
 	}
 }
 
 func TestStartJobsAsync(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	q := CreateJobQueue()
-	j := &Job{Repository: r}
-	q.AddJob(j)
+	j := &Job{Repository: th.Repository}
+	err := q.AddJob(j)
+	require.NoError(t, err)
+
 	var tests = []struct {
 		input *Queue
 	}{
 		{q},
 	}
 	for _, test := range tests {
-		if output := test.input.StartJobsAsync(); len(output) != 0 {
-			t.Errorf("Test Failed.")
-		}
+		output := test.input.StartJobsAsync()
+		require.Empty(t, output)
 	}
 }

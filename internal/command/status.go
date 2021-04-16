@@ -10,13 +10,6 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
-var (
-	statusCmdMode string
-
-	statusCmdModeLegacy = "git"
-	statusCmdModeNative = "go-git"
-)
-
 func shortStatus(r *git.Repository, option string) string {
 	args := make([]string, 0)
 	args = append(args, "status")

@@ -75,16 +75,13 @@ const (
 var (
 	mainViewFeature          = viewFeature{Name: "main", Title: " Matched Repositories "}
 	mainViewFrameFeature     = viewFeature{Name: "mainframe", Title: " Matched Repositories "}
-	loadingViewFeature       = viewFeature{Name: "loading", Title: " Loading in Progress "}
 	branchViewFeature        = viewFeature{Name: "branch", Title: " Branches "}
 	batchBranchViewFeature   = viewFeature{Name: "batch-branch", Title: " Select Branch "}
 	suggestBranchViewFeature = viewFeature{Name: "suggest-branch", Title: " Enter New Branch Name "}
 	remoteViewFeature        = viewFeature{Name: "remotes", Title: " Remotes "}
 	remoteBranchViewFeature  = viewFeature{Name: "remotebranches", Title: " Remote Branches "}
 	commitViewFeature        = viewFeature{Name: "commits", Title: " Commits "}
-	scheduleViewFeature      = viewFeature{Name: "schedule", Title: " Schedule "}
 	keybindingsViewFeature   = viewFeature{Name: "keybindings", Title: " Keybindings "}
-	diffViewFeature          = viewFeature{Name: "diff", Title: " Diff Detail "}
 	cheatSheetViewFeature    = viewFeature{Name: "cheatsheet", Title: " Application Controls "}
 	errorViewFeature         = viewFeature{Name: "error", Title: " Error "}
 	dynamicViewFeature       = viewFeature{Name: "dynamic", Title: " Dynamic "}
@@ -137,7 +134,9 @@ func (gui *Gui) Run() error {
 	g.SetManagerFunc(gui.layout)
 
 	// load repositories in background asynchronously
-	go load.AsyncLoad(gui.State.Directories, gui.loadRepository, loaded)
+	go func() {
+		_ = load.AsyncLoad(gui.State.Directories, gui.loadRepository, loaded)
+	}()
 
 	if err := gui.generateKeybindings(); err != nil {
 		return err
@@ -164,8 +163,8 @@ func (gui *Gui) loadRepository(r *git.Repository) {
 	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
 	r.On(git.BranchUpdated, gui.branchUpdated)
 	// update gui
-	gui.repositoryUpdated(nil)
-	gui.renderTitle()
+	_ = gui.repositoryUpdated(nil)
+	_ = gui.renderTitle()
 	// take pointer back
 	gui.State.Repositories = rs
 	go func() {

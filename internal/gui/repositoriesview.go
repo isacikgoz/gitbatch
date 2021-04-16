@@ -226,7 +226,7 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 		for j, err := range fails {
 			if err == gerr.ErrAuthenticationRequired {
 				j.Repository.SetWorkStatus(git.Paused)
-				gui_go.State.FailoverQueue.AddJob(j)
+				_ = gui_go.State.FailoverQueue.AddJob(j)
 			}
 		}
 	}(gui)
@@ -236,13 +236,15 @@ func (gui *Gui) startQueue(g *gocui.Gui, v *gocui.View) error {
 func (gui *Gui) submitCredentials(g *gocui.Gui, v *gocui.View) error {
 	if is, j := gui.State.FailoverQueue.IsInTheQueue(gui.getSelectedRepository()); is {
 		if j.Repository.WorkStatus() == git.Paused {
-			gui.State.FailoverQueue.RemoveFromQueue(j.Repository)
+			if err := gui.State.FailoverQueue.RemoveFromQueue(j.Repository); err != nil {
+				return err
+			}
 			err := gui.openAuthenticationView(g, gui.State.Queue, j, v.Name())
 			if err != nil {
 				return err
 			}
 			if isnt, _ := gui.State.Queue.IsInTheQueue(j.Repository); !isnt {
-				gui.State.FailoverQueue.AddJob(j)
+				_ = gui.State.FailoverQueue.AddJob(j)
 			}
 		}
 	}
@@ -302,7 +304,7 @@ func (gui *Gui) unmarkAllRepositories(g *gocui.Gui, v *gocui.View) error {
 // sortByName sorts the repositories by A to Z order
 func (gui *Gui) sortByName(g *gocui.Gui, v *gocui.View) error {
 	sort.Sort(git.Alphabetical(gui.State.Repositories))
-	gui.renderMain()
+	_ = gui.renderMain()
 	return nil
 }
 
@@ -310,6 +312,6 @@ func (gui *Gui) sortByName(g *gocui.Gui, v *gocui.View) error {
 // the top element will be the last modified
 func (gui *Gui) sortByMod(g *gocui.Gui, v *gocui.View) error {
 	sort.Sort(git.LastModified(gui.State.Repositories))
-	gui.renderMain()
+	_ = gui.renderMain()
 	return nil
 }

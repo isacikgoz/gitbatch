@@ -1,22 +1,25 @@
 package command
 
 import (
-	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDiffFile(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	f := &git.File{
-		AbsPath: r.AbsPath + string(os.PathSeparator) + ".gitignore",
+		AbsPath: filepath.Join(th.RepoPath, ".gitignore"),
 		Name:    ".gitignore",
 	}
+
+	_, err := testFile(th.RepoPath, f.Name)
+	require.NoError(t, err)
+
 	var tests = []struct {
 		input    *git.File
 		expected string
@@ -24,32 +27,28 @@ func TestDiffFile(t *testing.T) {
 		{f, ""},
 	}
 	for _, test := range tests {
-		if output, err := DiffFile(test.input); err != nil || output != test.expected {
-			t.Errorf("Test Failed: %s expected, %s was the output.", test.expected, output)
-		}
+		output, err := DiffFile(test.input)
+		require.NoError(t, err)
+		require.Equal(t, test.expected, output)
 	}
 }
 
 func TestDiffWithGoGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	headRef, err := r.Repo.Head()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	headRef, err := th.Repository.Repo.Head()
+	require.NoError(t, err)
 	var tests = []struct {
 		inp1     *git.Repository
 		inp2     string
 		expected string
 	}{
-		{r, headRef.Hash().String(), ""},
+		{th.Repository, headRef.Hash().String(), ""},
 	}
 	for _, test := range tests {
-		if output, err := diffWithGoGit(test.inp1, test.inp2); err != nil || len(output) == len(test.expected) {
-			t.Errorf("Test Failed: %s expected, %s was the output.", test.expected, output)
-		}
+		output, err := diffWithGoGit(test.inp1, test.inp2)
+		require.NoError(t, err)
+		require.False(t, len(output) == len(test.expected))
 	}
 }

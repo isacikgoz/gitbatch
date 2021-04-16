@@ -4,13 +4,13 @@ import (
 	"os"
 	"strings"
 
-	gerr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage"
+	gerr "github.com/isacikgoz/gitbatch/internal/errors"
+	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
 var (
@@ -109,13 +109,11 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 	if err != nil {
 		return err
 	}
-	var msg string
 	ref, _ := r.Repo.Head()
 	if err = w.Pull(opt); err != nil {
 		if err == gogit.NoErrAlreadyUpToDate {
 			// log.Error("error: " + err.Error())
 			// Already up-to-date
-			msg = err.Error()
 			// TODO: submit a PR for this kind of error, this type of catch is lame
 		} else if err == storage.ErrReferenceHasChanged && pullTryCount < pullMaxTry {
 			pullTryCount++
@@ -136,7 +134,7 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 	}
 	newref, _ := r.Repo.Head()
 
-	msg, err = getMergeMessage(r, ref.Hash().String(), newref.Hash().String())
+	msg, err := getMergeMessage(r, ref.Hash().String(), newref.Hash().String())
 	if err != nil {
 		msg = "couldn't get stat"
 	}

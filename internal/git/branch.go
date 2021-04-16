@@ -53,7 +53,7 @@ func (r *Repository) initBranches() error {
 	}
 	var branchFound bool
 	var push, pull string
-	bs.ForEach(func(b *plumbing.Reference) error {
+	_ = bs.ForEach(func(b *plumbing.Reference) error {
 		if b.Type() != plumbing.HashReference {
 			return nil
 		}
@@ -117,7 +117,7 @@ func (r *Repository) Checkout(b *Branch) error {
 	if err == nil {
 		r.State.Branch.Upstream = rb
 	}
-	b.initCommits(r)
+	_ = b.initCommits(r)
 
 	if err := r.Publish(BranchUpdated, nil); err != nil {
 		return err
@@ -265,13 +265,4 @@ func getUpstream(r *Repository, branchName string) (*RemoteBranch, error) {
 		}
 	}
 	return nil, fmt.Errorf("upstream not found")
-}
-
-// trimTrailingNewline removes the trailing new line form a string. this method
-// is used mostly on outputs of a command
-func trimTrailingNewline(s string) string {
-	if strings.HasSuffix(s, "\n") || strings.HasSuffix(s, "\r") {
-		return s[:len(s)-1]
-	}
-	return s
 }

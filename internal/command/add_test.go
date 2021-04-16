@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -11,71 +12,59 @@ var (
 )
 
 func TestAddAll(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	_, err = testFile("file")
-	if err != nil {
-		t.Errorf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	_, err := testFile(th.RepoPath, "file")
+	require.NoError(t, err)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *AddOptions
 	}{
-		{r, testAddopt1},
+		{th.Repository, testAddopt1},
 	}
 	for _, test := range tests {
-		if err := AddAll(test.inp1, test.inp2); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := AddAll(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }
 
 func TestAddWithGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	f, err := testFile("file")
-	if err != nil {
-		t.Errorf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	f, err := testFile(th.RepoPath, "file")
+	require.NoError(t, err)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *git.File
 		inp3 *AddOptions
 	}{
-		{r, f, testAddopt1},
+		{th.Repository, f, testAddopt1},
 	}
 	for _, test := range tests {
-		if err := addWithGit(test.inp1, test.inp2, test.inp3); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := addWithGit(test.inp1, test.inp2, test.inp3)
+		require.NoError(t, err)
 	}
 }
 
 func TestAddWithGoGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	f, err := testFile("file")
-	if err != nil {
-		t.Errorf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	f, err := testFile(th.RepoPath, "file")
+	require.NoError(t, err)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *git.File
 	}{
-		{r, f},
+		{th.Repository, f},
 	}
 	for _, test := range tests {
-		if err := addWithGoGit(test.inp1, test.inp2); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := addWithGoGit(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }

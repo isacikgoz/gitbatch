@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -23,41 +24,35 @@ var (
 )
 
 func TestPullWithGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *PullOptions
 	}{
-		{r, testPullopts1},
-		{r, testPullopts2},
+		{th.Repository, testPullopts1},
+		{th.Repository, testPullopts2},
 	}
 	for _, test := range tests {
-		if err := pullWithGit(test.inp1, test.inp2); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := pullWithGit(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }
 
 func TestPullWithGoGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *PullOptions
 	}{
-		{r, testPullopts1},
-		{r, testPullopts3},
+		{th.Repository, testPullopts1},
+		{th.Repository, testPullopts3},
 	}
 	for _, test := range tests {
-		if err := pullWithGoGit(test.inp1, test.inp2); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := pullWithGoGit(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }

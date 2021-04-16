@@ -26,7 +26,7 @@ func (gui *Gui) sideCursorDown(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		v.EditDelete(true)
-		adjustAnchor(cy+oy+1, ly, v)
+		_ = adjustAnchor(cy+oy+1, ly, v)
 	}
 	return nil
 }
@@ -38,7 +38,7 @@ func (gui *Gui) sideCursorUp(g *gocui.Gui, v *gocui.View) error {
 		_, cy := v.Cursor()
 		ly := len(v.BufferLines()) - 1
 		v.EditDelete(true)
-		adjustAnchor(cy+oy-1, ly, v)
+		_ = adjustAnchor(cy+oy-1, ly, v)
 	}
 	return nil
 }
@@ -83,7 +83,7 @@ func (gui *Gui) renderBranches(r *git.Repository) error {
 		}
 		fmt.Fprintln(v, tab+b.Name)
 	}
-	adjustAnchor(si, len(bs), v)
+	_ = adjustAnchor(si, len(bs), v)
 	return nil
 }
 
@@ -109,7 +109,7 @@ func (gui *Gui) renderRemotes(r *git.Repository) error {
 		}
 		fmt.Fprintln(v, tab+rb.Name+": "+shortURL)
 	}
-	adjustAnchor(si, len(rs), v)
+	_ = adjustAnchor(si, len(rs), v)
 	return nil
 }
 
@@ -131,7 +131,7 @@ func (gui *Gui) renderRemoteBranches(r *git.Repository) error {
 		// }
 		fmt.Fprintln(v, tab+rb.Name)
 	}
-	adjustAnchor(si, len(rs), v)
+	_ = adjustAnchor(si, len(rs), v)
 	return nil
 }
 
@@ -145,14 +145,14 @@ func (gui *Gui) selectSideItem(g *gocui.Gui, v *gocui.View) error {
 		r.State.Branch.State.Commit = r.State.Branch.Commits[ix]
 		err = gui.renderCommits(r)
 	} else if v.Name() == branchViewFeature.Name {
-		r.Checkout(r.Branches[ix])
+		_ = r.Checkout(r.Branches[ix])
 		err = gui.renderBranches(r)
 	} else if v.Name() == remoteBranchViewFeature.Name {
 		// r.State.Remote.Branch = r.State.Remote.Branches[ix]
 		err = gui.renderRemoteBranches(r)
 	} else if v.Name() == remoteViewFeature.Name {
 		r.State.Remote = r.Remotes[ix]
-		r.Refresh()
+		_ = r.Refresh()
 		err = gui.renderRemotes(r)
 	} else if v.Name() == batchBranchViewFeature.Name {
 		gui.State.targetBranch = gui.State.totalBranches[ix].BranchName
@@ -182,7 +182,7 @@ func adjustAnchor(i, r int, v *gocui.View) error {
 	}
 	_, oy := v.Origin()
 	c := i - oy
-	v.SetCursor(0, c)
+	_ = v.SetCursor(0, c)
 	v.EditWrite('→')
 	return nil
 }
@@ -193,7 +193,7 @@ func (gui *Gui) resetSideCursors() error {
 		if err != nil {
 			return err
 		}
-		v.SetCursor(0, 0)
+		_ = v.SetCursor(0, 0)
 	}
 	return nil
 }
@@ -208,7 +208,7 @@ func (gui *Gui) syncRemoteBranch(g *gocui.Gui, v *gocui.View) error {
 }
 
 // opens a confirmation view for setting default merge branch
-func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) setUpstreamToBranch(g *gocui.Gui, _ *gocui.View) error {
 	maxX, maxY := g.Size()
 
 	r := gui.getSelectedRepository()
@@ -241,7 +241,7 @@ func (gui *Gui) confirmSetUpstreamToBranch(g *gocui.Gui, v *gocui.View) error {
 	}, r.State.Branch.Reference.Name().String()); err != nil {
 		return err
 	}
-	r.Refresh()
+	_ = r.Refresh()
 	return gui.closeConfirmationView(g, v)
 }
 

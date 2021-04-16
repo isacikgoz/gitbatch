@@ -14,7 +14,7 @@ func (gui *Gui) openBatchBranchView(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetViewOnTop(batchBranchViewFeature.Name); err != nil {
 		return err
 	}
-	gui.renderBatchBranches(true)
+	_ = gui.renderBatchBranches(true)
 	return gui.focusToView(batchBranchViewFeature.Name)
 }
 
@@ -39,7 +39,7 @@ func (gui *Gui) renderBatchBranches(calculate bool) error {
 	if len(gui.State.Repositories) == 0 {
 		return nil
 	}
-	branchMap := make(map[string]int, 0)
+	branchMap := make(map[string]int)
 	for _, r := range gui.State.Repositories {
 		for _, b := range r.Branches {
 			branchMap[b.Name] = branchMap[b.Name] + 1
@@ -50,10 +50,7 @@ func (gui *Gui) renderBatchBranches(calculate bool) error {
 	for k, v := range branchMap {
 		ss = append(ss, &branchCountMap{k, v})
 	}
-	var vals []int
-	for _, val := range branchMap {
-		vals = append(vals, val)
-	}
+
 	sort.Slice(ss, func(i, j int) bool {
 		if ss[i].Count == ss[j].Count {
 			return lessAlphabetical(ss, i, j)
@@ -69,7 +66,8 @@ func (gui *Gui) renderBatchBranches(calculate bool) error {
 	}
 	for i, kv := range gui.State.totalBranches {
 		rule := gui.renderRules()
-		branch := align(kv.BranchName, rule.MaxBranch, true, true)
+		n, branch := align(kv.BranchName, rule.MaxBranch, true)
+		branch = branch + strings.Repeat(" ", n)
 		if kv.BranchName == gui.State.targetBranch {
 			si = i
 			fmt.Fprintf(v, "%s%s%s%d\n", ws, green.Sprint(branch), sep, kv.Count)
@@ -77,7 +75,7 @@ func (gui *Gui) renderBatchBranches(calculate bool) error {
 			fmt.Fprintf(v, "%s%s%s%d\n", tab, branch, sep, kv.Count)
 		}
 	}
-	adjustAnchor(si, len(gui.State.totalBranches), v)
+	_ = adjustAnchor(si, len(gui.State.totalBranches), v)
 	return nil
 }
 
@@ -126,7 +124,7 @@ func (gui *Gui) closeSuggestBranchesView(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetViewOnBottom(suggestBranchViewFeature.Name); err != nil {
 		return err
 	}
-	gui.renderBatchBranches(false)
+	_ = gui.renderBatchBranches(false)
 	return gui.focusToView(batchBranchViewFeature.Name)
 }
 
@@ -139,6 +137,6 @@ func (gui *Gui) closeSuggestBranchesViewWithAdd(g *gocui.Gui, v *gocui.View) err
 	nm := &branchCountMap{BranchName: newBranch}
 	gui.State.totalBranches = append(gui.State.totalBranches, nm)
 	gui.State.targetBranch = nm.BranchName
-	gui.renderBatchBranches(false)
+	_ = gui.renderBatchBranches(false)
 	return gui.closeSuggestBranchesView(g, v)
 }

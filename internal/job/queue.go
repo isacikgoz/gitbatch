@@ -112,6 +112,6 @@ func (jq *Queue) StartJobsAsync() map[*Job]error {
 			}
 		}()
 	}
-	sem.Acquire(ctx, int64(maxWorkers))
+	_ = sem.Acquire(ctx, int64(maxWorkers))
 	return fails
 }

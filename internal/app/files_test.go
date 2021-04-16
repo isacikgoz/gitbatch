@@ -1,52 +1,35 @@
 package app
 
 import (
-	"os"
-	"strings"
+	"path/filepath"
 	"testing"
-)
 
-var (
-	wd, _ = os.Getwd()
-	sp    = string(os.PathSeparator)
-	d     = strings.TrimSuffix(wd, sp+"app")
-
-	relparent = ".." + sp + "test"
-	parent    = d + sp + "test"
-	// data      = parent + sp + "test-data"
-	basic    = testRepoDir + sp + "basic-repo"
-	dirty    = testRepoDir + sp + "dirty-repo"
-	non      = testRepoDir + sp + "non-repo"
-	subbasic = non + sp + "basic-repo"
+	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateDirectories(t *testing.T) {
-	defer cleanRepo()
-	_, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1     []string
 		inp2     int
 		expected []string
 	}{
-		{[]string{testRepoDir}, 1, []string{basic, dirty}},
-		{[]string{testRepoDir}, 2, []string{basic, dirty}}, // maybe move one repo to a sub folder
+		{[]string{th.RepoPath}, 1, []string{th.BasicRepoPath(), th.DirtyRepoPath()}},
+		{[]string{th.RepoPath}, 2, []string{th.BasicRepoPath(), th.DirtyRepoPath()}}, // maybe move one repo to a sub folder
 	}
 	for _, test := range tests {
-		if output := generateDirectories(test.inp1, test.inp2); !testEq(output, test.expected) {
-			t.Errorf("Test Failed: {%s, %d} inputted, received: %s, expected: %s", test.inp1, test.inp2, output, test.expected)
-		}
+		output := generateDirectories(test.inp1, test.inp2)
+		require.ElementsMatch(t, output, test.expected)
 	}
 }
 
 func TestWalkRecursive(t *testing.T) {
-	defer cleanRepo()
-	_, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1 []string
 		inp2 []string
@@ -54,25 +37,23 @@ func TestWalkRecursive(t *testing.T) {
 		exp2 []string
 	}{
 		{
-			[]string{testRepoDir},
+			[]string{th.RepoPath},
 			[]string{""},
-			[]string{testRepoDir + sp + ".git", testRepoDir + sp + ".gitmodules", non},
-			[]string{"", basic, dirty},
+			[]string{filepath.Join(th.RepoPath, ".git"), filepath.Join(th.RepoPath, ".gitmodules"), th.NonRepoPath()},
+			[]string{"", th.BasicRepoPath(), th.DirtyRepoPath()},
 		},
 	}
 	for _, test := range tests {
-		if out1, out2 := walkRecursive(test.inp1, test.inp2); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) {
-			t.Errorf("Test Failed: {%s, %s} inputted, received: {%s, %s}, expected: {%s, %s}", test.inp1, test.inp2, out1, out2, test.exp1, test.exp2)
-		}
+		out1, out2 := walkRecursive(test.inp1, test.inp2)
+		require.ElementsMatch(t, out1, test.exp1)
+		require.ElementsMatch(t, out2, test.exp2)
 	}
 }
 
 func TestSeparateDirectories(t *testing.T) {
-	defer cleanRepo()
-	_, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		input string
 		exp1  []string
@@ -84,38 +65,15 @@ func TestSeparateDirectories(t *testing.T) {
 			nil,
 		},
 		{
-			testRepoDir,
-			[]string{testRepoDir + sp + ".git", testRepoDir + sp + ".gitmodules", non},
-			[]string{basic, dirty},
+			th.RepoPath,
+			[]string{filepath.Join(th.RepoPath, ".git"), filepath.Join(th.RepoPath, ".gitmodules"), th.NonRepoPath()},
+			[]string{th.BasicRepoPath(), th.DirtyRepoPath()},
 		},
 	}
 	for _, test := range tests {
-		if out1, out2, err := separateDirectories(test.input); !testEq(out1, test.exp1) || !testEq(out2, test.exp2) || err != nil {
-			if err != nil {
-				t.Errorf("Test failed with error: %s ", err.Error())
-				return
-			}
-			t.Errorf("Test Failed: %s inputted, received: {%s, %s}, expected: {%s, %s}", test.input, out1, out2, test.exp1, test.exp2)
-		}
+		out1, out2, err := separateDirectories(test.input)
+		require.NoError(t, err)
+		require.ElementsMatch(t, out1, test.exp1)
+		require.ElementsMatch(t, out2, test.exp2)
 	}
-}
-
-func testEq(a, b []string) bool {
-
-	// If one is nil, the other must also be nil.
-	if (a == nil) != (b == nil) {
-		return false
-	}
-
-	if len(a) != len(b) {
-		return false
-	}
-
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-
-	return true
 }
