@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -28,44 +29,38 @@ var (
 )
 
 func TestFetchWithGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *FetchOptions
 	}{
-		{r, testFetchopts1},
-		{r, testFetchopts2},
-		{r, testFetchopts3},
+		{th.Repository, testFetchopts1},
+		{th.Repository, testFetchopts2},
+		{th.Repository, testFetchopts3},
 	}
 	for _, test := range tests {
-		if err := fetchWithGit(test.inp1, test.inp2); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := fetchWithGit(test.inp1, test.inp2)
+		require.NoError(t, err)
 	}
 }
 
 func TestFetchWithGoGit(t *testing.T) {
-	defer cleanRepo()
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
-	}
-	refspec := "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Branch.Name
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
+
+	refspec := "+" + "refs/heads/" + th.Repository.State.Branch.Name + ":" + "/refs/remotes/" + th.Repository.State.Branch.Name
 	var tests = []struct {
 		inp1 *git.Repository
 		inp2 *FetchOptions
 		inp3 string
 	}{
-		{r, testFetchopts1, refspec},
-		{r, testFetchopts4, refspec},
+		{th.Repository, testFetchopts1, refspec},
+		{th.Repository, testFetchopts4, refspec},
 	}
 	for _, test := range tests {
-		if err := fetchWithGoGit(test.inp1, test.inp2, test.inp3); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := fetchWithGoGit(test.inp1, test.inp2, test.inp3)
+		require.NoError(t, err)
 	}
 }

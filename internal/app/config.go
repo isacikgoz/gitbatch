@@ -24,8 +24,6 @@ var (
 	modeKey             = "mode"
 	modeKeyDefault      = "fetch"
 	pathsKey            = "paths"
-	pathsKeyDefault     = []string{"."}
-	logLevelKeyDefault  = "error"
 	quickKey            = "quick"
 	quickKeyDefault     = false
 	recursionKey        = "recursion"
@@ -74,8 +72,14 @@ func readConfiguration() error {
 	if err != nil {             // Handle errors reading the config file
 		// if file does not exist, simply create one
 		if _, err := os.Stat(configFileAbsPath + configFileExt); os.IsNotExist(err) {
-			os.MkdirAll(configurationDirectory, 0755)
-			os.Create(configFileAbsPath + configFileExt)
+			if err = os.MkdirAll(configurationDirectory, 0755); err != nil {
+				return err
+			}
+			f, err := os.Create(configFileAbsPath + configFileExt)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
 		} else {
 			return err
 		}

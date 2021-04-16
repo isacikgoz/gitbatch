@@ -45,7 +45,7 @@ func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 		args = append(args, opt.CommitMsg)
 	}
 	if out, err := Run(r.AbsPath, "git", args); err != nil {
-		r.Refresh()
+		_ = r.Refresh()
 		return giterr.ParseGitError(out, err)
 	}
 	// till this step everything should be ok
@@ -74,7 +74,7 @@ func commitWithGoGit(r *git.Repository, options *CommitOptions) (err error) {
 
 	_, err = w.Commit(options.CommitMsg, opt)
 	if err != nil {
-		r.Refresh()
+		_ = r.Refresh()
 		return err
 	}
 	// till this step everything should be ok

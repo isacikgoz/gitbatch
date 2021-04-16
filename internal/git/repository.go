@@ -2,6 +2,7 @@ package git
 
 import (
 	"os"
+	"os/exec"
 	"sync"
 	"time"
 
@@ -131,9 +132,8 @@ func (r *Repository) loadComponents(reset bool) error {
 	if err := r.SyncRemoteAndBranch(r.State.Branch); err != nil {
 		return err
 	}
-	r.loadStashedItems()
 
-	return nil
+	return r.loadStashedItems()
 }
 
 // Refresh the belongings of a repository, this function is called right after
@@ -203,9 +203,19 @@ func (r *Repository) WorkStatus() WorkStatus {
 func (r *Repository) SetWorkStatus(ws WorkStatus) {
 	r.State.workStatus = ws
 	// we could send an event data but we don't need for this topic
-	r.Publish(RepositoryUpdated, nil)
+	_ = r.Publish(RepositoryUpdated, nil)
 }
 
 func (r *Repository) String() string {
 	return r.Name
+}
+
+func Create(dir string) (*Repository, error) {
+	cmd := exec.Command("git", "init")
+	cmd.Dir = dir
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, err
+	}
+	return InitializeRepo(dir)
 }

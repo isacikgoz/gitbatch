@@ -14,7 +14,12 @@ var (
 )
 
 func TestStart(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())

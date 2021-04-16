@@ -24,9 +24,8 @@ var (
 )
 
 // open the commit message views
-func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) openCommitMessageView(g *gocui.Gui, _ *gocui.View) error {
 	maxX, maxY := g.Size()
-	// commitMesageReturnView = v.Name()
 	vFrame, err := g.SetView(commitFrameViewFeature.Name, maxX/2-30, maxY/2-4, maxX/2+30, maxY/2+3)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
@@ -35,7 +34,7 @@ func (gui *Gui) openCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 		vFrame.Frame = true
 		fmt.Fprintln(vFrame, " Enter your commit message:")
 	}
-	v, err = g.SetView(commitMessageViewFeature.Name, maxX/2-29, maxY/2-3, maxX/2+29, maxY/2)
+	v, err := g.SetView(commitMessageViewFeature.Name, maxX/2-29, maxY/2-3, maxX/2+29, maxY/2)
 	if err != nil {
 		if err != gocui.ErrUnknownView {
 			return err

@@ -18,13 +18,22 @@ func TestCheckout(t *testing.T) {
 }
 
 func TestRevlistNew(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	// HEAD..@{u}
 	headref, err := r.Repo.Head()
+	if err != nil {
+		t.Fatalf("Test Failed. error: %s", err.Error())
+	}
+
 	head := headref.Hash().String()
 	fmt.Printf("HEAD (%s) @: %s\n", headref.Name(), head)
 	fmt.Printf("REMOTE (%s) @ %s\n", r.State.Remote.Name, r.State.Branch.Upstream.Name)
@@ -50,8 +59,4 @@ func TestRevlistNew(t *testing.T) {
 	for _, pushable := range pushables {
 		fmt.Println(pushable.Hash.String())
 	}
-}
-
-func testRevRepo() (*Repository, error) {
-	return InitializeRepo("/home/isacikgoz/git-testing/gitbatch")
 }

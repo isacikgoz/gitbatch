@@ -84,7 +84,7 @@ func (gui *Gui) commitStats(ix int) error {
 				if err != nil {
 					return err
 				}
-				fmt.Fprintf(v, decorateDiffStat(stat, true))
+				fmt.Fprintf(v, "%s", decorateDiffStat(stat, true))
 				return nil
 			})
 		}
@@ -94,7 +94,7 @@ func (gui *Gui) commitStats(ix int) error {
 }
 
 // show the diff of current commit
-func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) commitDiff(g *gocui.Gui, _ *gocui.View) error {
 	v, err := gui.g.View(dynamicViewFeature.Name)
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func (gui *Gui) commitDiff(g *gocui.Gui, v *gocui.View) error {
 	for _, d := range colorizeDiff(p.String()) {
 		s = s + "\n" + d
 	}
-	fmt.Fprintf(v, s)
+	fmt.Fprint(v, s)
 	return nil
 }
 

@@ -39,7 +39,7 @@ func (gui *Gui) renderBatchBranches(calculate bool) error {
 	if len(gui.State.Repositories) == 0 {
 		return nil
 	}
-	branchMap := make(map[string]int, 0)
+	branchMap := make(map[string]int)
 	for _, r := range gui.State.Repositories {
 		for _, b := range r.Branches {
 			branchMap[b.Name] = branchMap[b.Name] + 1
@@ -50,10 +50,7 @@ func (gui *Gui) renderBatchBranches(calculate bool) error {
 	for k, v := range branchMap {
 		ss = append(ss, &branchCountMap{k, v})
 	}
-	var vals []int
-	for _, val := range branchMap {
-		vals = append(vals, val)
-	}
+
 	sort.Slice(ss, func(i, j int) bool {
 		if ss[i].Count == ss[j].Count {
 			return lessAlphabetical(ss, i, j)

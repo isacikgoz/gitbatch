@@ -326,8 +326,7 @@ func decorateDiffStat(in string, sum bool) string {
 			continue
 		}
 		d = d + cyan.Sprint(align(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + align(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
-		sr := []rune(stat.Changes)
-		for _, r := range sr {
+		for _, r := range stat.Changes {
 			switch r {
 			case '+':
 				d = d + green.Sprint(string(r))
@@ -372,7 +371,6 @@ func decorateCommit(in string) string {
 	for _, l := range lines[3:] {
 		d = d + l + "\n"
 	}
-	d = d[:len(d)]
 	return d
 }
 

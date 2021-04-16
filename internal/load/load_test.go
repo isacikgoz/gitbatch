@@ -14,17 +14,20 @@ import (
 var (
 	testChannel = make(chan bool)
 
-	sp       = string(os.PathSeparator)
-	basic    = testRepoDir + sp + "basic-repo"
-	dirty    = testRepoDir + sp + "dirty-repo"
-	non      = testRepoDir + sp + "non-repo"
-	subbasic = non + sp + "basic-repo"
+	sp    = string(os.PathSeparator)
+	basic = testRepoDir + sp + "basic-repo"
+	dirty = testRepoDir + sp + "dirty-repo"
 
 	testRepoDir, _ = ioutil.TempDir("", "test-data")
 )
 
 func TestSyncLoad(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	_, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
@@ -43,7 +46,12 @@ func TestSyncLoad(t *testing.T) {
 }
 
 func TestAsyncLoad(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	_, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())

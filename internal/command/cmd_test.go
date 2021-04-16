@@ -1,17 +1,10 @@
 package command
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 
-	ggit "github.com/go-git/go-git/v5"
 	"github.com/isacikgoz/gitbatch/internal/git"
-)
-
-var (
-	testRepoDir, _ = ioutil.TempDir("", "dirty-repo")
 )
 
 func TestRun(t *testing.T) {
@@ -69,20 +62,7 @@ func TestTrimTrailingNewline(t *testing.T) {
 	}
 }
 
-func testRepo() (*git.Repository, error) {
-	testRepoURL := "https://gitlab.com/isacikgoz/dirty-repo.git"
-	_, err := ggit.PlainClone(testRepoDir, false, &ggit.CloneOptions{
-		URL:               testRepoURL,
-		RecurseSubmodules: ggit.DefaultSubmoduleRecursionDepth,
-	})
-	time.Sleep(time.Second)
-	if err != nil && err != ggit.NoErrAlreadyUpToDate {
-		return nil, err
-	}
-	return git.InitializeRepo(testRepoDir)
-}
-
-func testFile(name string) (*git.File, error) {
+func testFile(testRepoDir, name string) (*git.File, error) {
 	_, err := os.Create(testRepoDir + string(os.PathSeparator) + name)
 	if err != nil {
 		return nil, err
@@ -94,8 +74,4 @@ func testFile(name string) (*git.File, error) {
 		Y:       git.StatusUntracked,
 	}
 	return f, nil
-}
-
-func cleanRepo() error {
-	return os.RemoveAll(testRepoDir)
 }

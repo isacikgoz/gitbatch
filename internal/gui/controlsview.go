@@ -9,7 +9,7 @@ import (
 // open the application controls
 // TODO: view size can handled better for such situations like too small
 // application area
-func (gui *Gui) openCheatSheetView(g *gocui.Gui, v *gocui.View) error {
+func (gui *Gui) openCheatSheetView(g *gocui.Gui, _ *gocui.View) error {
 	maxX, maxY := g.Size()
 	v, err := g.SetView(cheatSheetViewFeature.Name, maxX/2-25, maxY/2-10, maxX/2+25, maxY/2+10)
 	if err != nil {

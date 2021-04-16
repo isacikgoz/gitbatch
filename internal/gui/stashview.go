@@ -41,7 +41,7 @@ func (gui *Gui) stashCursorDown(g *gocui.Gui, v *gocui.View) error {
 		v.EditDelete(true)
 		pos := cy + oy + 1
 		adjustAnchor(pos, ly, v)
-		gui.renderStashDiff(pos)
+		_ = gui.renderStashDiff(pos)
 	}
 	return nil
 }
@@ -60,7 +60,7 @@ func (gui *Gui) stashCursorUp(g *gocui.Gui, v *gocui.View) error {
 		pos := cy + oy - 1
 		adjustAnchor(pos, ly, v)
 		if pos >= 0 {
-			gui.renderStashDiff(cy + oy - 1)
+			_ = gui.renderStashDiff(cy + oy - 1)
 		}
 	}
 	return nil
@@ -87,7 +87,7 @@ func (gui *Gui) renderStashDiff(ix int) error {
 		return err
 	}
 	s := colorizeDiff(d)
-	fmt.Fprintf(v, strings.Join(s, "\n"))
+	fmt.Fprintf(v, "%s", strings.Join(s, "\n"))
 	return nil
 }
 
@@ -118,7 +118,7 @@ func (gui *Gui) stashPop(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 	// since the pop is a func of stashed item, we need to refresh entity here
-	r.Refresh()
+	_ = r.Refresh()
 	if err := gui.focusToRepository(g, v); err != nil {
 		return err
 	}

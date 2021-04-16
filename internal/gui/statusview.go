@@ -78,9 +78,9 @@ func (gui *Gui) initFocusStat(r *git.Repository) error {
 		}
 		_, cy := v.Cursor()
 		if cy == 0 {
-			gui.statusCursorDown(gui.g, v)
+			_ = gui.statusCursorDown(gui.g, v)
 		} else {
-			gui.statusCursorUp(gui.g, v)
+			_ = gui.statusCursorUp(gui.g, v)
 		}
 	}
 	return nil

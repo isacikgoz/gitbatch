@@ -13,7 +13,12 @@ func TestCreateJobQueue(t *testing.T) {
 }
 
 func TestAddJob(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
@@ -33,14 +38,19 @@ func TestAddJob(t *testing.T) {
 }
 
 func TestRemoveFromQueue(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	q := CreateJobQueue()
 	j := &Job{Repository: r}
-	q.AddJob(j)
+	_ = q.AddJob(j)
 	var tests = []struct {
 		input *git.Repository
 	}{
@@ -54,14 +64,19 @@ func TestRemoveFromQueue(t *testing.T) {
 }
 
 func TestIsInTheQueue(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	q := CreateJobQueue()
 	j := &Job{Repository: r}
-	q.AddJob(j)
+	_ = q.AddJob(j)
 	var tests = []struct {
 		input *git.Repository
 	}{
@@ -75,14 +90,19 @@ func TestIsInTheQueue(t *testing.T) {
 }
 
 func TestStartJobsAsync(t *testing.T) {
-	defer cleanRepo()
+	defer func() {
+		if err := cleanRepo(); err != nil {
+			t.Fatalf("Test Failed. error: %s", err.Error())
+		}
+	}()
+
 	r, err := testRepo()
 	if err != nil {
 		t.Fatalf("Test Failed. error: %s", err.Error())
 	}
 	q := CreateJobQueue()
 	j := &Job{Repository: r}
-	q.AddJob(j)
+	_ = q.AddJob(j)
 	var tests = []struct {
 		input *Queue
 	}{
