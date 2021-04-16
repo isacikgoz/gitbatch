@@ -21,7 +21,7 @@ func (gui *Gui) initStashedView(r *git.Repository) error {
 		fmt.Fprintf(v, " %d %s: %s\n", s.StashID, cyan.Sprint(s.BranchName), s.Description)
 	}
 	if len(st) > 0 {
-		adjustAnchor(0, len(st), v)
+		_ = adjustAnchor(0, len(st), v)
 	}
 	return nil
 }
@@ -40,7 +40,7 @@ func (gui *Gui) stashCursorDown(g *gocui.Gui, v *gocui.View) error {
 		}
 		v.EditDelete(true)
 		pos := cy + oy + 1
-		adjustAnchor(pos, ly, v)
+		_ = adjustAnchor(pos, ly, v)
 		_ = gui.renderStashDiff(pos)
 	}
 	return nil
@@ -58,7 +58,7 @@ func (gui *Gui) stashCursorUp(g *gocui.Gui, v *gocui.View) error {
 		}
 		v.EditDelete(true)
 		pos := cy + oy - 1
-		adjustAnchor(pos, ly, v)
+		_ = adjustAnchor(pos, ly, v)
 		if pos >= 0 {
 			_ = gui.renderStashDiff(cy + oy - 1)
 		}

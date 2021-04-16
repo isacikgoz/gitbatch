@@ -13,35 +13,29 @@ import (
 )
 
 var (
-	black   = color.New(color.FgBlack)
 	blue    = color.New(color.FgBlue)
 	green   = color.New(color.FgGreen)
 	red     = color.New(color.FgRed)
 	cyan    = color.New(color.FgCyan)
 	yellow  = color.New(color.FgYellow)
-	white   = color.New(color.FgWhite)
 	magenta = color.New(color.FgMagenta)
 
 	keySymbol = " " + yellow.Sprint("🔑") + ws
 	sep       = " " + yellow.Sprint("|") + ws
 
-	pushable = string(blue.Sprint("↖"))
-	pullable = string(blue.Sprint("↘"))
-	dirty    = string(yellow.Sprint("✗"))
-
-	bold = color.New(color.Bold)
+	pushable = "↖"
+	pullable = "↘"
 )
 
 const (
-	maxBranchLength     = 15
-	maxRepositoryLength = 20
+	maxBranchLength     = 40
+	maxRepositoryLength = 80
 	hashLength          = 7
 
 	ws            = " "
 	queuedSymbol  = "•"
 	workingSymbol = "•"
 	successSymbol = "✔"
-	pauseSymbol   = "॥"
 	failSymbol    = "✗"
 
 	fetchSymbol         = "↓"
@@ -57,11 +51,36 @@ const (
 
 // RepositoryDecorationRules is a rule set for creating repository labels
 type RepositoryDecorationRules struct {
-	MaxName        int
-	MaxPushables   int
-	MaxPullables   int
-	MaxBranch      int
-	MaxBranchDirty int
+	MaxName      int
+	MaxPushables int
+	MaxPullables int
+	MaxBranch    int
+}
+
+// repository render rules
+func (gui *Gui) renderRules() *RepositoryDecorationRules {
+	rules := &RepositoryDecorationRules{
+		MaxBranch: 15,
+		MaxName:   30,
+	}
+
+	for _, r := range gui.State.Repositories {
+		if len(r.State.Branch.Pullables) > rules.MaxPullables {
+			rules.MaxPullables = len(r.State.Branch.Pullables)
+		}
+		if len(r.State.Branch.Pushables) > rules.MaxPushables {
+			rules.MaxPushables = len(r.State.Branch.Pushables)
+		}
+		if len(r.State.Branch.Name) > maxBranchLength {
+			rules.MaxBranch = maxBranchLength
+		}
+		if len(r.Name) > maxRepositoryLength {
+			rules.MaxName = maxRepositoryLength
+		}
+	}
+
+	rules.MaxBranch = rules.MaxBranch + len(cyan.Sprint("")) + 2
+	return rules
 }
 
 // this function handles the render and representation of the repository
@@ -86,23 +105,28 @@ func (gui *Gui) renderRepoName(r *git.Repository, rule *RepositoryDecorationRule
 	var repoName string
 	sr := gui.getSelectedRepository()
 	if sr == r {
-		repoName = selectionIndicator + green.Sprint(align(r.Name, rule.MaxName, true, true))
-	} else {
-		repoName = align(r.Name, rule.MaxName+2, true, true)
+		n, in := align(r.Name, rule.MaxName-2, true)
+		in = in + strings.Repeat(" ", n)
+		return selectionIndicator + green.Sprint(in)
 	}
+
+	n, in := align(r.Name, rule.MaxName, true)
+	in = in + strings.Repeat(" ", n)
+	repoName = in
+
 	return repoName
 }
 
 // render branch, add x if it is dirty
 func renderBranchName(r *git.Repository, rule *RepositoryDecorationRules) string {
 	b := r.State.Branch
-	branch := cyan.Sprint(b.Name)
+	branch := b.Name
 	if !b.Clean {
-		branch = align(branch+ws+dirty, rule.MaxBranchDirty, true, true)
-	} else {
-		branch = align(branch, rule.MaxBranch, true, true)
+		n, in := align(branch, rule.MaxBranch-2, true)
+		return cyan.Sprint(in) + " " + yellow.Sprint("✗") + strings.Repeat(" ", n)
 	}
-	return branch
+	n, in := align(branch, rule.MaxBranch, true)
+	return cyan.Sprint(in) + strings.Repeat(" ", n)
 }
 
 // render ahead and behind info
@@ -110,11 +134,15 @@ func renderRevCount(r *git.Repository, rule *RepositoryDecorationRules) string {
 	var revCount string
 	b := r.State.Branch
 	if b.Pushables != "?" {
-		revCount = pushable + ws + align(b.Pushables, rule.MaxPushables, false, false) +
-			ws + pullable + ws + align(b.Pullables, rule.MaxPullables, false, false)
+		n1, part1 := align(b.Pushables, rule.MaxPushables, false)
+		n2, part2 := align(b.Pullables, rule.MaxPullables, false)
+		revCount = blue.Sprint(pushable) + ws + strings.Repeat(" ", n1) + part1 +
+			ws + blue.Sprint(pullable) + ws + strings.Repeat(" ", n2) + part2
 	} else {
-		revCount = pushable + ws + yellow.Sprint(align(b.Pushables, rule.MaxPushables, false, false)) +
-			ws + pullable + ws + yellow.Sprint(align(b.Pullables, rule.MaxPullables, false, false))
+		n1, part1 := align(b.Pushables, rule.MaxPushables, false)
+		n2, part2 := align(b.Pullables, rule.MaxPullables, false)
+		revCount = blue.Sprint(pushable) + ws + strings.Repeat(" ", n1) + yellow.Sprint(part1) +
+			ws + blue.Sprint(pullable) + ws + strings.Repeat(" ", n2) + yellow.Sprint(part2)
 	}
 	return revCount
 }
@@ -147,9 +175,12 @@ func (gui *Gui) renderTableHeader(rule *RepositoryDecorationRules) {
 	v.Clear()
 	var header string
 	revlen := 2 + rule.MaxPullables + 2 + rule.MaxPushables + 1
-	header = ws + magenta.Sprint(align("revs", revlen, true, true)) + sep
-	header = header + align(magenta.Sprint("branch"), rule.MaxBranch, true, true) + sep
-	header = header + magenta.Sprint(align("name", rule.MaxName+2, true, true)) + sep
+	n, in := align("revs", revlen, true)
+	header = ws + magenta.Sprint(in) + strings.Repeat(" ", n) + sep
+	n, in = align("branch", rule.MaxBranch, true)
+	header = header + magenta.Sprint(in) + strings.Repeat(" ", n) + sep
+	n, in = align("name", rule.MaxName, true)
+	header = header + magenta.Sprint(in) + strings.Repeat(" ", n) + sep
 	fmt.Fprintln(v, header)
 }
 
@@ -195,14 +226,6 @@ func commitLabel(c *git.Commit, sel bool) string {
 		body = c.Hash[:hashLength] + " " + msg
 	}
 	return body
-}
-
-// limit the text length for visual concerns
-func adjustTextLength(text string, maxLength int) string {
-	if len(text) > maxLength {
-		return text[:maxLength-2] + ".."
-	}
-	return text
 }
 
 // colorize the plain diff text collected from system output
@@ -325,7 +348,9 @@ func decorateDiffStat(in string, sum bool) string {
 		if len(stat.FileName) <= 0 {
 			continue
 		}
-		d = d + cyan.Sprint(align(stat.FileName, rule.MaxNameLength, true, true)) + yellow.Sprint(" | ") + align(stat.ChangeCount, rule.MaxChangeCountLength, false, false) + " "
+		n1, part1 := align(stat.FileName, rule.MaxNameLength, true)
+		n2, part2 := align(stat.ChangeCount, rule.MaxChangeCountLength, false)
+		d = d + cyan.Sprint(part1) + strings.Repeat(" ", n1) + yellow.Sprint(" | ") + strings.Repeat(" ", n2) + part2 + " "
 		for _, r := range stat.Changes {
 			switch r {
 			case '+':
@@ -342,23 +367,24 @@ func decorateDiffStat(in string, sum bool) string {
 }
 
 // align text with whitespaces
-func align(in string, max int, direction, trim bool) string {
+func align(in string, max int, trim bool) (int, string) {
 	realmax := 50
 	il := len(in)
 	if max > realmax {
 		max = 50
 	}
-	if trim && il > realmax {
-		return " ..." + in[il-46:]
+	if trim && il > max {
+		return 0, in[:max-2] + ".."
 	}
 	if il < max {
-		if direction {
-			in = in + strings.Repeat(" ", max-il)
-		} else {
-			in = strings.Repeat(" ", max-il) + in
-		}
+		return max - il, in
+		//true
+		//in = in + strings.Repeat(" ", max-il)
+		//false
+		//return max-il, in
+		//in = strings.Repeat(" ", max-il) + in
 	}
-	return in
+	return 0, in
 }
 
 // colorize commit info
@@ -372,27 +398,4 @@ func decorateCommit(in string) string {
 		d = d + l + "\n"
 	}
 	return d
-}
-
-// repository render rules
-func (gui *Gui) renderRules() *RepositoryDecorationRules {
-	rules := &RepositoryDecorationRules{}
-
-	for _, r := range gui.State.Repositories {
-		if len(r.State.Branch.Pullables) > rules.MaxPullables {
-			rules.MaxPullables = len(r.State.Branch.Pullables)
-		}
-		if len(r.State.Branch.Pushables) > rules.MaxPushables {
-			rules.MaxPushables = len(r.State.Branch.Pushables)
-		}
-		if len(r.State.Branch.Name) > rules.MaxBranch {
-			rules.MaxBranch = len(r.State.Branch.Name)
-		}
-		if len(r.Name) > rules.MaxName {
-			rules.MaxName = len(r.Name)
-		}
-	}
-	rules.MaxBranchDirty = rules.MaxBranch + len(cyan.Sprint("")) + len(dirty) + len(ws)
-	rules.MaxBranch = rules.MaxBranch + len(cyan.Sprint("")) + 2
-	return rules
 }

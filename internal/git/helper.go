@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -75,17 +74,3 @@ func (h *TestHelper) BasicRepoPath() string {
 func (h *TestHelper) NonRepoPath() string {
 	return filepath.Join(h.RepoPath, "non-repo")
 }
-
-var (
-	wd, _ = os.Getwd()
-	sp    = string(os.PathSeparator)
-	d     = strings.TrimSuffix(wd, sp+"app")
-
-	relparent = ".." + sp + "test"
-	parent    = d + sp + "test"
-	// data      = parent + sp + "test-data"
-	// basic    = testRepoDir + sp + "basic-repo"
-	// dirty    = testRepoDir + sp + "dirty-repo"
-	// non      = testRepoDir + sp + "non-repo"
-	// subbasic = non + sp + "basic-repo"
-)

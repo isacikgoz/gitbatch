@@ -26,7 +26,7 @@ func (gui *Gui) sideCursorDown(g *gocui.Gui, v *gocui.View) error {
 			return nil
 		}
 		v.EditDelete(true)
-		adjustAnchor(cy+oy+1, ly, v)
+		_ = adjustAnchor(cy+oy+1, ly, v)
 	}
 	return nil
 }
@@ -38,7 +38,7 @@ func (gui *Gui) sideCursorUp(g *gocui.Gui, v *gocui.View) error {
 		_, cy := v.Cursor()
 		ly := len(v.BufferLines()) - 1
 		v.EditDelete(true)
-		adjustAnchor(cy+oy-1, ly, v)
+		_ = adjustAnchor(cy+oy-1, ly, v)
 	}
 	return nil
 }
@@ -83,7 +83,7 @@ func (gui *Gui) renderBranches(r *git.Repository) error {
 		}
 		fmt.Fprintln(v, tab+b.Name)
 	}
-	adjustAnchor(si, len(bs), v)
+	_ = adjustAnchor(si, len(bs), v)
 	return nil
 }
 
@@ -109,7 +109,7 @@ func (gui *Gui) renderRemotes(r *git.Repository) error {
 		}
 		fmt.Fprintln(v, tab+rb.Name+": "+shortURL)
 	}
-	adjustAnchor(si, len(rs), v)
+	_ = adjustAnchor(si, len(rs), v)
 	return nil
 }
 
@@ -131,7 +131,7 @@ func (gui *Gui) renderRemoteBranches(r *git.Repository) error {
 		// }
 		fmt.Fprintln(v, tab+rb.Name)
 	}
-	adjustAnchor(si, len(rs), v)
+	_ = adjustAnchor(si, len(rs), v)
 	return nil
 }
 

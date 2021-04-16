@@ -158,7 +158,7 @@ func commit(c *object.Commit, t CommitType) *Commit {
 func (c *Commit) DiffStat(done chan bool) string {
 
 	var str string
-	defer recoverDiff(str)
+	defer recoverDiff(&str)
 	if c.C == nil {
 		return ""
 	}
@@ -183,8 +183,8 @@ func (c *Commit) String() string {
 	return d
 }
 
-func recoverDiff(str string) {
+func recoverDiff(str *string) {
 	if r := recover(); r != nil {
-		str = "diffstat overloaded"
+		*str = "diffstat overloaded"
 	}
 }

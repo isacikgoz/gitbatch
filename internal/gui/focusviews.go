@@ -29,7 +29,7 @@ func (gui *Gui) commitCursorDown(g *gocui.Gui, v *gocui.View) error {
 		}
 		v.EditDelete(true)
 		pos := cy + oy + 1
-		adjustAnchor(pos, ly, v)
+		_ = adjustAnchor(pos, ly, v)
 		if err := gui.commitStats(pos); err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (gui *Gui) commitCursorUp(g *gocui.Gui, v *gocui.View) error {
 		ly := len(v.BufferLines()) - 1
 		v.EditDelete(true)
 		pos := cy + oy - 1
-		adjustAnchor(pos, ly, v)
+		_ = adjustAnchor(pos, ly, v)
 		if pos >= 0 {
 			if err := gui.commitStats(cy + oy - 1); err != nil {
 				return err
@@ -76,7 +76,7 @@ func (gui *Gui) renderCommits(r *git.Repository) error {
 
 		fmt.Fprintln(v, tab+commitLabel(c, false))
 	}
-	adjustAnchor(si, len(cs), v)
+	_ = adjustAnchor(si, len(cs), v)
 	return nil
 }
 
@@ -92,7 +92,7 @@ func (gui *Gui) commitPageDown(g *gocui.Gui, v *gocui.View) error {
 		}
 		v.EditDelete(true)
 
-		adjustAnchor(oy+cy+vy-1, lr, v)
+		_ = adjustAnchor(oy+cy+vy-1, lr, v)
 		// if err := gui.commitStats(oy + cy + vy - 1); err != nil {
 		// 	return err
 		// }
@@ -108,7 +108,7 @@ func (gui *Gui) commitCursorTop(g *gocui.Gui, v *gocui.View) error {
 		v.EditDelete(true)
 		lr := len(v.BufferLines())
 
-		adjustAnchor(0, lr, v)
+		_ = adjustAnchor(0, lr, v)
 		if err := gui.commitStats(0); err != nil {
 			return err
 		}
@@ -124,7 +124,7 @@ func (gui *Gui) commitPageUp(g *gocui.Gui, v *gocui.View) error {
 		_, vy := v.Size()
 		lr := len(v.BufferLines())
 		v.EditDelete(true)
-		adjustAnchor(oy+cy-vy+1, lr, v)
+		_ = adjustAnchor(oy+cy-vy+1, lr, v)
 		// if err := gui.commitStats(oy + cy - vy + 1); err != nil {
 		// 	return err
 		// }

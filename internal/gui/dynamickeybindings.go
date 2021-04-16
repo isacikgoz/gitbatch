@@ -12,7 +12,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 	t := DynamicViewMode(vd.Title)
 
 	// the order is important here
-	gui.generateKeybindings()
+	_ = gui.generateKeybindings()
 	gui.g.DeleteKeybindings(vd.Name())
 
 	keybindings := []*KeyBinding{
@@ -301,7 +301,7 @@ func (gui *Gui) updateDynamicKeybindings() error {
 	}
 	v := gui.g.CurrentView()
 	if v.Name() == dynamicViewFeature.Name {
-		gui.updateKeyBindingsView(gui.g, dynamicViewFeature.Name)
+		_ = gui.updateKeyBindingsView(gui.g, dynamicViewFeature.Name)
 	}
 	return nil
 }

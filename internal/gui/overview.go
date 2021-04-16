@@ -4,10 +4,6 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-var (
-	overviewViews = []viewFeature{mainViewFeature}
-)
-
 // set the layout and create views with their default size, name etc. values
 // TODO: window sizes can be handled better
 func (gui *Gui) overviewLayout(g *gocui.Gui) error {
@@ -74,7 +70,7 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.Editable = true
 		v.Wrap = false
 		v.Autoscroll = false
-		g.SetViewOnBottom(v.Name())
+		_, _ = g.SetViewOnBottom(v.Name())
 	}
 	if v, err := g.SetView(stashViewFeature.Name, -1*int(0.20*float32(maxX)), 0, -1, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -107,7 +103,7 @@ func (gui *Gui) overviewLayout(g *gocui.Gui) error {
 		v.BgColor = gocui.ColorWhite
 		v.FgColor = gocui.ColorBlack
 		v.Frame = false
-		gui.updateKeyBindingsView(g, mainViewFeature.Name)
+		_ = gui.updateKeyBindingsView(g, mainViewFeature.Name)
 	}
 	return nil
 }

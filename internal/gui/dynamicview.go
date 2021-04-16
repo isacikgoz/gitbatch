@@ -48,8 +48,8 @@ func (gui *Gui) commitStats(ix int) error {
 	if err != nil {
 		return err
 	}
-	v.SetOrigin(0, 0)
-	v.SetCursor(0, 0)
+	_ = v.SetOrigin(0, 0)
+	_ = v.SetCursor(0, 0)
 	r := gui.getSelectedRepository()
 	v.Clear()
 	if ix == 0 {

@@ -1,11 +1,13 @@
 package git
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestRandomString(t *testing.T) {
 	stringLength := 8
 	randString := RandomString(stringLength)
-	if len(randString) != stringLength {
-		t.Errorf("The length of the string should be equal.")
-	}
+	require.NotEqual(t, len(randString), stringLength)
 }
