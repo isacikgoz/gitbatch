@@ -13,7 +13,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nsf/termbox-go v0.0.0-20190325093121-288510b9734e // indirect
 	github.com/spf13/viper v1.3.2
-	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/stretchr/testify v1.7.0
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	gopkg.in/src-d/go-git.v4 v4.13.1
 )
