@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	kingpin.Version("gitbatch version 0.5.3")
+	kingpin.Version("gitbatch version 0.6.1")
 
 	dirs := kingpin.Flag("directory", "Directory(s) to roam for git repositories.").Short('d').Strings()
 	mode := kingpin.Flag("mode", "Application start mode, more sensible with quick run.").Short('m').String()
