@@ -1,43 +1,29 @@
 package job
 
 import (
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
-	ggit "gopkg.in/src-d/go-git.v4"
-)
-
-var (
-	testRepoDir, _ = ioutil.TempDir("", "dirty-repo")
+	"github.com/stretchr/testify/require"
 )
 
 func TestStart(t *testing.T) {
-	defer func() {
-		if err := cleanRepo(); err != nil {
-			t.Fatalf("Test Failed. error: %s", err.Error())
-		}
-	}()
+	th := git.InitTestRepositoryFromLocal(t)
+	defer th.CleanUp(t)
 
-	r, err := testRepo()
-	if err != nil {
-		t.Fatalf("Test Failed. error: %s", err.Error())
+	mockJob1 := &Job{
+		JobType:    PullJob,
+		Repository: th.Repository,
 	}
-	var (
-		mockJob1 = &Job{
-			JobType:    PullJob,
-			Repository: r,
-		}
-		mockJob2 = &Job{
-			JobType:    FetchJob,
-			Repository: r,
-		}
-		mockJob3 = &Job{
-			JobType:    MergeJob,
-			Repository: r,
-		}
-	)
+	mockJob2 := &Job{
+		JobType:    FetchJob,
+		Repository: th.Repository,
+	}
+	mockJob3 := &Job{
+		JobType:    MergeJob,
+		Repository: th.Repository,
+	}
+
 	var tests = []struct {
 		input *Job
 	}{
@@ -46,24 +32,7 @@ func TestStart(t *testing.T) {
 		{mockJob3},
 	}
 	for _, test := range tests {
-		if err := test.input.start(); err != nil {
-			t.Errorf("Test Failed. error: %s", err.Error())
-		}
+		err := test.input.start()
+		require.NoError(t, err)
 	}
-}
-
-func testRepo() (*git.Repository, error) {
-	testRepoURL := "https://gitlab.com/isacikgoz/dirty-repo.git"
-	_, err := ggit.PlainClone(testRepoDir, false, &ggit.CloneOptions{
-		URL:               testRepoURL,
-		RecurseSubmodules: ggit.DefaultSubmoduleRecursionDepth,
-	})
-	if err != nil && err != ggit.NoErrAlreadyUpToDate {
-		return nil, err
-	}
-	return git.InitializeRepo(testRepoDir)
-}
-
-func cleanRepo() error {
-	return os.RemoveAll(testRepoDir)
 }

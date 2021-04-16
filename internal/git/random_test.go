@@ -9,5 +9,5 @@ import (
 func TestRandomString(t *testing.T) {
 	stringLength := 8
 	randString := RandomString(stringLength)
-	require.NotEqual(t, len(randString), stringLength)
+	require.Equal(t, len(randString), stringLength)
 }
