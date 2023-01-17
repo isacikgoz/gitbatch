@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/isacikgoz/gitbatch.svg?branch=master)](https://travis-ci.com/isacikgoz/gitbatch) [![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/isacikgoz/gitbatch)](https://goreportcard.com/report/github.com/isacikgoz/gitbatch)
+![Build Status](https://img.shields.io/github/actions/workflow/status/isacikgoz/gitbatch/ci.yml) [![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](/LICENSE) [![Go Report Card](https://goreportcard.com/badge/github.com/isacikgoz/gitbatch)](https://goreportcard.com/report/github.com/isacikgoz/gitbatch)
 
 ## gitbatch
 Managing multiple git repositories is easier than ever. I (*was*) often end up working on many directories and manually pulling updates etc. To make this routine faster, I created a simple tool to handle this job. Although the focus is batch jobs, you can still do de facto micro management of your git repositories (e.g *add/reset, stash, commit etc.*)
@@ -12,7 +12,7 @@ Install [latest](https://golang.org/dl/) Golang release.
 
 To install with go, run the following command;
 ```bash
-go get -u github.com/isacikgoz/gitbatch/cmd/gitbatch
+go get github.com/isacikgoz/gitbatch/cmd/gitbatch
 ```
 or, in Windows 10:
 ```bash
