@@ -7,9 +7,16 @@ Check out the screencast of the app:
 [![asciicast](https://asciinema.org/a/lxoZT6Z8fSliIEebWSPVIY8ct.svg)](https://asciinema.org/a/lxoZT6Z8fSliIEebWSPVIY8ct)
 
 ## Installation
+
+Install [latest](https://golang.org/dl/) Golang release.
+
 To install with go, run the following command;
 ```bash
 go get github.com/isacikgoz/gitbatch/cmd/gitbatch
+```
+or, in Windows 10:
+```bash
+go install github.com/isacikgoz/gitbatch/cmd/gitbatch@latest
 ```
 
 ### MacOS using homebrew
