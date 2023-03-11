@@ -27,10 +27,6 @@ type Config struct {
 func New(argConfig *Config) (*App, error) {
 	// initiate the app and give it initial values
 	app := &App{}
-	if len(argConfig.Directories) <= 0 {
-		d, _ := os.Getwd()
-		argConfig.Directories = []string{d}
-	}
 	presetConfig, err := loadConfiguration()
 	if err != nil {
 		return nil, err
@@ -57,6 +53,10 @@ func (a *App) Run() error {
 func overrideConfig(appConfig, setupConfig *Config) *Config {
 	if len(setupConfig.Directories) > 0 {
 		appConfig.Directories = setupConfig.Directories
+	}
+	if len(appConfig.Directories) <= 0 {
+		d, _ := os.Getwd()
+		appConfig.Directories = []string{d}
 	}
 	if len(setupConfig.LogLevel) > 0 {
 		appConfig.LogLevel = setupConfig.LogLevel
