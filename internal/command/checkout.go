@@ -3,7 +3,7 @@ package command
 import (
 	"os/exec"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // CheckoutOptions defines the rules of checkout command

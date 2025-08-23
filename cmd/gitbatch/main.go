@@ -5,11 +5,13 @@ import (
 	"os"
 
 	"github.com/alecthomas/kingpin"
-	"github.com/isacikgoz/gitbatch/internal/app"
+	"github.com/thorstenhirsch/gitbatch/internal/app"
 )
 
+var version = "dev"
+
 func main() {
-	kingpin.Version("gitbatch version 0.6.1")
+	kingpin.Version("gitbatch version " + version)
 
 	dirs := kingpin.Flag("directory", "Directory(s) to roam for git repositories.").Short('d').Strings()
 	mode := kingpin.Flag("mode", "Application start mode, more sensible with quick run.").Short('m').String()

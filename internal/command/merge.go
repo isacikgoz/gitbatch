@@ -3,8 +3,8 @@ package command
 import (
 	"regexp"
 
-	gerr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
+	gerr "github.com/thorstenhirsch/gitbatch/internal/errors"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // MergeOptions defines the rules of a merge operation

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
+	"github.com/thorstenhirsch/gitbatch/internal/testlib"
 )
 
 type TestHelper struct {

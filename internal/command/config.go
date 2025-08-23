@@ -3,7 +3,7 @@ package command
 import (
 	"fmt"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // ConfigOptions defines the rules for commit operation

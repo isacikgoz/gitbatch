@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/isacikgoz/gitbatch/internal/command"
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // there is no AI, only too much if clauses

@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/isacikgoz/gitbatch/internal/command"
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func quick(directories []string, mode string) error {

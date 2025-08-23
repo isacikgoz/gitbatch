@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/stretchr/testify/require"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func TestDiffFile(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/stretchr/testify/require"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func TestSyncLoad(t *testing.T) {

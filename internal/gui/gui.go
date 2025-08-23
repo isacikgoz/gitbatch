@@ -5,10 +5,10 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
-	"github.com/isacikgoz/gitbatch/internal/job"
-	"github.com/isacikgoz/gitbatch/internal/load"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/job"
+	"github.com/thorstenhirsch/gitbatch/internal/load"
 )
 
 // Gui struct hold the gocui struct along with the gui's state, also keybindings

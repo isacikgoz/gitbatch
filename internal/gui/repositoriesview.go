@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/isacikgoz/gitbatch/internal/command"
-	gerr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
-	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
+	gerr "github.com/thorstenhirsch/gitbatch/internal/errors"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/job"
 )
 
 // refresh the main view and re-render the repository representations

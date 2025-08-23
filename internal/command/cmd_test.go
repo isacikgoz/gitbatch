@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func TestRun(t *testing.T) {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/isacikgoz/gitbatch/internal/command"
-	"github.com/isacikgoz/gitbatch/internal/git"
-	"github.com/isacikgoz/gitbatch/internal/job"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/job"
 )
 
 var (

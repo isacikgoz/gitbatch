@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/stretchr/testify/require"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func TestOverrideConfig(t *testing.T) {

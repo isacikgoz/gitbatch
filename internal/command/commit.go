@@ -6,8 +6,8 @@ import (
 
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	giterr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
+	giterr "github.com/thorstenhirsch/gitbatch/internal/errors"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // CommitOptions defines the rules for commit operation

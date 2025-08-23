@@ -3,9 +3,9 @@ package command
 import (
 	"fmt"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // ResetOptions defines the rules of git reset command

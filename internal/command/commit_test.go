@@ -3,9 +3,9 @@ package command
 import (
 	"testing"
 
-	giterr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/stretchr/testify/require"
+	giterr "github.com/thorstenhirsch/gitbatch/internal/errors"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func TestCommitWithGit(t *testing.T) {

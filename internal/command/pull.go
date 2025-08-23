@@ -9,8 +9,8 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage"
-	gerr "github.com/isacikgoz/gitbatch/internal/errors"
-	"github.com/isacikgoz/gitbatch/internal/git"
+	gerr "github.com/thorstenhirsch/gitbatch/internal/errors"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 var (

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/isacikgoz/gitbatch/internal/command"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
 )
 
 var (

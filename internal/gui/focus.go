@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 var (

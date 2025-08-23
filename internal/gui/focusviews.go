@@ -3,8 +3,8 @@ package gui
 import (
 	"fmt"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/jroimartin/gocui"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // listens the event -> "branch.updated"

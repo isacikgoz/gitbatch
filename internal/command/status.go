@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func shortStatus(r *git.Repository, option string) string {

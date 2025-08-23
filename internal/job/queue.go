@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 	"golang.org/x/sync/semaphore"
 )
 

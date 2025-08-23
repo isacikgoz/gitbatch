@@ -1,0 +1,44 @@
+name: build and release
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+  release:
+    types: [created]
+
+permissions:
+    contents: write
+    packages: write
+
+jobs:
+  build-and-release-all:
+    name: Build and release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+        exclude:
+        - goarch: arm64
+          goos: windows
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+    - name: Release
+      uses: wangyoucao577/go-release-action@v1
+      with:
+        build_flags: "-tags=${{ matrix.goos }}"
+        ldflags: "-X github.com/thorstenhirsch/gitbatch/cmd/gitbatch.version=${{ github.ref_name }}"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        binary_name: gitbatch
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}

@@ -3,8 +3,8 @@ package command
 import (
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/stretchr/testify/require"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 func TestCheckout(t *testing.T) {

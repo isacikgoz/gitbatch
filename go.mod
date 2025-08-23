@@ -1,4 +1,4 @@
-module github.com/isacikgoz/gitbatch
+module github.com/thorstenhirsch/gitbatch
 
 go 1.25.0
 

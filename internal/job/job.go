@@ -1,8 +1,8 @@
 package job
 
 import (
-	"github.com/isacikgoz/gitbatch/internal/command"
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
 )
 
 // Job relates the type of the operation and the entity

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/isacikgoz/gitbatch/internal/gui"
+	"github.com/thorstenhirsch/gitbatch/internal/gui"
 )
 
 // The App struct is responsible to hold app-wide related entities. Currently

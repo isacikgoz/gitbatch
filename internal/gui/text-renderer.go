@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/isacikgoz/gitbatch/internal/command"
-	"github.com/isacikgoz/gitbatch/internal/git"
-	"github.com/isacikgoz/gitbatch/internal/job"
+	"github.com/thorstenhirsch/gitbatch/internal/command"
+	"github.com/thorstenhirsch/gitbatch/internal/git"
+	"github.com/thorstenhirsch/gitbatch/internal/job"
 )
 
 var (
