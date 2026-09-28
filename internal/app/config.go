@@ -62,7 +62,6 @@ func setDefaults() error {
 	viper.SetDefault(quickKey, quickKeyDefault)
 	viper.SetDefault(recursionKey, recursionKeyDefault)
 	viper.SetDefault(modeKey, modeKeyDefault)
-	// viper.SetDefault(pathsKey, pathsKeyDefault)
 	return nil
 }
 

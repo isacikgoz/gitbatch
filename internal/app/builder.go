@@ -16,7 +16,6 @@ type App struct {
 // Config is an assembler data to initiate a setup
 type Config struct {
 	Directories []string
-	LogLevel    string
 	Depth       int
 	QuickMode   bool
 	Mode        string
@@ -57,9 +56,6 @@ func (a *App) Run() error {
 func overrideConfig(appConfig, setupConfig *Config) *Config {
 	if len(setupConfig.Directories) > 0 {
 		appConfig.Directories = setupConfig.Directories
-	}
-	if len(setupConfig.LogLevel) > 0 {
-		appConfig.LogLevel = setupConfig.LogLevel
 	}
 	if setupConfig.Depth > 0 {
 		appConfig.Depth = setupConfig.Depth

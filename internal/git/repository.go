@@ -2,18 +2,11 @@ package git
 
 import (
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 
 	"github.com/go-git/go-git/v5"
 )
-
-// Reference is the interface for commits, remotes and branches
-type Reference interface {
-	Next() *Reference
-	Previous() *Reference
-}
 
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
@@ -208,14 +201,4 @@ func (r *Repository) SetWorkStatus(ws WorkStatus) {
 
 func (r *Repository) String() string {
 	return r.Name
-}
-
-func Create(dir string) (*Repository, error) {
-	cmd := exec.Command("git", "init")
-	cmd.Dir = dir
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-	return InitializeRepo(dir)
 }

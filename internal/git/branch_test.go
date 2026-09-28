@@ -8,14 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNextBranch(t *testing.T) {
-
-}
-
-func TestPreviousBranch(t *testing.T) {
-
-}
-
 func TestRevlistNew(t *testing.T) {
 	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)

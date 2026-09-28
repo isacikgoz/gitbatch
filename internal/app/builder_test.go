@@ -11,14 +11,12 @@ import (
 func TestOverrideConfig(t *testing.T) {
 	config1 := &Config{
 		Directories: []string{},
-		LogLevel:    "info",
 		Depth:       1,
 		QuickMode:   false,
 		Mode:        "fetch",
 	}
 	config2 := &Config{
 		Directories: []string{string(os.PathSeparator) + "tmp"},
-		LogLevel:    "error",
 		Depth:       1,
 		QuickMode:   true,
 		Mode:        "pull",

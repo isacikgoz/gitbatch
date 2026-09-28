@@ -2,7 +2,6 @@ package load
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"sync"
 
@@ -12,43 +11,6 @@ import (
 
 // AsyncAdd is interface to caller
 type AsyncAdd func(r *git.Repository)
-
-// SyncLoad initializes the go-git's repository objects with given
-// slice of paths. since this job is done parallel, the order of the directories
-// is not kept
-func SyncLoad(directories []string) (entities []*git.Repository, err error) {
-	entities = make([]*git.Repository, 0)
-
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-
-	for _, dir := range directories {
-		// increment wait counter by one because we run a single goroutine
-		// below
-		wg.Add(1)
-		go func(d string) {
-			// decrement the wait counter by one, we call it in a defer so it's
-			// called at the end of this goroutine
-			defer wg.Done()
-			entity, err := git.InitializeRepo(d)
-			if err != nil {
-				return
-			}
-			// lock so we don't get a race if multiple go routines try to add
-			// to the same entities
-			mu.Lock()
-			entities = append(entities, entity)
-			mu.Unlock()
-		}(dir)
-	}
-	// wait until the wait counter is zero, this happens if all goroutines have
-	// finished
-	wg.Wait()
-	if len(entities) == 0 {
-		return entities, fmt.Errorf("there are no git repositories at given path(s)")
-	}
-	return entities, nil
-}
 
 // AsyncLoad initializes repositories in parallel, passing each one to add as it
 // is loaded. It returns once every directory has been tried.
