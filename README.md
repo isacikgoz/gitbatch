@@ -12,10 +12,6 @@ Install [latest](https://golang.org/dl/) Golang release.
 
 To install with go, run the following command;
 ```bash
-go get github.com/isacikgoz/gitbatch/cmd/gitbatch
-```
-or, in Windows 10:
-```bash
 go install github.com/isacikgoz/gitbatch/cmd/gitbatch@latest
 ```
 
@@ -29,6 +25,15 @@ For other options see [installation page](https://github.com/isacikgoz/gitbatch/
 run the `gitbatch` command from the parent of your git repositories. For start-up options simply `gitbatch --help`
 
 For more information see the [wiki pages](https://github.com/isacikgoz/gitbatch/wiki)
+
+## Development
+Requires the Go version declared in `go.mod`, and [golangci-lint](https://golangci-lint.run) for linting.
+```bash
+make build   # build ./gitbatch
+make test    # run tests (make race for the race detector)
+make lint    # run golangci-lint
+make all     # vet, lint, test and build
+```
 
 ## Further goals
 - improve testing

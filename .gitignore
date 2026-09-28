@@ -5,3 +5,5 @@ test.go
 build/
 coverage.txt
 .DS_Store
+/gitbatch
+dist/
