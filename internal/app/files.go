@@ -52,28 +52,16 @@ func separateDirectories(directory string) ([]string, []string, error) {
 		return nil, nil, nil
 	}
 	for _, f := range files {
-		repo := directory + string(os.PathSeparator) + f.Name()
-		file, err := os.Open(repo)
-		// if we cannot open it, simply continue to iteration and don't consider
+		dir, err := filepath.Abs(filepath.Join(directory, f.Name()))
 		if err != nil {
-			file.Close()
-			continue
-		}
-		dir, err := filepath.Abs(file.Name())
-		if err != nil {
-			file.Close()
 			continue
 		}
 		// with this approach, we ignore submodule or sub repositories in a git repository
-		ff, err := os.Open(dir + string(os.PathSeparator) + ".git")
-		if err != nil {
+		if _, err := os.Stat(filepath.Join(dir, ".git")); err != nil {
 			dirs = append(dirs, dir)
 		} else {
 			gitDirs = append(gitDirs, dir)
 		}
-		ff.Close()
-		file.Close()
-
 	}
 	return dirs, gitDirs, nil
 }

@@ -149,8 +149,8 @@ func (gui *Gui) Run() error {
 	if err := gui.keybindings(g); err != nil {
 		return err
 	}
-	// mainViews = overviewViews
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+	// MainLoop only returns on error, quitting is reported with ErrQuit
+	if err := g.MainLoop(); err != gocui.ErrQuit {
 		return err
 	}
 	return nil
@@ -192,9 +192,10 @@ func (gui *Gui) renderTitle() error {
 // set the layout and create views with their default size, name etc. values
 // TODO: window sizes can be handled better
 func (gui *Gui) layout(g *gocui.Gui) error {
-	if gui.order == overview {
+	switch gui.order {
+	case overview:
 		return gui.overviewLayout(g)
-	} else if gui.order == focus {
+	case focus:
 		return gui.focusLayout(g)
 	}
 	return nil

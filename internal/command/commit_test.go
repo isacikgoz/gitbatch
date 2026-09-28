@@ -3,7 +3,7 @@ package command
 import (
 	"testing"
 
-	giterr "github.com/isacikgoz/gitbatch/internal/errors"
+	gerr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
 	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
@@ -33,7 +33,7 @@ func TestCommitWithGit(t *testing.T) {
 	}
 	for _, test := range tests {
 		err = commitWithGit(test.inp1, test.inp2)
-		require.False(t, err != nil && err == giterr.ErrUserEmailNotSet)
+		require.False(t, err != nil && err == gerr.ErrUserEmailNotSet)
 	}
 }
 

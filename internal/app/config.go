@@ -78,7 +78,9 @@ func readConfiguration() error {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			if err := f.Close(); err != nil {
+				return err
+			}
 		} else {
 			return err
 		}

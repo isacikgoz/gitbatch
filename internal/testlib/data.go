@@ -39,7 +39,7 @@ func extractFile(dst string, f *zip.File) error {
 	if err != nil {
 		return err
 	}
-	defer rc.Close()
+	defer func() { _ = rc.Close() }()
 
 	path := filepath.Join(dst, f.Name)
 
@@ -61,12 +61,10 @@ func extractFile(dst string, f *zip.File) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-
-	_, err = io.Copy(file, rc)
-	if err != nil {
+	if _, err := io.Copy(file, rc); err != nil {
+		_ = file.Close()
 		return err
 	}
 
-	return nil
+	return file.Close()
 }

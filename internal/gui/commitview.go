@@ -151,7 +151,7 @@ func (gui *Gui) submitCommitMessageView(g *gocui.Gui, v *gocui.View) error {
 	name := re.ReplaceAllString(vName.ViewBuffer(), "")
 	email := re.ReplaceAllString(vEmail.ViewBuffer(), "")
 	if len(email) <= 0 {
-		return errors.New("User email needs to be provided")
+		return errors.New("user email needs to be provided")
 	}
 
 	err = command.Commit(r, &command.CommitOptions{
