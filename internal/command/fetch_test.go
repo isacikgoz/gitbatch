@@ -61,7 +61,7 @@ func TestFetchWithGoGit(t *testing.T) {
 		{th.Repository, testFetchopts4, refspec},
 	}
 	for _, test := range tests {
-		err := fetchWithGoGit(test.inp1, test.inp2, test.inp3)
+		err := fetchWithGoGit(test.inp1, test.inp2, test.inp3, 0)
 		require.NoError(t, err)
 	}
 }

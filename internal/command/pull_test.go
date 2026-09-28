@@ -53,7 +53,7 @@ func TestPullWithGoGit(t *testing.T) {
 		{th.Repository, testPullopts3},
 	}
 	for _, test := range tests {
-		err := pullWithGoGit(test.inp1, test.inp2)
+		err := pullWithGoGit(test.inp1, test.inp2, 0)
 		require.NoError(t, err)
 	}
 }

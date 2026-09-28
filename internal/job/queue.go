@@ -12,6 +12,7 @@ import (
 
 // Queue holds the slice of Jobs
 type Queue struct {
+	mu     sync.Mutex
 	series []*Job
 }
 
@@ -26,6 +27,8 @@ func CreateJobQueue() (jq *Queue) {
 
 // AddJob adds a job to the queue
 func (jq *Queue) AddJob(j *Job) error {
+	jq.mu.Lock()
+	defer jq.mu.Unlock()
 	for _, job := range jq.series {
 		if job.Repository.RepoID == j.Repository.RepoID && job.JobType == j.JobType {
 			return fmt.Errorf("same job already is in the queue")
@@ -39,28 +42,33 @@ func (jq *Queue) AddJob(j *Job) error {
 
 // StartNext starts the next job in the queue
 func (jq *Queue) StartNext() (j *Job, finished bool, err error) {
-	finished = false
+	jq.mu.Lock()
 	if len(jq.series) < 1 {
-		finished = true
-		return nil, finished, nil
+		jq.mu.Unlock()
+		return nil, true, nil
 	}
 	i := len(jq.series) - 1
 	lastJob := jq.series[i]
 	jq.series = jq.series[:i]
+	// release the lock before starting, the job may take a long time
+	jq.mu.Unlock()
 	if err = lastJob.start(); err != nil {
-		return lastJob, finished, err
+		return lastJob, false, err
 	}
-	return lastJob, finished, nil
+	return lastJob, false, nil
 }
 
 // RemoveFromQueue deletes the given entity and its job from the queue
 // TODO: it is not safe if the job has been started
 func (jq *Queue) RemoveFromQueue(r *git.Repository) error {
+	jq.mu.Lock()
+	defer jq.mu.Unlock()
 	removed := false
-	for i, job := range jq.series {
-		if job.Repository.RepoID == r.RepoID {
+	for i := 0; i < len(jq.series); i++ {
+		if jq.series[i].Repository.RepoID == r.RepoID {
 			jq.series = append(jq.series[:i], jq.series[i+1:]...)
 			removed = true
+			i--
 		}
 	}
 	if !removed {
@@ -73,7 +81,8 @@ func (jq *Queue) RemoveFromQueue(r *git.Repository) error {
 // struct, this function returns true if that entity is in the queue along with
 // the jobs type
 func (jq *Queue) IsInTheQueue(r *git.Repository) (inTheQueue bool, j *Job) {
-	inTheQueue = false
+	jq.mu.Lock()
+	defer jq.mu.Unlock()
 	for _, job := range jq.series {
 		if job.Repository.RepoID == r.RepoID {
 			inTheQueue = true
@@ -85,7 +94,6 @@ func (jq *Queue) IsInTheQueue(r *git.Repository) (inTheQueue bool, j *Job) {
 
 // StartJobsAsync start he jobs in the queue asynchronously
 func (jq *Queue) StartJobsAsync() map[*Job]error {
-
 	ctx := context.TODO()
 
 	var (
@@ -94,15 +102,17 @@ func (jq *Queue) StartJobsAsync() map[*Job]error {
 		fails      = make(map[*Job]error)
 	)
 
-	var mx sync.Mutex
-	for range jq.series {
+	jq.mu.Lock()
+	n := len(jq.series)
+	jq.mu.Unlock()
 
+	var mx sync.Mutex
+	for i := 0; i < n; i++ {
 		if err := sem.Acquire(ctx, 1); err != nil {
 			break
 		}
 
 		go func() {
-
 			defer sem.Release(1)
 			j, _, err := jq.StartNext()
 			if err != nil {

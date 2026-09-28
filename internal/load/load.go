@@ -50,8 +50,9 @@ func SyncLoad(directories []string) (entities []*git.Repository, err error) {
 	return entities, nil
 }
 
-// AsyncLoad asynchronously adds to AsyncAdd function
-func AsyncLoad(directories []string, add AsyncAdd, d chan bool) error {
+// AsyncLoad initializes repositories in parallel, passing each one to add as it
+// is loaded. It returns once every directory has been tried.
+func AsyncLoad(directories []string, add AsyncAdd) error {
 	ctx := context.TODO()
 
 	var (
@@ -82,10 +83,5 @@ func AsyncLoad(directories []string, add AsyncAdd, d chan bool) error {
 		}(dir)
 	}
 	// Acquire all of the tokens to wait for any remaining workers to finish.
-	if err := sem.Acquire(ctx, int64(maxWorkers)); err != nil {
-		return err
-	}
-	d <- true
-	sem = nil
-	return nil
+	return sem.Acquire(ctx, int64(maxWorkers))
 }

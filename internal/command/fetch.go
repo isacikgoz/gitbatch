@@ -13,10 +13,8 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
-var (
-	fetchTryCount int
-	fetchMaxTry   = 1
-)
+// fetchMaxTry is how many times a native fetch is retried with the remote refspec
+const fetchMaxTry = 1
 
 // FetchOptions defines the rules for fetch operation
 type FetchOptions struct {
@@ -45,7 +43,6 @@ func Fetch(r *git.Repository, o *FetchOptions) (err error) {
 	// here we configure fetch operation
 	// default mode is go-git (this may be configured)
 	mode := o.CommandMode
-	fetchTryCount = 0
 	// prune and dry run is not supported from go-git yet, rely on old friend
 	if o.Prune || o.DryRun {
 		mode = ModeLegacy
@@ -63,7 +60,7 @@ func Fetch(r *git.Repository, o *FetchOptions) (err error) {
 		} else {
 			refspec = "+" + "refs/heads/" + r.State.Branch.Name + ":" + "/refs/remotes/" + r.State.Remote.Name + "/" + r.State.Branch.Name
 		}
-		err = fetchWithGoGit(r, o, refspec)
+		err = fetchWithGoGit(r, o, refspec, 0)
 		return err
 	}
 	return nil
@@ -103,7 +100,7 @@ func fetchWithGit(r *git.Repository, options *FetchOptions) (err error) {
 // pattern for references on the remote side and <dst> is where those references
 // will be written locally. The + tells Git to update the reference even if it
 // isn’t a fast-forward.
-func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (err error) {
+func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string, try int) (err error) {
 	opt := &gogit.FetchOptions{
 		RemoteName: options.RemoteName,
 		RefSpecs:   []config.RefSpec{config.RefSpec(refspec)},
@@ -134,9 +131,8 @@ func fetchWithGoGit(r *git.Repository, options *FetchOptions, refspec string) (e
 		} else if strings.Contains(err.Error(), "couldn't find remote ref") {
 			// we don't have remote ref, so lets pull other things.. maybe it'd be useful
 			rp := r.State.Remote.RefSpecs[0]
-			if fetchTryCount < fetchMaxTry {
-				fetchTryCount++
-				_ = fetchWithGoGit(r, options, rp)
+			if try < fetchMaxTry {
+				_ = fetchWithGoGit(r, options, rp, try+1)
 			} else {
 				return err
 			}
