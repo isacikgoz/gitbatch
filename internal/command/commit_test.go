@@ -5,11 +5,12 @@ import (
 
 	giterr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCommitWithGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	f, err := testFile(th.RepoPath, "file")
@@ -37,7 +38,7 @@ func TestCommitWithGit(t *testing.T) {
 }
 
 func TestCommitWithGoGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	f, err := testFile(th.RepoPath, "file")

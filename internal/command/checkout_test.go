@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +20,7 @@ func TestCheckout(t *testing.T) {
 		CommandMode:    ModeLegacy,
 	}
 
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {

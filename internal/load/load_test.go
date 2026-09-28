@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSyncLoad(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {
@@ -25,7 +26,7 @@ func TestSyncLoad(t *testing.T) {
 }
 
 func TestAsyncLoad(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	testChannel := make(chan bool)

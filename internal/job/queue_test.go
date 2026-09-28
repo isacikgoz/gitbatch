@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +15,7 @@ func TestCreateJobQueue(t *testing.T) {
 }
 
 func TestAddJob(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	q := CreateJobQueue()
@@ -30,7 +31,7 @@ func TestAddJob(t *testing.T) {
 }
 
 func TestRemoveFromQueue(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	q := CreateJobQueue()
@@ -50,7 +51,7 @@ func TestRemoveFromQueue(t *testing.T) {
 }
 
 func TestIsInTheQueue(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	q := CreateJobQueue()
@@ -71,7 +72,7 @@ func TestIsInTheQueue(t *testing.T) {
 }
 
 func TestStartJobsAsync(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	q := CreateJobQueue()

@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,7 +39,7 @@ func TestOverrideConfig(t *testing.T) {
 }
 
 func TestExecQuickMode(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {

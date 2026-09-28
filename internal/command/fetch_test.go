@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,7 +30,7 @@ var (
 )
 
 func TestFetchWithGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {
@@ -47,7 +48,7 @@ func TestFetchWithGit(t *testing.T) {
 }
 
 func TestFetchWithGoGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	refspec := "+" + "refs/heads/" + th.Repository.State.Branch.Name + ":" + "/refs/remotes/" + th.Repository.State.Branch.Name
