@@ -1,7 +1,6 @@
 package app
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -47,7 +46,7 @@ func walkRecursive(search, appendant []string) ([]string, []string) {
 func separateDirectories(directory string) ([]string, []string, error) {
 	dirs := make([]string, 0)
 	gitDirs := make([]string, 0)
-	files, err := ioutil.ReadDir(directory)
+	files, err := os.ReadDir(directory)
 	// can we read the directory?
 	if err != nil {
 		return nil, nil, nil
