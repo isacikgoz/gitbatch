@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +25,7 @@ var (
 )
 
 func TestPullWithGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {
@@ -41,7 +42,7 @@ func TestPullWithGit(t *testing.T) {
 }
 
 func TestPullWithGoGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {
@@ -52,7 +53,7 @@ func TestPullWithGoGit(t *testing.T) {
 		{th.Repository, testPullopts3},
 	}
 	for _, test := range tests {
-		err := pullWithGoGit(test.inp1, test.inp2)
+		err := pullWithGoGit(test.inp1, test.inp2, 0)
 		require.NoError(t, err)
 	}
 }

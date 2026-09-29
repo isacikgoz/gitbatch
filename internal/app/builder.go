@@ -16,7 +16,6 @@ type App struct {
 // Config is an assembler data to initiate a setup
 type Config struct {
 	Directories []string
-	LogLevel    string
 	Depth       int
 	QuickMode   bool
 	Mode        string
@@ -58,9 +57,6 @@ func overrideConfig(appConfig, setupConfig *Config) *Config {
 	if len(setupConfig.Directories) > 0 {
 		appConfig.Directories = setupConfig.Directories
 	}
-	if len(setupConfig.LogLevel) > 0 {
-		appConfig.LogLevel = setupConfig.LogLevel
-	}
 	if setupConfig.Depth > 0 {
 		appConfig.Depth = setupConfig.Depth
 	}
@@ -75,7 +71,7 @@ func overrideConfig(appConfig, setupConfig *Config) *Config {
 
 func (a *App) execQuickMode(directories []string) error {
 	if a.Config.Mode != "fetch" && a.Config.Mode != "pull" {
-		return fmt.Errorf("unrecognized quick mode: " + a.Config.Mode)
+		return fmt.Errorf("unrecognized quick mode: %s", a.Config.Mode)
 	}
 
 	return quick(directories, a.Config.Mode)

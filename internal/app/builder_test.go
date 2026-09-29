@@ -4,21 +4,19 @@ import (
 	"os"
 	"testing"
 
-	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
 func TestOverrideConfig(t *testing.T) {
 	config1 := &Config{
 		Directories: []string{},
-		LogLevel:    "info",
 		Depth:       1,
 		QuickMode:   false,
 		Mode:        "fetch",
 	}
 	config2 := &Config{
 		Directories: []string{string(os.PathSeparator) + "tmp"},
-		LogLevel:    "error",
 		Depth:       1,
 		QuickMode:   true,
 		Mode:        "pull",
@@ -39,7 +37,7 @@ func TestOverrideConfig(t *testing.T) {
 }
 
 func TestExecQuickMode(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	var tests = []struct {

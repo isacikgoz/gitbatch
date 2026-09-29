@@ -13,10 +13,8 @@ import (
 	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
-var (
-	pullTryCount int
-	pullMaxTry   = 1
-)
+// pullMaxTry is how many times a native pull is retried after a fetch
+const pullMaxTry = 1
 
 // PullOptions defines the rules for pull operation
 type PullOptions struct {
@@ -39,15 +37,13 @@ type PullOptions struct {
 
 // Pull incorporates changes from a remote repository into the current branch.
 func Pull(r *git.Repository, o *PullOptions) (err error) {
-	pullTryCount = 0
-
 	// here we configure pull operation
 	switch o.CommandMode {
 	case ModeLegacy:
 		err = pullWithGit(r, o)
 		return err
 	case ModeNative:
-		err = pullWithGoGit(r, o)
+		err = pullWithGoGit(r, o, 0)
 		return err
 	}
 	return nil
@@ -77,7 +73,7 @@ func pullWithGit(r *git.Repository, options *PullOptions) (err error) {
 	return r.Refresh()
 }
 
-func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
+func pullWithGoGit(r *git.Repository, options *PullOptions, try int) (err error) {
 	opt := &gogit.PullOptions{
 		RemoteName:   options.RemoteName,
 		SingleBranch: options.SingleBranch,
@@ -115,14 +111,13 @@ func pullWithGoGit(r *git.Repository, options *PullOptions) (err error) {
 			// log.Error("error: " + err.Error())
 			// Already up-to-date
 			// TODO: submit a PR for this kind of error, this type of catch is lame
-		} else if err == storage.ErrReferenceHasChanged && pullTryCount < pullMaxTry {
-			pullTryCount++
+		} else if err == storage.ErrReferenceHasChanged && try < pullMaxTry {
 			if err := Fetch(r, &FetchOptions{
 				RemoteName: options.RemoteName,
 			}); err != nil {
 				return err
 			}
-			return Pull(r, options)
+			return pullWithGoGit(r, options, try+1)
 		} else if strings.Contains(err.Error(), "SSH_AUTH_SOCK") {
 			// The env variable SSH_AUTH_SOCK is not defined, maybe git can handle this
 			return pullWithGit(r, options)

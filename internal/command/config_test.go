@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
 func TestConfigWithGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	testConfigopt := &ConfigOptions{
@@ -32,7 +33,7 @@ func TestConfigWithGit(t *testing.T) {
 }
 
 func TestConfigWithGoGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	testConfigopt := &ConfigOptions{
@@ -56,7 +57,7 @@ func TestConfigWithGoGit(t *testing.T) {
 }
 
 func TestAddConfigWithGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	testConfigopt := &ConfigOptions{

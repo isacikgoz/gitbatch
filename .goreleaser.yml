@@ -1,23 +1,22 @@
+version: 2
+
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod download
+
 builds:
--
-  # Path to main.go file or main package. Default is `.`.
-  main: ./cmd/gitbatch/main.go
-  env:
-  - CGO_ENABLED=0
-    # GOOS list to build for. Defaults are darwin and linux.
-    # For more info: https://golang.org/doc/install/source#environment
-  goos:
-  - darwin
-  - linux
-  - windows
+  - main: ./cmd/gitbatch
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
 
 brews:
-  -
-    tap:
+  - repository:
       owner: isacikgoz
       name: homebrew-taps
     homepage: "{{ .GitURL }}"

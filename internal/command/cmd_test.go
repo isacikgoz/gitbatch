@@ -38,6 +38,8 @@ func TestReturn(t *testing.T) {
 		expected int
 	}{
 		{wd, "foo", []string{}, -1},
+		{wd, "git", []string{"--version"}, 0},
+		{wd, "git", []string{"no-such-subcommand"}, 1},
 	}
 	for _, test := range tests {
 		if output, _ := Return(test.inp1, test.inp2, test.inp3); output != test.expected {

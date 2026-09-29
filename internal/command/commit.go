@@ -6,7 +6,7 @@ import (
 
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	giterr "github.com/isacikgoz/gitbatch/internal/errors"
+	gerr "github.com/isacikgoz/gitbatch/internal/errors"
 	"github.com/isacikgoz/gitbatch/internal/git"
 )
 
@@ -46,7 +46,7 @@ func commitWithGit(r *git.Repository, opt *CommitOptions) (err error) {
 	}
 	if out, err := Run(r.AbsPath, "git", args); err != nil {
 		_ = r.Refresh()
-		return giterr.ParseGitError(out, err)
+		return gerr.ParseGitError(out, err)
 	}
 	// till this step everything should be ok
 	return r.Refresh()

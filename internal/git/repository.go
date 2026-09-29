@@ -2,18 +2,11 @@ package git
 
 import (
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 
 	"github.com/go-git/go-git/v5"
 )
-
-// Reference is the interface for commits, remotes and branches
-type Reference interface {
-	Next() *Reference
-	Previous() *Reference
-}
 
 // Repository is the main entity of the application. The repository name is
 // actually the name of its folder in the host's filesystem. It holds the go-git
@@ -81,13 +74,10 @@ const (
 
 // FastInitializeRepo initializes a Repository struct without its belongings.
 func FastInitializeRepo(dir string) (r *Repository, err error) {
-	f, err := os.Open(dir)
+	fstat, err := os.Stat(dir)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	// get status of the file
-	fstat, _ := f.Stat()
 	rp, err := git.PlainOpen(dir)
 	if err != nil {
 		return nil, err
@@ -139,15 +129,15 @@ func (r *Repository) loadComponents(reset bool) error {
 // Refresh the belongings of a repository, this function is called right after
 // fetch/pull/merge operations
 func (r *Repository) Refresh() error {
-	var err error
-	// error can be ignored since the file already exists when app is loading
 	// if the Repository is only fast initialized, no need to refresh because
 	// it won't contain its belongings
 	if r.State.Branch == nil {
 		return nil
 	}
-	file, _ := os.Open(r.AbsPath)
-	fstat, _ := file.Stat()
+	fstat, err := os.Stat(r.AbsPath)
+	if err != nil {
+		return err
+	}
 	// re-initialize the go-git repository struct after supposed update
 	rp, err := git.PlainOpen(r.AbsPath)
 	if err != nil {
@@ -208,14 +198,4 @@ func (r *Repository) SetWorkStatus(ws WorkStatus) {
 
 func (r *Repository) String() string {
 	return r.Name
-}
-
-func Create(dir string) (*Repository, error) {
-	cmd := exec.Command("git", "init")
-	cmd.Dir = dir
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
-	return InitializeRepo(dir)
 }

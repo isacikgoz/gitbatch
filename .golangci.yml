@@ -1,0 +1,16 @@
+version: "2"
+
+linters:
+  default: standard
+  exclusions:
+    rules:
+      # gocui's View.Write never returns an error, so writes to views are
+      # not worth checking
+      - path: internal/gui/
+        linters:
+          - errcheck
+        text: "Error return value of `fmt.Fprint"
+
+formatters:
+  enable:
+    - gofmt

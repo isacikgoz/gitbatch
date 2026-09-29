@@ -1,51 +1,24 @@
 package load
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
-func TestSyncLoad(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
-	defer th.CleanUp(t)
-
-	var tests = []struct {
-		input []string
-	}{
-		{[]string{th.BasicRepoPath(), th.DirtyRepoPath()}},
-	}
-	for _, test := range tests {
-		output, err := SyncLoad(test.input)
-		require.NoError(t, err)
-		require.NotEmpty(t, output)
-	}
-}
-
 func TestAsyncLoad(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
-	testChannel := make(chan bool)
-	testAsyncMockFunc := func(r *git.Repository) {
-		go func() {
-			if <-testChannel {
-				fmt.Println(r.Name)
-			}
-		}()
+	var loaded []string
+	add := func(r *git.Repository) {
+		loaded = append(loaded, r.Name)
 	}
 
-	var tests = []struct {
-		inp1 []string
-		inp2 AsyncAdd
-		inp3 chan bool
-	}{
-		{[]string{th.BasicRepoPath(), th.DirtyRepoPath()}, testAsyncMockFunc, testChannel},
-	}
-	for _, test := range tests {
-		err := AsyncLoad(test.inp1, test.inp2, test.inp3)
-		require.NoError(t, err)
-	}
+	dirs := []string{th.BasicRepoPath(), th.DirtyRepoPath(), th.NonRepoPath()}
+	err := AsyncLoad(dirs, add)
+	require.NoError(t, err)
+	require.ElementsMatch(t, []string{"basic-repo", "dirty-repo"}, loaded)
 }

@@ -31,6 +31,8 @@ type guiState struct {
 	FailoverQueue *job.Queue
 	targetBranch  string
 	totalBranches []*branchCountMap
+	// loaded is set once every directory has been tried as a repository
+	loaded bool
 }
 
 // this struct encapsulates the name and title of a view. the name of a view is
@@ -93,8 +95,6 @@ var (
 	checkoutMode = mode{ModeID: CheckoutMode, DisplayString: "Checkout", CommandString: "checkout"}
 
 	modes = []mode{fetchMode, pullMode, mergeMode}
-	// mainViews = []viewFeature{mainViewFeature, commitViewFeature, dynamicViewFeature, remoteViewFeature, remoteBranchViewFeature, branchViewFeature, stashViewFeature}
-	loaded = make(chan bool)
 )
 
 // New creates a Gui object and fill it's state related entities
@@ -135,7 +135,12 @@ func (gui *Gui) Run() error {
 
 	// load repositories in background asynchronously
 	go func() {
-		_ = load.AsyncLoad(gui.State.Directories, gui.loadRepository, loaded)
+		_ = load.AsyncLoad(gui.State.Directories, gui.loadRepository)
+		g.Update(func(g *gocui.Gui) error {
+			gui.State.loaded = true
+			_ = gui.renderTitle()
+			return nil
+		})
 	}()
 
 	if err := gui.generateKeybindings(); err != nil {
@@ -144,8 +149,8 @@ func (gui *Gui) Run() error {
 	if err := gui.keybindings(g); err != nil {
 		return err
 	}
-	// mainViews = overviewViews
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+	// MainLoop only returns on error, quitting is reported with ErrQuit
+	if err := g.MainLoop(); err != gocui.ErrQuit {
 		return err
 	}
 	return nil
@@ -153,29 +158,21 @@ func (gui *Gui) Run() error {
 
 // add repository to gui's own slice and register listeners
 func (gui *Gui) loadRepository(r *git.Repository) {
-	rs := gui.State.Repositories
-	// insertion sort implementation
-	index := sort.Search(len(rs), func(i int) bool { return git.Less(r, rs[i]) })
-	rs = append(rs, &git.Repository{})
-	copy(rs[index+1:], rs[index:])
-	rs[index] = r
 	// add listener
 	r.On(git.RepositoryUpdated, gui.repositoryUpdated)
 	r.On(git.BranchUpdated, gui.branchUpdated)
-	// update gui
-	_ = gui.repositoryUpdated(nil)
-	_ = gui.renderTitle()
-	// take pointer back
-	gui.State.Repositories = rs
-	go func() {
-		if <-loaded {
-			v, err := gui.g.View(mainViewFrameFeature.Name)
-			if err != nil {
-				return
-			}
-			v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
-		}
-	}()
+	// the repository slice is only accessed from the main loop, insert it there
+	gui.g.Update(func(g *gocui.Gui) error {
+		rs := gui.State.Repositories
+		// insertion sort implementation
+		index := sort.Search(len(rs), func(i int) bool { return git.Less(r, rs[i]) })
+		rs = append(rs, &git.Repository{})
+		copy(rs[index+1:], rs[index:])
+		rs[index] = r
+		gui.State.Repositories = rs
+		_ = gui.renderTitle()
+		return gui.renderMain()
+	})
 }
 
 // render title with loaded repository count
@@ -184,16 +181,21 @@ func (gui *Gui) renderTitle() error {
 	if err != nil {
 		return err
 	}
-	v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
+	if gui.State.loaded {
+		v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d) ", len(gui.State.Repositories))
+	} else {
+		v.Title = mainViewFrameFeature.Title + fmt.Sprintf("(%d/%d) ", len(gui.State.Repositories), len(gui.State.Directories))
+	}
 	return nil
 }
 
 // set the layout and create views with their default size, name etc. values
 // TODO: window sizes can be handled better
 func (gui *Gui) layout(g *gocui.Gui) error {
-	if gui.order == overview {
+	switch gui.order {
+	case overview:
 		return gui.overviewLayout(g)
-	} else if gui.order == focus {
+	case focus:
 		return gui.focusLayout(g)
 	}
 	return nil

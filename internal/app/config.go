@@ -62,7 +62,6 @@ func setDefaults() error {
 	viper.SetDefault(quickKey, quickKeyDefault)
 	viper.SetDefault(recursionKey, recursionKeyDefault)
 	viper.SetDefault(modeKey, modeKeyDefault)
-	// viper.SetDefault(pathsKey, pathsKeyDefault)
 	return nil
 }
 
@@ -79,7 +78,9 @@ func readConfiguration() error {
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			if err := f.Close(); err != nil {
+				return err
+			}
 		} else {
 			return err
 		}

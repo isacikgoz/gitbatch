@@ -5,6 +5,9 @@ on:
     tags:
     - 'v*.*.*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: Release
@@ -12,20 +15,19 @@ jobs:
 
     steps:
     - name: Check out code into $GITHUB_WORKSPACE directory
-      uses: actions/checkout@v2
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v6
       with:
-        go-version: 1.18
-      id: go
+        go-version-file: go.mod
 
     - name: GoReleaser
-      uses: goreleaser/goreleaser-action@v2
+      uses: goreleaser/goreleaser-action@v6
       with:
-        version: latest
-        args: release --rm-dist
+        version: "~> v2"
+        args: release --clean
       env:
         GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP }}

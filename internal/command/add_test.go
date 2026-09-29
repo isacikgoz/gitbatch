@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/isacikgoz/gitbatch/internal/git"
+	"github.com/isacikgoz/gitbatch/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -12,7 +13,7 @@ var (
 )
 
 func TestAddAll(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	_, err := testFile(th.RepoPath, "file")
@@ -31,7 +32,7 @@ func TestAddAll(t *testing.T) {
 }
 
 func TestAddWithGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	f, err := testFile(th.RepoPath, "file")
@@ -51,7 +52,7 @@ func TestAddWithGit(t *testing.T) {
 }
 
 func TestAddWithGoGit(t *testing.T) {
-	th := git.InitTestRepositoryFromLocal(t)
+	th := testlib.InitTestRepositoryFromLocal(t)
 	defer th.CleanUp(t)
 
 	f, err := testFile(th.RepoPath, "file")
